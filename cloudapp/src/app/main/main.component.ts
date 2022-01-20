@@ -158,6 +158,9 @@ export class MainComponent implements OnInit, OnDestroy {
             titles.forEach(title => {
               oclcQueries.push(new OclcQuery("ti","exact",title));
               names.forEach( name => {
+                if(name == "") {
+                  return;
+                }
                 let tnq = new OclcQuery("ti","exact",title);
                 tnq.addParams("au","=",name);
                 oclcQueries.push(tnq);
