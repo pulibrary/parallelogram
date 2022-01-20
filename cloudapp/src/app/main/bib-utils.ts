@@ -60,6 +60,9 @@ export class BibUtils {
       if(ono.startsWith("(OCoLC)")) {
         ono = ono.replace(/^[^0-9]*/,"");
         ono = ono.replace(/[^0-9]*$/,"");
+        if(result != "") {
+          result += "|";
+        }
         result += ono;
       }
     })
