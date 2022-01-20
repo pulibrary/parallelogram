@@ -1,0 +1,26 @@
+{
+   "id": "pulibrary/parallelogram",
+   "title": "Parallelogram",
+   "description": "Tool for generating parallel fields in bibliographic records",
+   "subtitle": "Creates and populates parallel fields",
+   "author": "Thomas Ventimiglia",
+   "contentSecurity": {
+      "connectSrc": [
+         "https://nga1cj08ih.execute-api.us-east-2.amazonaws.com/"
+      ],
+      "sandbox": {
+         "popups": true
+      }
+   },
+   "pages": {
+      "settings": "/#/settings"
+   },
+   "icon": {
+      "type": "url",
+      "value": "/assets/parallelogram.png"
+   },
+   "fullscreen": {
+      "allow": true,
+      "open": true
+   }
+}

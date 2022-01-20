@@ -1,0 +1,27 @@
+<section>
+  <div class="statusString">{{statusString}}</div>
+  <div class="loading-shade" *ngIf="loading">
+    <mat-progress-spinner mode="determinate" diameter="50" value={{searchProgress}}>
+    </mat-progress-spinner>
+  </div>
+  <mat-card>
+    <!--
+    <mat-card-header>
+      <mat-card-title></mat-card-title> 
+    </mat-card-header>
+    -->
+    <mat-card-content>
+      <div>
+        <table class="marc">
+           <tr *ngFor="let field of fieldTable | keyvalue">
+              <td><button mat-raised-button [routerLink]="['detail', bib.mms_id, field.key]">
+                {{field.value.tag}}</button></td>
+              <td>{{field.value.ind1}}</td>
+              <td>{{field.value.ind2}}</td>
+              <td>{{field.value.getSubfieldString()}}</td>
+            </tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</section>

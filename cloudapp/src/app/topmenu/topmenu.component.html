@@ -1,0 +1,10 @@
+<div *ngIf="route.url != '/'" class="title">
+    <div class="eca-actions">
+      <button mat-flat-button color="secondary" [routerLink]="['/']">
+        <mat-icon>arrow_back</mat-icon>
+        Home
+      </button>
+      <ng-content select="[buttons]"></ng-content>
+    </div>
+    <h1>{{ title }}</h1>
+  </div>
