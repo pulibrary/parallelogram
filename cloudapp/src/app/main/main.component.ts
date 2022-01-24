@@ -96,7 +96,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.relator_terms.ready.then((rt_ready) => {
     this.wadegiles.ready.then((wg_ready) =>  {
-    this.bibUtils = new BibUtils(this.restService);
+    this.bibUtils = new BibUtils(this.restService,this.alert);
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
     if ((pageInfo.entities || []).length == 1) {
       const entity = pageInfo.entities[0];

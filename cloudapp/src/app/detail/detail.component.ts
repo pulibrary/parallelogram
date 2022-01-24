@@ -28,6 +28,7 @@ export class DetailComponent implements OnInit {
   main_field: MarcDataField;
   parallel_field: MarcDataField;
   lookup_fields: Map<string, Array<string>>;
+  saving: boolean = false;
 
   private bibUtils: BibUtils;
   private bib: Bib;
@@ -76,7 +77,7 @@ delimiter_re = new RegExp(this.delimiterPattern,"u");
 
     this.mms_id = this.route.snapshot.params['mms_id'];
     this.field_id = this.route.snapshot.params['field_id'];
-    this.bibUtils = new BibUtils(this.restService);
+    this.bibUtils = new BibUtils(this.restService,this.alert);
     this.bibUtils.getBib(this.mms_id).subscribe(bib=> {
       this.bib = null;
       if(bib.record_format=='marc21') {
@@ -365,13 +366,13 @@ delimiter_re = new RegExp(this.delimiterPattern,"u");
     }
     subfields.forEach(sf => {
       let code = sf.id.replace("input-","");
-      newfield.addSubfield(code,code.substr(0,1),sf.value);
+      newfield.addSubfield(code,code.substring(0,1),sf.value);
     });
     let useParallel = false;
     let fid = this.field_id;
-    if(fid.substr(-1,1) == "P") {
+    if(fid.substring(fid.length-1) == "P") {
       useParallel = true;
-      fid = fid.substr(0,fid.length-1);
+      fid = fid.substring(0,fid.length-1);
     }
 
     this.bibUtils.replaceFieldInBib(this.bib,fid,this.main_field,useParallel);
@@ -381,8 +382,11 @@ delimiter_re = new RegExp(this.delimiterPattern,"u");
       this.bibUtils.replaceFieldInBib(this.bib,fid,newfield,!useParallel);
     }
     this.parallel_field = newfield;
+
+    this.saving = true;
     this.bibUtils.updateBib(this.bib).subscribe(() => {
       this.alert.success("Record updated.");
+      this.saving = false;
     });
   }
 

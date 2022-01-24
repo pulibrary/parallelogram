@@ -1,3 +1,7 @@
+<div class="loading-shade" *ngIf="saving">
+    <mat-progress-spinner mode="indeterminate" diameter="50" value={{searchProgress}}>
+    </mat-progress-spinner>
+</div>
 <button mat-raised-button routerLink="../../.." [queryParams]="{doSearch: false}">&lt; View full record</button>
 <table class="marc">
     <tr><td colspan='4'><span class='tablehead'>Original Field:</span></td></tr>

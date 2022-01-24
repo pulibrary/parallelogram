@@ -1,4 +1,4 @@
-import { CloudAppRestService, HttpMethod } from "@exlibris/exl-cloudapp-angular-lib";
+import { CloudAppRestService, AlertService, HttpMethod } from "@exlibris/exl-cloudapp-angular-lib";
 import {MarcDataField} from './marc-datafield';
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
@@ -19,10 +19,13 @@ export interface Bib {
 
 export class BibUtils {
   private _restService: CloudAppRestService;
+  private alert: AlertService;
 
 
-  constructor(restService: CloudAppRestService) {
+  constructor(restService: CloudAppRestService,
+    alert: AlertService ) {
     this._restService = restService;
+    this.alert = alert;
   }
 
   /** Retrieve a single BIB record */
@@ -34,7 +37,7 @@ export class BibUtils {
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let xpath = "/record/datafield[@tag='" + field + "']";
 
-    if(field.substr(0,2) == "00") {
+    if(field.substring(0,2) == "00") {
       xpath.replace("datafield","controlfield");
     }
     if(subfield != null) {
@@ -128,19 +131,19 @@ export class BibUtils {
 
   replaceFieldInBib(bib: Bib, field_id: string, field: MarcDataField, parallel = false) {
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
-    let tag = field_id.substr(0,3);
-    let tag_seq = field_id.substr(4);
+    let tag = field_id.substring(0,3);
+    let tag_seq = field_id.substring(4);
     let target_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
 
     if(parallel) {
       let linkage = target_field.querySelector("subfield[code='6']");
       if(linkage) {
         let linkageStr = linkage.innerHTML;
-        let ptag = linkageStr.substr(0,3);
-        let plink = linkageStr.substr(4,2);
+        let ptag = linkageStr.substring(0,3);
+        let plink = linkageStr.substring(4,6);
         let parfields = doc.querySelectorAll("datafield[tag='"+ptag+"']");
         for(let i = 0; i < parfields.length; i++) {
-           let linkageVal = parfields[i].querySelector("subfield[code='6']").innerHTML.substr(4,2);
+           let linkageVal = parfields[i].querySelector("subfield[code='6']").innerHTML.substring(4,6);
            if(plink == linkageVal) {
               target_field = parfields[i];
               break;
@@ -155,7 +158,6 @@ export class BibUtils {
       parent: doc.documentElement, 
       attributes: [ ["tag", field.tag], ["ind1", field.ind1], ["ind2", field.ind2] ]
     });
-
     field.subfields.forEach(sf => {
       dom("subfield", { 
         parent: datafield, 
@@ -163,6 +165,7 @@ export class BibUtils {
         attributes: [ ["code", sf.code] ]
       });
     });
+
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
     return bib;
   }
@@ -174,23 +177,31 @@ export class BibUtils {
       attributes: [ ["tag", field.tag], ["ind1", field.ind1], ["ind2", field.ind2] ]
     });
     field.subfields.forEach(sf => {
+      //this.alert.info(JSON.stringify(datafield.outerHTML) +"|"+ sf.code + "|" + sf.data,{autoClose: false})
       dom("subfield", { 
         parent: datafield, 
-        text: sf.data, 
+        text: this.xmlEscape(sf.data), 
         attributes: [ ["code", sf.code] ]
       });
     });
+    
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
     return bib;
-  }   
+  }  
+  xmlEscape(str: string): string {
+    return str.replace(/&/g, "&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/,"&#039;")
+  } 
 }
 
 /** Adds Element to dom and returns it */
-const dom = (name: string, options: {parent?: Element | Node, text?: 
+const dom = (name: string, options: {parent?: Element, text?: 
   string, className?: string, id?: string, attributes?: string[][]} = {}
   ): Element => {
-
-  let ns = options.parent ? options.parent.parentElement.namespaceURI : '';
+  let ns = options.parent ? options.parent.namespaceURI : '';
   let element = document.createElementNS(ns, name);
 
   if (options.parent) options.parent.appendChild(element);
