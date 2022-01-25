@@ -226,6 +226,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   addParallelDictToStorage(status: string = "") {
     let storePairs = [];
+    //this.alert.warn(this.parallelDictToString(),{autoClose: false})
     this.parallelDict.forEach((value, textA) => {
       let entry = [];
       value.forEach((count,textB) => {
@@ -237,6 +238,8 @@ export class MainComponent implements OnInit, OnDestroy {
       kv => this.storeService.set(kv['key'],[kv['value']])
     );
     concat(...storeOperations).subscribe({
+      //next: (res) => this.alert.info(JSON.stringify(res),{autoClose: false}),
+      //error: (err) => this.alert.error(err,{autoClose: false}),
       complete: () => {
         this.loading = false;
         this.statusString = status;
@@ -421,7 +424,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 addToParallelDict(textA: string, textB: string): void {
     //this.alert.info(textA + "<br>" + textB,{autoClose: false})
-    if(textA == textB) {
+    if(textA == textB || textA.match(/^[0-9\s]*$/) || textB.match(/^[0-9\s]*$/)) {
       return;
     }
     if(!this.parallelDict.has(textA)) {
