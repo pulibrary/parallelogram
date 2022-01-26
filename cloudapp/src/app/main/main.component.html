@@ -4,18 +4,40 @@
     <mat-progress-spinner mode="determinate" diameter="50" value={{searchProgress}}>
     </mat-progress-spinner>
   </div>
+  <div class="loading-shade" *ngIf="saving">
+    <mat-progress-spinner mode="indeterminate">
+    </mat-progress-spinner>
+  </div>
   <mat-card>
-    <!--
-    <mat-card-header>
-      <mat-card-title></mat-card-title> 
-    </mat-card-header>
-    -->
     <mat-card-content>
       <div>
         <table class="marc">
-           <tr *ngFor="let field of fieldTable | keyvalue">
-              <td><button mat-raised-button [routerLink]="['detail', bib.mms_id, field.key]">
-                {{field.value.tag}}</button></td>
+           <tr *ngFor="let field of fieldTable | keyvalue" [class]="field.value.hasParallel ? 'parallel' : 'noparallel'">
+              <td *ngIf="field.value.hasParallel; else addBlock">
+                <button mat-flat-button color="secondary" [matMenuTriggerFor]="fieldOptions">
+                  <mat-icon>more_horiz</mat-icon>                
+                </button>
+              <mat-menu #fieldOptions="matMenu">
+                  <button mat-menu-item [routerLink]="['detail', bib.mms_id, field.key]">
+                    <mat-icon>edit</mat-icon>edit
+                  </button>
+                  <button mat-menu-item (click)="swapField(field.key)">
+                    <mat-icon>swap_vert</mat-icon>swap
+                  </button>
+                  <button mat-menu-item (click)="deleteField(field.key)">
+                    <mat-icon>delete</mat-icon>delete
+                  </button>
+                </mat-menu>
+              </td>
+              <ng-template #addBlock>
+              <td>
+                <button mat-flat-button color="secondary" (click)="lookupField(field.key)">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </td>
+              </ng-template>
+              <!--<td>{{field.key}}</td>-->
+              <td>{{field.value.tag}}</td>
               <td>{{field.value.ind1}}</td>
               <td>{{field.value.ind2}}</td>
               <td>{{field.value.getSubfieldString()}}</td>

@@ -35,3 +35,18 @@ pre,
 textarea {
   font-size: 0.9em;
 }
+
+.mat-raised-button {
+  min-width: 30px!important
+}
+table.marc {
+  border-collapse: collapse;
+}
+table.marc td {
+  font-size: 120%;
+  border: solid gray 0.5px;
+  padding: 5px;
+}
+tr.parallel {
+  font-weight: bold;
+}

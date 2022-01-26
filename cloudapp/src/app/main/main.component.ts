@@ -1,5 +1,5 @@
 import { concat, Observable, Subscription } from 'rxjs';
-import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature } from '@angular/core';
+import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
   Entity, EntityType, PageInfo, RestErrorResponse, AlertService, CloudAppConfigService, 
@@ -30,6 +30,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   hasApiResult: boolean = false;
   loading = false;
+  saving = false;
   completedSearches = 0;
   totalSearches = 0;
   private bibUtils: BibUtils;
@@ -40,6 +41,7 @@ export class MainComponent implements OnInit, OnDestroy {
   statusString: string = "";
   doSearch: boolean = true;
   searchProgress: number = 0;
+  lookupComplete: Promise<boolean>;
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -105,7 +107,7 @@ export class MainComponent implements OnInit, OnDestroy {
         if(bib.record_format=='marc21') {
           this.bib = bib;
           this.extractParallelFields(this.bib.anies);
-          this.addParallelDictToStorage();
+          //this.addParallelDictToStorage();
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch) {
             this.loading = true;
@@ -176,11 +178,15 @@ export class MainComponent implements OnInit, OnDestroy {
             this.completedSearches = 0;  
             this.totalSearches = oclcQueries.length;
             if(this.totalSearches > 0) {
-               this.statusString = "Searching WorldCat: 0% complete";
+              this.loading = true;
+              this.statusString = "Searching WorldCat: 0% complete";
             }    
             
-            oclcQueries.map(oq => this.getOCLCrecords(oq));
+            oclcQueries.map(oq => this.getOCLCrecords(oq))      
          } 
+         //this.lookupComplete.then((ready) => {
+          //this.lookupFields();
+        //});
         }
       })
     } else {
@@ -218,13 +224,283 @@ export class MainComponent implements OnInit, OnDestroy {
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
         if(this.completedSearches == this.totalSearches) {
-          this.addParallelDictToStorage("Completed Searching WorldCat Records");
+          this.addParallelDictToStorage();
+          //this.addParallelDictToStorage("Completed Searching WorldCat Records");          
         }
       }
     )
   }
 
+  async lookupField(fkey) {
+    //let fields = Array.from(this.fieldTable);
+    //for(let [key, field] of fields) {
+    this.saving = true;
+    let field = this.fieldTable.get(fkey)
+    let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
+    let seqno = this.findUnusedLinkage();
+    let seq = field.tag + "-" + seqno;
+    let seq880 = "880-" + seqno;    
+    parallel_field.addSubfield("61","6",seq);
+    for(let j = 0; j < field.subfields.length; j++) {
+      let sf = field.subfields[j];
+      let options = await this.lookupInDictionary(sf.data);
+      parallel_field.addSubfield(sf.id,sf.code,options[0])
+    }    
+    field.addSubfield("61","6",seq880,true);
+    //if(field.getSubfieldString() != parallel_field.getSubfieldString()) {
+      //this.alert.info(parallel_field.getSubfieldString())
+      this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
+      this.bibUtils.addFieldToBib(this.bib,parallel_field);   
+      this.bibUtils.updateBib(this.bib).subscribe(() => {
+        this.saving = false;
+      })   
+      this.fieldTable = this.bibUtils.getDatafields(this.bib)
+      //this.alert.info(this.bibUtils.xmlEscape(this.bib.anies),{autoClose: false})
+      //this.fieldTable.get(key).hasParallel = true;
+      //this.alert.info(parallel_field.getSubfieldString(),{autoClose: false})
+    //} else {
+    //  this.alert.warn("Not found")
+    //}
+  }
+
+  swapField(fkey: string) {
+    this.saving = true;
+    this.bibUtils.swapParallelFields(this.bib, fkey);
+    this.bibUtils.updateBib(this.bib).subscribe(() => {
+      this.saving = false;
+    })   
+    this.fieldTable = this.bibUtils.getDatafields(this.bib)
+  }
+
+  deleteField(fkey: string) {
+    this.saving = true;
+    this.bibUtils.deleteField(this.bib, fkey);
+    this.bibUtils.updateBib(this.bib).subscribe(() => {
+      this.saving = false;
+    })   
+    this.fieldTable = this.bibUtils.getDatafields(this.bib)
+  }
+
+  findUnusedLinkage(): string {
+    let seqs = new Array<boolean>(100).fill(false);
+    let unused = 0;
+    this.fieldTable.forEach((field_i,id) => {
+      field_i.subfields.forEach(sf => {
+        if(sf.code == '6') {
+          let seqno : number = +sf.data.substr(4,2);
+          seqs[seqno] = true;
+        }
+      });
+    });
+    for(let i = 0; i < seqs.length; i++) {
+      if(i == 0 || unused > 0) {
+        continue;
+      }
+      if(!seqs[i]) {
+        unused = i;
+        break;
+      }
+    }
+    let unusedStr = "" + unused;
+    if(unused < 10) {
+      unusedStr = "0" + unusedStr;
+    }
+    return unusedStr;
+  }
+
+  async lookupInDictionary(sfdata: string): Promise<Array<string>> {
+    //this.alert.info(sfdata)
+    let [startpunct,endpunct] = ["",""]
+    let m = sfdata.match(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"))
+    if(m) {
+      endpunct = m[0];
+    }
+    m = sfdata.match(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"))
+    if(m) {
+      startpunct = m[0];
+    }
+    let suffix = "";
+    m = sfdata.match(/\s*\([^\)]+\)[\s\p{P}]*$/u);
+    if(m) {
+      suffix = m[0];
+      sfdata = sfdata.substr(0,sfdata.length - suffix.length);
+    }
+    let options_final = new Array<string>();
+    //let sfparts = sfdata.split(new RegExp("(" + this.punctuationPattern + ")"))
+    let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
+    if(suffix != "") {
+      sfsections.push(suffix);
+    }
+    for(let g = 0; g < sfsections.length; g++) {
+      let options_d = new Array<string>();
+      let text_normal_d = this.cjkNormalize(sfsections[g]);
+      let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
+      let search_keys_d = [sfsections[g],text_normal_d,text_normal_wgpy_d];
+      //this.alert.info(JSON.stringify(search_keys_d),{autoClose: false});
+      for(let h = 0; h < search_keys_d.length; h++) {
+        let hi = search_keys_d[h];
+        //this.alert.info(hi,{autoClose: false});
+        if(hi.length == 0) {
+          continue;
+        }
+        if(options_d.length > 0) {
+          break;
+        }
+        await this.storeService.get(hi).toPromise().then((res) => {
+          if(res) {
+          //this.alert.success(JSON.stringify(res),{autoClose: false});
+            options_d = res[0].map(a => a.text);
+          }
+        });
+      }
+      //this.alert.warn(JSON.stringify(options_d),{autoClose: false});
+      if(options_d.length == 0) {
+        let sfparts = sfsections[g].split(new RegExp("("+ this.punctuationPattern + ")","u")); 
+        //this.alert.success(JSON.stringify(sfparts),{autoClose: false});
+        for(let h = 0; h < sfparts.length; h++) {
+          let search_text = sfparts[h];
+          let options = new Array<string>();
+          let text_normal = this.cjkNormalize(search_text);
+          let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
+          let search_keys = [search_text,text_normal,text_normal_wgpy];
+          for(let i = 0; i < search_keys.length; i++) {
+            let ki = search_keys[i];
+            if(ki.length == 0) {
+              continue;
+            }
+            if(options.length > 0) {
+              break;
+            }
+            await this.storeService.get(ki).toPromise().then((res) => {
+              if(res) {
+                options = res[0].map(a => a.text);
+              }
+            });
+          }    
+          //this.alert.warn(JSON.stringify(options),{autoClose: false})
+          if(options.length == 0)  {
+            let rlen = this.relator_terms.relator_keys_pinyin.length;
+            for(let i = 0; i < rlen; i++) {      
+              let relator = this.relator_terms.relator_keys_pinyin[i];
+              let relator_wgpy = this.wadegiles.WGtoPY(relator);
+              let relator_lookup = this.relator_terms.lookup(relator);
+              let relator_wgpy_lookup = this.relator_terms.lookup(relator_wgpy);
+
+              if(options.length > 0) {
+                break;
+              }
+              await this.storeService.get(text_normal + relator).toPromise().then((res) => {
+                options = res[0].map(a => a.text.replace(
+                  new RegExp("(" + relator_lookup + ")(\\p{P}*$","")
+                ));
+              });
+              if(options.length > 0) {
+                break;
+              }
+              await this.storeService.get(relator + text_normal).toPromise().then((res) => {
+                options = res[0].map(a => a.text.replace(
+                  new RegExp("(" + relator_lookup + ")","")
+                ));
+              });
+              if(options.length > 0) {
+                break;
+              }
+              await this.storeService.get(text_normal_wgpy + relator_wgpy).toPromise().then((res) => {
+                options = res[0].map(a => a.text.replace(
+                  new RegExp("(" + relator_wgpy_lookup + ")(\\p{P}*$","")
+                ));
+              });
+              if(options.length > 0) {
+                break;
+              }
+              await this.storeService.get(relator_wgpy + text_normal_wgpy).toPromise().then((res) => {
+                options = res[0].map(a => a.text.replace(
+                  new RegExp("(" + relator_wgpy_lookup + ")","")
+                ));
+              });
+
+              if(options.length > 0) {
+                break;
+              }
+              let trunc = text_normal.replace(new RegExp("^(" + relator + ")"),"");
+              await this.storeService.get(trunc).toPromise().then((res) => {
+                options = res[0].map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+              });
+
+              if(options.length > 0) {
+                break;
+              }
+              trunc = text_normal.replace(new RegExp("(" + relator + ")$"),"");
+              await this.storeService.get(trunc).toPromise().then((res) => {
+                options = res[0].map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+              });
+              if(options.length > 0) {
+                break;
+              }
+              trunc = text_normal.replace(new RegExp("^(" + relator_wgpy + ")"),"");
+              await this.storeService.get(trunc).toPromise().then((res) => {
+                options = res[0].map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+              });
+
+              if(options.length > 0) {
+                break;
+              }
+              trunc = text_normal.replace(new RegExp("(" + relator_wgpy + ")$"),"");
+              await this.storeService.get(trunc).toPromise().then((res) => {
+                options = res[0].map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+              });
+            }
+          }
+          if(options.length == 0) {
+            options = [search_text];
+          }
+          //this.alert.warn(JSON.stringify(options),{autoClose: false})
+          if(options_d.length == 0) {
+            options_d = options;
+          } else {
+            let options_temp = new Array<string>();
+            options_d.forEach((opt1) => {
+              options.forEach((opt2) => {
+                options_temp.push(opt1 + opt2);
+              });
+            });
+            options_d = options_temp;
+          }
+        }
+      }
+      if(options_final.length == 0) {
+        options_final = options_d;
+      } else {
+        let options_temp = new Array<string>();
+        options_final.forEach((opt1) => {
+          options_d.forEach((opt2) => {
+            options_temp.push(opt1 + opt2);
+          });
+        });
+        options_final = options_temp;
+      }
+    //this.alert.info(JSON.stringify(options_final),{autoClose: false})
+    }
+    //this.alert.success(JSON.stringify(options_final),{autoClose: false});
+    for(let i = 0; i < options_final.length; i++) {
+      m = sfdata.match(this.etal_re);
+      if(m) {
+        options_final[i] = options_final[i].replace(this.etal_re,m[0]);
+      }
+      if(options_final[i].substr(options_final[i].length - endpunct.length) == endpunct) {
+        endpunct = "";
+      }
+      if(options_final[i].substr(0,startpunct.length) == startpunct) {
+        startpunct = "";
+      }
+      options_final[i] = startpunct + options_final[i] + endpunct;
+    }
+    //this.alert.success(JSON.stringify(options_final),{autoClose: false});
+    return options_final;
+}
+
   addParallelDictToStorage(status: string = "") {
+    this.lookupComplete = new Promise((resolve) => {
     let storePairs = [];
     //this.alert.warn(this.parallelDictToString(),{autoClose: false})
     this.parallelDict.forEach((value, textA) => {
@@ -237,14 +513,17 @@ export class MainComponent implements OnInit, OnDestroy {
     let storeOperations = storePairs.map(
       kv => this.storeService.set(kv['key'],[kv['value']])
     );
+    this.statusString = "Finalizing..."
     concat(...storeOperations).subscribe({
       //next: (res) => this.alert.info(JSON.stringify(res),{autoClose: false}),
       //error: (err) => this.alert.error(err,{autoClose: false}),
       complete: () => {
         this.loading = false;
         this.statusString = status;
+        resolve(true);
       }
     })
+  })
   }
 
   parallelDictToString(): string {
