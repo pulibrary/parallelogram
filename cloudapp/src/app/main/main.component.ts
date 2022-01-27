@@ -17,12 +17,15 @@ import {MarcDataField} from './marc-datafield';
 import { SettingsComponent } from '../settings/settings.component';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { RelatorTermsService } from '../relator_terms.service';
+import { PinyinService } from '../pinyin.service';
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
+
+
 export class MainComponent implements OnInit, OnDestroy {
   private pageLoad$: Subscription;
   pageEntities: Entity[];
@@ -38,10 +41,12 @@ export class MainComponent implements OnInit, OnDestroy {
   bib: Bib;
   fieldTable: Map<string,MarcDataField>;
   parallelDict: Map<string, Map<string, number>>;
+  subfield_options: Map<string, Map<string, Array<string>>>;
   statusString: string = "";
   doSearch: boolean = true;
   searchProgress: number = 0;
   lookupComplete: Promise<boolean>;
+  showDetails = ""
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -62,6 +67,7 @@ export class MainComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private route: ActivatedRoute,
     private wadegiles: WadegilesService,
+    private pinyin:PinyinService,
     private relator_terms: RelatorTermsService,
     private router: Router) { }
 
@@ -77,6 +83,7 @@ export class MainComponent implements OnInit, OnDestroy {
     });
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     this.parallelDict = new Map();    
+    this.subfield_options = new Map<string, Map<string, Array<string>>>();
   }
 
   ngOnDestroy(): void {
@@ -98,6 +105,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.relator_terms.ready.then((rt_ready) => {
     this.wadegiles.ready.then((wg_ready) =>  {
+    this.pinyin.ready.then((py_ready) => {
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
     if ((pageInfo.entities || []).length == 1) {
@@ -192,6 +200,7 @@ export class MainComponent implements OnInit, OnDestroy {
     } else {
       this.apiResult = {};
     }
+  });
   });
   });
   }
@@ -724,6 +733,50 @@ addToParallelDict(textA: string, textB: string): void {
     //  this.parallelDict.get(textB).set(textA, this.parallelDict.get(textB).get(textA) + 1);
     //}
     
+  }
+
+  lookupSubfields(fkey: string) {
+    if(!this.subfield_options.has(fkey)) {
+      let sfo = new Map<string, Array<string>>();
+      let pfkey = fkey;
+      if(pfkey.substring(pfkey.length-1) == "P") {
+        pfkey = pfkey.substring(0,pfkey.length - 1);
+      } else {
+        pfkey = pfkey + "P";
+      }
+      let main_field = this.fieldTable.get(fkey)
+      let parallel_field = this.fieldTable.get(pfkey);
+      
+      let subfields = parallel_field.subfields;
+      subfields.forEach(sf => {
+        if(sf.code == '6' || sf.code == '0') {
+          return;
+        }
+        let opts = new Array();
+        if(!this.settings.pinyinonly) {
+          this.lookupInDictionary(sf.data).then((res) => {
+            res.forEach((str) => {
+              opts.push(str); 
+            });
+          }).finally(() => {
+            if(!opts.includes(sf.data)) {
+              opts.push(sf.data);
+            }
+          });
+        } else {
+          let pylookup = this.pinyin.lookup(sf.data,parallel_field.tag,parallel_field.ind1,sf.code);
+          if(pylookup != sf.data && !opts.includes(pylookup)) {
+            opts.push(pylookup);
+          }
+          if(!opts.includes(sf.data)) {
+            opts.push(sf.data);
+          }
+          
+        }
+        sfo.set(sf.id,opts);
+      })
+      this.subfield_options.set(fkey, sfo);
+    }
   }
 
   generateBGColor(linkage: string) {

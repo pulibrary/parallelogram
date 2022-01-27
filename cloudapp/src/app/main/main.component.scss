@@ -41,9 +41,18 @@ textarea {
 }
 table.marc {
   border-collapse: collapse;
+  width: 100%
 }
 table.marc td {
   font-size: 120%;
   border: 0.5px solid gray;
   padding: 5px;
+  vertical-align: middle;
+}
+
+table.marc td.mainContent {
+  width: 100%
+}
+table.parallelOptions td {
+  border: none
 }
