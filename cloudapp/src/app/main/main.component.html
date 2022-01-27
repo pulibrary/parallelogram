@@ -5,14 +5,15 @@
     </mat-progress-spinner>
   </div>
   <div class="loading-shade" *ngIf="saving">
-    <mat-progress-spinner mode="indeterminate">
+    <mat-progress-spinner mode="indeterminate" diameter="50">
     </mat-progress-spinner>
   </div>
   <mat-card>
     <mat-card-content>
       <div>
         <table class="marc">
-           <tr *ngFor="let field of fieldTable | keyvalue" [class]="field.value.hasParallel ? 'parallel' : 'noparallel'">
+           <tr *ngFor="let field of fieldTable | keyvalue" 
+              [ngStyle]="{'background-color': generateBGColor(field.value.getSubfield('61'))}">
               <td *ngIf="field.value.hasParallel; else addBlock">
                 <button mat-flat-button color="secondary" [matMenuTriggerFor]="fieldOptions">
                   <mat-icon>more_horiz</mat-icon>                

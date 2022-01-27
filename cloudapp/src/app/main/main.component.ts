@@ -726,6 +726,18 @@ addToParallelDict(textA: string, textB: string): void {
     
   }
 
+  generateBGColor(linkage: string) {
+    let seqno = Number.parseInt(linkage.substring(4,6));
+    if(seqno > 0) {
+      let hue = 60;
+      for(let i  = 1; i < seqno; i++) {
+        hue = ((hue + 75) % 360);
+      }
+      return "hsl(" + hue + ",85%,90%)"
+    } else {
+      return "#FFFFFF"
+    }
+  }
   cjkNormalize(inputString: string): string {
     let outputString = inputString;
     outputString = outputString.toLowerCase();
