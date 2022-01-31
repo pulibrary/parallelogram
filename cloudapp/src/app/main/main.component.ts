@@ -1,5 +1,5 @@
 import { concat, Observable, Subscription } from 'rxjs';
-import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
   Entity, EntityType, PageInfo, RestErrorResponse, AlertService, CloudAppConfigService, 
@@ -34,6 +34,7 @@ export class MainComponent implements OnInit, OnDestroy {
   hasApiResult: boolean = false;
   loading = false;
   saving = false;
+  recordChanged = false;
   completedSearches = 0;
   totalSearches = 0;
   private bibUtils: BibUtils;
@@ -57,6 +58,8 @@ export class MainComponent implements OnInit, OnDestroy {
   etal_re = new RegExp(this.etalPattern,"u");
   cjkPattern = "[\\p{sc=Han}]";
   cjk_re = new RegExp(this.cjkPattern,"u");
+
+  @ViewChild('marcRecord',{static: false}) marcRecordTable: ElementRef;
 
   constructor(private restService: CloudAppRestService,
     private eventsService: CloudAppEventsService,
@@ -233,8 +236,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
         if(this.completedSearches == this.totalSearches) {
-          this.addParallelDictToStorage();
-          //this.addParallelDictToStorage("Completed Searching WorldCat Records");          
+          this.addParallelDictToStorage();         
         }
       }
     )
@@ -243,7 +245,7 @@ export class MainComponent implements OnInit, OnDestroy {
   async lookupField(fkey) {
     //let fields = Array.from(this.fieldTable);
     //for(let [key, field] of fields) {
-    this.saving = true;
+    //this.saving = true;
     let field = this.fieldTable.get(fkey)
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
     let seqno = this.findUnusedLinkage();
@@ -252,7 +254,9 @@ export class MainComponent implements OnInit, OnDestroy {
     parallel_field.addSubfield("61","6",seq);
     for(let j = 0; j < field.subfields.length; j++) {
       let sf = field.subfields[j];
+      this.saving = true;
       let options = await this.lookupInDictionary(sf.data);
+      this.saving = false;
       parallel_field.addSubfield(sf.id,sf.code,options[0])
     }    
     field.addSubfield("61","6",seq880,true);
@@ -260,10 +264,11 @@ export class MainComponent implements OnInit, OnDestroy {
       //this.alert.info(parallel_field.getSubfieldString())
       this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
       this.bibUtils.addFieldToBib(this.bib,parallel_field);   
-      this.bibUtils.updateBib(this.bib).subscribe(() => {
-        this.saving = false;
-      })   
+      //this.bibUtils.updateBib(this.bib).subscribe(() => {
+      //  this.saving = false;
+      //})   
       this.fieldTable = this.bibUtils.getDatafields(this.bib)
+      this.recordChanged = true;
       //this.alert.info(this.bibUtils.xmlEscape(this.bib.anies),{autoClose: false})
       //this.fieldTable.get(key).hasParallel = true;
       //this.alert.info(parallel_field.getSubfieldString(),{autoClose: false})
@@ -272,22 +277,44 @@ export class MainComponent implements OnInit, OnDestroy {
     //}
   }
 
-  swapField(fkey: string) {
+  saveRecord() {
     this.saving = true;
-    this.bibUtils.swapParallelFields(this.bib, fkey);
     this.bibUtils.updateBib(this.bib).subscribe(() => {
       this.saving = false;
-    })   
+      this.recordChanged = false;
+    }) 
+  }
+
+  swapField(fkey: string) {
+    this.recordChanged = true;
+    this.bibUtils.swapParallelFields(this.bib, fkey);
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
   }
 
   deleteField(fkey: string) {
-    this.saving = true;
-    this.bibUtils.deleteField(this.bib, fkey);
-    this.bibUtils.updateBib(this.bib).subscribe(() => {
-      this.saving = false;
-    })   
+    this.recordChanged = true;
+    this.bibUtils.deleteField(this.bib, fkey); 
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
+  }
+
+  saveField(fkey: string) {
+    //let marc = document.querySelector("#marcRecord")
+    //let field = this.fieldTable.get(fkey)
+    //for(let i = 0; i < document.childElementCount; i++) {
+    //  this.alert.info(this.bibUtils.xmlEscape(marc.children.item(i).innerHTML),{autoClose: false});
+   // }
+    /*
+    let fieldRow : HTMLInputElement = marc.querySelector('parallelOptions-'+fkey);
+    let subfieldRows : NodeListOf<HTMLInputElement> = fieldRow.querySelectorAll('input-'  + fkey + '-');
+    let newfield = new MarcDataField(field.tag,field.ind1,field.ind2); 
+
+    subfieldRows.forEach(sf => {
+      let code = sf.id.replace('input-'+fkey+'-',"");
+      newfield.addSubfield(code,code.substring(0,1),sf.value);
+    });
+
+    this.bibUtils.replaceFieldInBib(this.bib,fkey,newfield);
+    */
   }
 
   findUnusedLinkage(): string {
@@ -508,7 +535,7 @@ export class MainComponent implements OnInit, OnDestroy {
     return options_final;
 }
 
-  addParallelDictToStorage(status: string = "") {
+  addParallelDictToStorage() {
     this.lookupComplete = new Promise((resolve) => {
     let storePairs = [];
     //this.alert.warn(this.parallelDictToString(),{autoClose: false})
@@ -528,7 +555,6 @@ export class MainComponent implements OnInit, OnDestroy {
       //error: (err) => this.alert.error(err,{autoClose: false}),
       complete: () => {
         this.loading = false;
-        this.statusString = status;
         resolve(true);
       }
     })

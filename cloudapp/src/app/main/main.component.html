@@ -1,17 +1,25 @@
 <section>
-  <div class="statusString">{{statusString}}</div>
   <div class="loading-shade" *ngIf="loading">
-    <mat-progress-spinner mode="determinate" diameter="50" value={{searchProgress}}>
-    </mat-progress-spinner>
+    <mat-progress-spinner mode="determinate" value={{searchProgress}}></mat-progress-spinner>    
+    <div class="spinnerText">{{statusString}}</div>
   </div>
   <div class="loading-shade" *ngIf="saving">
-    <mat-progress-spinner mode="indeterminate" diameter="50">
-    </mat-progress-spinner>
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
   </div>
   <mat-card>
-    <mat-card-content>
-      <div>
-        <table class="marc">
+    <div>
+      <button mat-flat-button color="secondary" (click)="saveRecord()" [disabled]="!recordChanged">
+        <mat-icon>save</mat-icon> Save Record
+      </button>
+      &nbsp;
+      <button mat-flat-button color="secondary" routerLink="/settings">
+        <mat-icon>settings</mat-icon> Settings
+      </button>
+    </div>
+    <div><br/></div>
+    <mat-card-content>      
+      <div>        
+        <table #marcRecord class="marc">
            <tr *ngFor="let field of fieldTable | keyvalue" 
               [ngStyle]="{'background-color': generateBGColor(field.value.getSubfield('61'))}">
               <td *ngIf="field.value.hasParallel; else addBlock">
@@ -36,7 +44,7 @@
                 </div>
                 <ng-template #detailsButtonBlock>
                   <div>
-                  <button mat-stroked-button color="secondary" (click)="showDetails=''">
+                  <button mat-stroked-button color="secondary" (click)="saveField(field.key);showDetails=''">
                     <mat-icon>done</mat-icon>
                   </button>
                 </div>
@@ -64,7 +72,7 @@
                 {{field.value.getSubfieldString()}}
               </div>
               <ng-template #detailsFormBlock>                 
-                <table class='parallelOptions' style="width: 100%">
+                <table [id]="'parallelOptions-'+field.key" class='parallelOptions' style="width: 100%">
                   <div *ngFor="let subfield of field.value.subfields; index as i;">
                       <!--<span *ngIf="subfield.code!='6' && subfield.code!='0'">-->
                       <tr *ngIf="subfield.code!='6' && subfield.code!='0'">  
@@ -89,7 +97,7 @@
                         </button>
                       </td>                                                                             
                       <td style="width: 80%">
-                          <textarea style="width: 100%" 
+                          <textarea [id]="'input-'+field.key+'-'+subfield.id" style="width: 100%" 
                             matInput cdkTextareaAutosize #sf>{{subfield.data}}</textarea>                                                 
                         </td>
                       </tr>
