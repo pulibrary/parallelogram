@@ -2,7 +2,7 @@ import { CloudAppRestService, AlertService, HttpMethod } from "@exlibris/exl-clo
 import {MarcDataField} from './marc-datafield';
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import { NgIfContext } from "@angular/common";
+import { NgIfContext, NumberSymbol } from "@angular/common";
 
 export interface Bib {
   link: string,
@@ -71,6 +71,17 @@ export class BibUtils {
       }
     })
     return result;
+  }
+
+  getLanguageCode( bib: Bib ): string {
+    const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
+    let field008 = doc.evaluate("/record/controlfield[@tag='008']",doc,null,
+      XPathResult.ANY_UNORDERED_NODE_TYPE,null)
+    let language = ""
+      if(field008.singleNodeValue) {
+        language = field008.singleNodeValue.textContent.substring(35,38)
+      }
+    return language
   }
 
   getDatafields( bib: Bib ): Map<string,MarcDataField> {

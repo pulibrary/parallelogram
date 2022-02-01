@@ -40,6 +40,7 @@ export class MainComponent implements OnInit, OnDestroy {
   private bibUtils: BibUtils;
   private settings: Settings;
   bib: Bib;
+  languageCode: string;
   fieldTable: Map<string,MarcDataField>;
   parallelDict: Map<string, Map<string, number>>;
   subfield_options: Map<string, Map<string, Array<string>>>;
@@ -117,6 +118,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.bib = null;
         if(bib.record_format=='marc21') {
           this.bib = bib;
+          this.languageCode = this.bibUtils.getLanguageCode(bib)
           this.extractParallelFields(this.bib.anies);
           //this.addParallelDictToStorage();
           this.fieldTable = this.bibUtils.getDatafields(bib);
@@ -195,9 +197,6 @@ export class MainComponent implements OnInit, OnDestroy {
             
             oclcQueries.map(oq => this.getOCLCrecords(oq))      
          } 
-         //this.lookupComplete.then((ready) => {
-          //this.lookupFields();
-        //});
         }
       })
     } else {
@@ -243,9 +242,6 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async lookupField(fkey) {
-    //let fields = Array.from(this.fieldTable);
-    //for(let [key, field] of fields) {
-    //this.saving = true;
     let field = this.fieldTable.get(fkey)
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
     let seqno = this.findUnusedLinkage();
@@ -255,26 +251,23 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let j = 0; j < field.subfields.length; j++) {
       let sf = field.subfields[j];
       this.saving = true;
-      let options = await this.lookupInDictionary(sf.data);
+      if(this.settings.pinyinonly) {
+        let pylookup = this.pinyin.lookup(sf.data,field.tag,field.ind1,sf.code)
+        parallel_field.addSubfield(sf.id,sf.code,pylookup)
+      } else {
+        let options = await this.lookupInDictionary(sf.data);        
+        parallel_field.addSubfield(sf.id,sf.code,options[0])
+        
+      }
       this.saving = false;
-      parallel_field.addSubfield(sf.id,sf.code,options[0])
     }    
     field.addSubfield("61","6",seq880,true);
-    //if(field.getSubfieldString() != parallel_field.getSubfieldString()) {
-      //this.alert.info(parallel_field.getSubfieldString())
-      this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
-      this.bibUtils.addFieldToBib(this.bib,parallel_field);   
-      //this.bibUtils.updateBib(this.bib).subscribe(() => {
-      //  this.saving = false;
-      //})   
-      this.fieldTable = this.bibUtils.getDatafields(this.bib)
-      this.recordChanged = true;
-      //this.alert.info(this.bibUtils.xmlEscape(this.bib.anies),{autoClose: false})
-      //this.fieldTable.get(key).hasParallel = true;
-      //this.alert.info(parallel_field.getSubfieldString(),{autoClose: false})
-    //} else {
-    //  this.alert.warn("Not found")
-    //}
+
+    this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
+    this.bibUtils.addFieldToBib(this.bib,parallel_field);   
+ 
+    this.fieldTable = this.bibUtils.getDatafields(this.bib)
+    this.recordChanged = true;
   }
 
   saveRecord() {
