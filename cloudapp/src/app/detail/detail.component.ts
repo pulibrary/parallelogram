@@ -375,11 +375,11 @@ delimiter_re = new RegExp(this.delimiterPattern,"u");
       fid = fid.substring(0,fid.length-1);
     }
 
-    this.bibUtils.replaceFieldInBib(this.bib,fid,this.main_field,useParallel);
+    this.bibUtils.replaceFieldInBib(this.bib,fid,this.main_field);
     if(linkage == "") {
       this.bibUtils.addFieldToBib(this.bib,newfield);
     } else {
-      this.bibUtils.replaceFieldInBib(this.bib,fid,newfield,!useParallel);
+      this.bibUtils.replaceFieldInBib(this.bib,fid,newfield);
     }
     this.parallel_field = newfield;
 

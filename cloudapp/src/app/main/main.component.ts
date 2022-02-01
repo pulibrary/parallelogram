@@ -298,23 +298,23 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   saveField(fkey: string) {
-    //let marc = document.querySelector("#marcRecord")
-    //let field = this.fieldTable.get(fkey)
-    //for(let i = 0; i < document.childElementCount; i++) {
-    //  this.alert.info(this.bibUtils.xmlEscape(marc.children.item(i).innerHTML),{autoClose: false});
-   // }
-    /*
-    let fieldRow : HTMLInputElement = marc.querySelector('parallelOptions-'+fkey);
-    let subfieldRows : NodeListOf<HTMLInputElement> = fieldRow.querySelectorAll('input-'  + fkey + '-');
-    let newfield = new MarcDataField(field.tag,field.ind1,field.ind2); 
+    let inputs : NodeListOf<HTMLInputElement> = document.querySelectorAll(".subfieldInput");
+    let field = this.fieldTable.get(fkey)
+    let newfield = new MarcDataField(field.tag,field.ind1,field.ind2)
+    let fieldUpdates = new Map<string,string>();
 
-    subfieldRows.forEach(sf => {
-      let code = sf.id.replace('input-'+fkey+'-',"");
-      newfield.addSubfield(code,code.substring(0,1),sf.value);
-    });
+    for(let i = 0; i < inputs.length; i++) { 
+      let id = inputs.item(i).id.replace('input-'+fkey+'-',"");
+      fieldUpdates.set(id,inputs.item(i).value)      
+    }
+    field.subfields.forEach(sf => {
+      let newvalue = fieldUpdates.has(sf.id) ? fieldUpdates.get(sf.id) : sf.data;
+      newfield.addSubfield(sf.id,sf.code,newvalue);
+    })
 
     this.bibUtils.replaceFieldInBib(this.bib,fkey,newfield);
-    */
+    this.fieldTable = this.bibUtils.getDatafields(this.bib)
+    
   }
 
   findUnusedLinkage(): string {

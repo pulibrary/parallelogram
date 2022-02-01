@@ -144,10 +144,11 @@ export class BibUtils {
     });
   }    
 
-  replaceFieldInBib(bib: Bib, field_id: string, field: MarcDataField, parallel = false) {
+  replaceFieldInBib(bib: Bib, field_id: string, field: MarcDataField) {
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
     let tag_seq = field_id.substring(4,5);
+    let parallel = (field_id.substring(5,6) == "P")
     let target_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
 
     if(parallel) {
