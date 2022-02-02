@@ -290,6 +290,14 @@ export class MainComponent implements OnInit, OnDestroy {
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
   }
 
+  removeOption(fkey: string, sfid: string, optionValue: string) {
+    let pfkey = (fkey.substring(fkey.length-1) == "P") ? fkey.substring(0,fkey.length-1) : fkey + "P"
+    let psf = this.fieldTable.get(pfkey).getSubfield(sfid)
+    if(psf && psf != "") {
+      let optionList = this.lookupInDictionary(psf);
+    }    
+  }
+
   saveField(fkey: string) {
     let inputs : NodeListOf<HTMLInputElement> = document.querySelectorAll(".subfieldInput");
     let field = this.fieldTable.get(fkey)
@@ -307,6 +315,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     this.bibUtils.replaceFieldInBib(this.bib,fkey,newfield);
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
+    this.recordChanged = true;
     
   }
 

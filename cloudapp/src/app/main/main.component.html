@@ -74,7 +74,6 @@
               <ng-template #detailsFormBlock>                 
                 <table [id]="'parallelOptions-'+field.key" class='parallelOptions' style="width: 100%">
                   <div *ngFor="let subfield of field.value.subfields; index as i;">
-                      <!--<span *ngIf="subfield.code!='6' && subfield.code!='0'">-->
                       <tr *ngIf="subfield.code!='6' && subfield.code!='0'">  
                         <td>${{subfield.code}}</td>                        
                         <td style="width: 150px"><button mat-stroked-button color="secondary" [matMenuTriggerFor]="options"
@@ -87,12 +86,8 @@
                                {{lookup_value}}
                           </button>
                         </mat-menu>
-                        <!--
-                        <button mat-stroked-button color="secondary">
-                          <mat-icon>thumb_up</mat-icon>
-                        </button>
-                      -->
-                        <button mat-stroked-button color="secondary" [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">
+                        <button mat-stroked-button color="secondary" (click)=removeOption(field.key,subfield.id,sf.value)
+                          [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">
                           <mat-icon>thumb_down</mat-icon>
                         </button>
                       </td>                                                                             
@@ -101,7 +96,6 @@
                             matInput cdkTextareaAutosize #sf>{{subfield.data}}</textarea>                                                 
                         </td>
                       </tr>
-                     <!-- </span> -->
                     </div>
                   </table>
                 </ng-template>
