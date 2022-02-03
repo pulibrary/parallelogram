@@ -1,4 +1,4 @@
-import { concat, Observable, Subscription } from 'rxjs';
+import { concat, Observable, of, Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
@@ -8,7 +8,7 @@ import {
 import {WadegilesService} from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
 import { from } from 'rxjs';
-import { elementAt, finalize, switchMap, concatMap, timeout, timestamp } from 'rxjs/operators';
+import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map } from 'rxjs/operators';
 import { HttpClient, HttpHeaders, JsonpClientBackend } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Settings } from '../models/settings';
@@ -18,6 +18,7 @@ import { SettingsComponent } from '../settings/settings.component';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { RelatorTermsService } from '../relator_terms.service';
 import { PinyinService } from '../pinyin.service';
+import { MissingTranslationHandler } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-main',
@@ -272,6 +273,10 @@ export class MainComponent implements OnInit, OnDestroy {
 
   saveRecord() {
     this.saving = true;
+    //this.alert.warn(this.bib.anies,{autoClose: false})
+    this.extractParallelFields(this.bib.anies)
+    //this.alert.warn(this.parallelDictToString(),{autoClose: false})
+    this.addParallelDictToStorage()
     this.bibUtils.updateBib(this.bib).subscribe(() => {
       this.saving = false;
       this.recordChanged = false;
@@ -347,7 +352,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async lookupInDictionary(sfdata: string): Promise<Array<string>> {
-    //this.alert.info(sfdata)
+    //this.alert.warn(sfdata)
     let [startpunct,endpunct] = ["",""]
     let m = sfdata.match(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"))
     if(m) {
@@ -361,7 +366,7 @@ export class MainComponent implements OnInit, OnDestroy {
     m = sfdata.match(/\s*\([^\)]+\)[\s\p{P}]*$/u);
     if(m) {
       suffix = m[0];
-      sfdata = sfdata.substr(0,sfdata.length - suffix.length);
+      sfdata = sfdata.substring(0,sfdata.length - suffix.length);
     }
     let options_final = new Array<string>();
     //let sfparts = sfdata.split(new RegExp("(" + this.punctuationPattern + ")"))
@@ -387,7 +392,7 @@ export class MainComponent implements OnInit, OnDestroy {
         await this.storeService.get(hi).toPromise().then((res) => {
           if(res) {
           //this.alert.success(JSON.stringify(res),{autoClose: false});
-            options_d = res[0].map(a => a.text);
+            options_d = res.map(a => a.text);
           }
         });
       }
@@ -411,7 +416,7 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             await this.storeService.get(ki).toPromise().then((res) => {
               if(res) {
-                options = res[0].map(a => a.text);
+                options = res.map(a => a.text);
               }
             });
           }    
@@ -428,7 +433,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 break;
               }
               await this.storeService.get(text_normal + relator).toPromise().then((res) => {
-                options = res[0].map(a => a.text.replace(
+                options = res.map(a => a.text.replace(
                   new RegExp("(" + relator_lookup + ")(\\p{P}*$","")
                 ));
               });
@@ -436,7 +441,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 break;
               }
               await this.storeService.get(relator + text_normal).toPromise().then((res) => {
-                options = res[0].map(a => a.text.replace(
+                options = res.map(a => a.text.replace(
                   new RegExp("(" + relator_lookup + ")","")
                 ));
               });
@@ -444,7 +449,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 break;
               }
               await this.storeService.get(text_normal_wgpy + relator_wgpy).toPromise().then((res) => {
-                options = res[0].map(a => a.text.replace(
+                options = res.map(a => a.text.replace(
                   new RegExp("(" + relator_wgpy_lookup + ")(\\p{P}*$","")
                 ));
               });
@@ -452,7 +457,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 break;
               }
               await this.storeService.get(relator_wgpy + text_normal_wgpy).toPromise().then((res) => {
-                options = res[0].map(a => a.text.replace(
+                options = res.map(a => a.text.replace(
                   new RegExp("(" + relator_wgpy_lookup + ")","")
                 ));
               });
@@ -462,7 +467,7 @@ export class MainComponent implements OnInit, OnDestroy {
               }
               let trunc = text_normal.replace(new RegExp("^(" + relator + ")"),"");
               await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res[0].map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                options = res.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
               });
 
               if(options.length > 0) {
@@ -470,14 +475,14 @@ export class MainComponent implements OnInit, OnDestroy {
               }
               trunc = text_normal.replace(new RegExp("(" + relator + ")$"),"");
               await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res[0].map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                options = res.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
               });
               if(options.length > 0) {
                 break;
               }
               trunc = text_normal.replace(new RegExp("^(" + relator_wgpy + ")"),"");
               await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res[0].map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                options = res.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
               });
 
               if(options.length > 0) {
@@ -485,7 +490,7 @@ export class MainComponent implements OnInit, OnDestroy {
               }
               trunc = text_normal.replace(new RegExp("(" + relator_wgpy + ")$"),"");
               await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res[0].map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                options = res.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
               });
             }
           }
@@ -548,16 +553,45 @@ export class MainComponent implements OnInit, OnDestroy {
       });
       storePairs.push({key: textA,value: entry});
     });
-    let storeOperations = storePairs.map(
-      kv => this.storeService.set(kv['key'],[kv['value']])
-    );
+    let getOperations = from(storePairs).pipe(
+      concatMap(kv => this.storeService.get(kv['key']).pipe(
+        map(res => {return {key: kv['key'], value: res}})
+        )
+      )
+    )
+    //let storeOperations = from(storePairs).pipe(
+    //  map(kv => this.storeService.get(kv['key'])),
+    //  map(kv => this.storeService.set(kv['key'],[kv['value']])),
+    //  concatAll()
+    //);
     this.statusString = "Finalizing..."
-    concat(...storeOperations).subscribe({
-      //next: (res) => this.alert.info(JSON.stringify(res),{autoClose: false}),
-      //error: (err) => this.alert.error(err,{autoClose: false}),
+    getOperations.subscribe({
+      next: res => {
+        let origPair = storePairs.find(a => {return a.key == res.key})
+        for(let i = 0; i < origPair.value.length; i++) {
+          let target = origPair.value[i];
+          let found = origPair.value.find(a => {return a.text == target.text})
+          //this.alert.warn(JSON.stringify(found),{autoClose: false})
+          if(found) {
+            found.count += target.count
+          } else {
+            origPair.value.push(found)
+          }
+        }        
+      },
       complete: () => {
-        this.loading = false;
-        resolve(true);
+        let storeOperations = from(storePairs).pipe(
+          concatMap(kv => this.storeService.set(kv['key'],kv['value']))
+        )
+        storeOperations.subscribe({
+            //next: (res) => this.alert.info(JSON.stringify(res),{autoClose: false}),
+            //error: (err) => this.alert.error(err,{autoClose: false}),
+            complete: () => {
+              this.loading = false;
+              resolve(true);
+            }
+          })
+      //  this.alert.success(JSON.stringify(storePairs),{autoClose: false})
       }
     })
   })
@@ -740,7 +774,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 addToParallelDict(textA: string, textB: string): void {
     //this.alert.info(textA + "<br>" + textB,{autoClose: false})
-    if(textA == textB || textA.match(/^[0-9\s]*$/) || textB.match(/^[0-9\s]*$/)) {
+    if(textA == textB) {//} || textA.match(/^[0-9\s]*$/) || textB.match(/^[0-9\s]*$/)) {
       return;
     }
     if(!this.parallelDict.has(textA)) {
