@@ -277,6 +277,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.extractParallelFields(this.bib.anies)
     //this.alert.warn(this.parallelDictToString(),{autoClose: false})
     this.addParallelDictToStorage()
+    this.extractParallelFields(this.bib.anies)
     this.bibUtils.updateBib(this.bib).subscribe(() => {
       this.saving = false;
       this.recordChanged = false;
@@ -567,19 +568,30 @@ export class MainComponent implements OnInit, OnDestroy {
     this.statusString = "Finalizing..."
     getOperations.subscribe({
       next: res => {
-        let origPair = storePairs.find(a => {return a.key == res.key})
-        for(let i = 0; i < origPair.value.length; i++) {
-          let target = origPair.value[i];
-          let found = origPair.value.find(a => {return a.text == target.text})
-          //this.alert.warn(JSON.stringify(found),{autoClose: false})
-          if(found) {
+        if(!res.value) {
+          return;
+        }
+        //this.alert.success(JSON.stringify(res),{autoClose: false})
+        let prevPair = res;  
+        //this.alert.info(JSON.stringify(prevPair),{autoClose: false})
+        let newPair = storePairs.find(a => {return a.key == res.key})
+        for(let i = 0; i < prevPair.value.length; i++) {         
+          let target = prevPair.value[i];          
+          if(target == null) {
+            continue;
+          }     
+          let found = newPair.value.find(a => {return a.text == target.text})
+          //this.alert.info(JSON.stringify(target) + "|" + JSON.stringify(found),{autoClose: false})
+          if(found != undefined) {
             found.count += target.count
           } else {
-            origPair.value.push(found)
+            newPair.value.push(target)
           }
+          //this.alert.error(JSON.stringify(newPair))
         }        
       },
       complete: () => {
+        //this.alert.success("blah")
         let storeOperations = from(storePairs).pipe(
           concatMap(kv => this.storeService.set(kv['key'],kv['value']))
         )
@@ -798,7 +810,9 @@ addToParallelDict(textA: string, textB: string): void {
   }
 
   lookupSubfields(fkey: string) {
-    if(!this.subfield_options.has(fkey)) {
+    //this.alert.warn(fkey,{autoClose: false})
+    //this.alert.info(this.parallelDictToString(),{autoClose: false})
+    //if(!this.subfield_options.has(fkey)) {
       let sfo = new Map<string, Array<string>>();
       let pfkey = fkey;
       if(pfkey.substring(pfkey.length-1) == "P") {
@@ -810,20 +824,29 @@ addToParallelDict(textA: string, textB: string): void {
       let parallel_field = this.fieldTable.get(pfkey);
       
       let subfields = parallel_field.subfields;
-      subfields.forEach(sf => {
+      for(let i = 0; i < subfields.length; i++) {
+        let sf = subfields[i]
         if(sf.code == '6' || sf.code == '0') {
-          return;
+          continue;
         }
         let opts = new Array();
         if(!this.settings.pinyinonly) {
           this.lookupInDictionary(sf.data).then((res) => {
-            res.forEach((str) => {
+            //this.alert.info(sf.data + "|" + JSON.stringify(res),{autoClose: false})
+            for(let j = 0; j < res.length; j++) {   
+              let str = res[j]       
               opts.push(str); 
-            });
+            }
           }).finally(() => {
             if(!opts.includes(sf.data)) {
               opts.push(sf.data);
-            }
+            }    
+            sfo.set(sf.id,opts);
+            if(i == subfields.length - 1) { 
+              
+              //this.alert.success(fkey + "|" + JSON.stringify(opts),{autoClose: false})
+              this.subfield_options.set(fkey, sfo);      
+           }
           });
         } else {
           let pylookup = this.pinyin.lookup(sf.data,parallel_field.tag,parallel_field.ind1,sf.code);
@@ -833,12 +856,12 @@ addToParallelDict(textA: string, textB: string): void {
           if(!opts.includes(sf.data)) {
             opts.push(sf.data);
           }
-          
-        }
-        sfo.set(sf.id,opts);
-      })
-      this.subfield_options.set(fkey, sfo);
-    }
+          sfo.set(sf.id,opts);
+          this.alert.success(fkey + "|" + JSON.stringify(sfo),{autoClose: false})
+          this.subfield_options.set(fkey, sfo);
+        }  
+      }      
+    //}
   }
 
   generateBGColor(linkage: string) {
