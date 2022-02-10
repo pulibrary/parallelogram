@@ -1,4 +1,4 @@
-import { concat, Observable, of, Subscription } from 'rxjs';
+import { concat, identity, Observable, of, Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
@@ -7,6 +7,7 @@ import {
 } from '@exlibris/exl-cloudapp-angular-lib';
 import {WadegilesService} from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
+import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
 import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map } from 'rxjs/operators';
 import { HttpClient, HttpHeaders, JsonpClientBackend } from '@angular/common/http';
@@ -43,13 +44,14 @@ export class MainComponent implements OnInit, OnDestroy {
   bib: Bib;
   languageCode: string;
   fieldTable: Map<string,MarcDataField>;
-  parallelDict: Map<string, Map<string, number>>;
+  parallelDict: Map<string, DictEntry>;
   subfield_options: Map<string, Map<string, Array<string>>>;
   statusString: string = "";
   doSearch: boolean = true;
   searchProgress: number = 0;
   lookupComplete: Promise<boolean>;
   showDetails = ""
+  deleteMarker = "**DELETE**"
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -297,13 +299,28 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   removeOption(fkey: string, sfid: string, optionValue: string) {
-    let pfkey = (fkey.substring(fkey.length-1) == "P") ? fkey.substring(0,fkey.length-1) : fkey + "P"
-    let psf = this.fieldTable.get(pfkey).getSubfield(sfid)
-    if(psf && psf != "") {
-      let optionList = this.lookupInDictionary(psf);
-    }    
-  }
+    //let pfkey = (fkey.substring(fkey.length-1) == "P") ? fkey.substring(0,fkey.length-1) : fkey + "P"
+    //let psf = this.fieldTable.get(pfkey).getSubfield(sfid)
+    //if(psf && psf != "") {
+      //let optionList = this.lookupInDictionary(psf,optionValue);
+    let sfo = this.subfield_options.get(fkey).get(sfid)
+    let found = sfo.findIndex(a => a == optionValue)
+    if(found > -1) {
+     sfo[found] = this.deleteMarker + sfo[found]
+    }
+    let newindex = 0;
+    for(let i = 0; i < sfo.length; i++) {
+      if(!sfo[i].includes(this.deleteMarker)) {
+        newindex = i
+        break
+      }
+    }
 
+    this.subfield_options.get(fkey).set(sfid,sfo)
+    this.fieldTable.get(fkey).setSubfield(sfid,sfo[newindex])
+      //})
+    //}    
+  }
   saveField(fkey: string) {
     let inputs : NodeListOf<HTMLInputElement> = document.querySelectorAll(".subfieldInput");
     let field = this.fieldTable.get(fkey)
@@ -352,7 +369,7 @@ export class MainComponent implements OnInit, OnDestroy {
     return unusedStr;
   }
 
-  async lookupInDictionary(sfdata: string): Promise<Array<string>> {
+  async lookupInDictionary(sfdata: string, deleteEntry = ""): Promise<Array<string>> {
     //this.alert.warn(sfdata)
     let [startpunct,endpunct] = ["",""]
     let m = sfdata.match(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"))
@@ -369,6 +386,18 @@ export class MainComponent implements OnInit, OnDestroy {
       suffix = m[0];
       sfdata = sfdata.substring(0,sfdata.length - suffix.length);
     }
+    if(deleteEntry != "") {
+      if(deleteEntry.substring(0,startpunct.length) == startpunct) {
+        deleteEntry = deleteEntry.substring(startpunct.length)
+      } 
+     if(deleteEntry.substring(deleteEntry.length - endpunct.length) == endpunct) {
+        deleteEntry = deleteEntry.substring(0,deleteEntry.length - endpunct.length)
+      } 
+      if(deleteEntry.substring(deleteEntry.length - suffix.length) == suffix) {
+        deleteEntry = deleteEntry.substring(0,deleteEntry.length - suffix.length)
+      } 
+    }
+
     let options_final = new Array<string>();
     //let sfparts = sfdata.split(new RegExp("(" + this.punctuationPattern + ")"))
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
@@ -382,18 +411,27 @@ export class MainComponent implements OnInit, OnDestroy {
       let search_keys_d = [sfsections[g],text_normal_d,text_normal_wgpy_d];
       //this.alert.info(JSON.stringify(search_keys_d),{autoClose: false});
       for(let h = 0; h < search_keys_d.length; h++) {
-        let hi = search_keys_d[h];
-        //this.alert.info(hi,{autoClose: false});
+        let hi = search_keys_d[h];        
         if(hi.length == 0) {
           continue;
         }
         if(options_d.length > 0) {
           break;
         }
-        await this.storeService.get(hi).toPromise().then((res) => {
-          if(res) {
-          //this.alert.success(JSON.stringify(res),{autoClose: false});
-            options_d = res.map(a => a.text);
+        //this.alert.info(hi,{autoClose: false});
+        await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
+          //this.alert.success("*" + JSON.stringify(res),{autoClose: false})
+          if(res != undefined) {  
+            //this.alert.success(JSON.stringify(res),{autoClose: false})          
+            options_d = res.parallels.map(a => a.text)  
+            //this.alert.info(JSON.stringify(options_d),{autoClose: false})      
+            if(deleteEntry != "") {
+              //this.alert.success(deleteEntry + "|" + JSON.stringify(options_d),{autoClose: false})
+              let found = options_d.findIndex(b => b == deleteEntry) 
+              if(found > -1) {
+                options_d.splice(found,1)
+              }
+            }
           }
         });
       }
@@ -545,56 +583,32 @@ export class MainComponent implements OnInit, OnDestroy {
 
   addParallelDictToStorage() {
     this.lookupComplete = new Promise((resolve) => {
-    let storePairs = [];
-    //this.alert.warn(this.parallelDictToString(),{autoClose: false})
-    this.parallelDict.forEach((value, textA) => {
-      let entry = [];
-      value.forEach((count,textB) => {
-        entry.push({text: textB, count: count});
-      });
-      storePairs.push({key: textA,value: entry});
+    let storePairs: DictEntry[] = [];    
+    this.parallelDict.forEach((entry, key) => {
+      entry.consolidate()
+      storePairs.push(entry);
     });
-    let getOperations = from(storePairs).pipe(
-      concatMap(kv => this.storeService.get(kv['key']).pipe(
-        map(res => {return {key: kv['key'], value: res}})
-        )
-      )
+    let getOperations = from(storePairs).pipe(concatMap(entry => this.storeService.get(entry.key))
     )
-    //let storeOperations = from(storePairs).pipe(
-    //  map(kv => this.storeService.get(kv['key'])),
-    //  map(kv => this.storeService.set(kv['key'],[kv['value']])),
-    //  concatAll()
-    //);
+    //this.alert.info(JSON.stringify(storePairs),{autoClose: false})
     this.statusString = "Finalizing..."
+    let storePairs2: DictEntry[] = []
     getOperations.subscribe({
-      next: res => {
-        if(!res.value) {
-          return;
-        }
-        //this.alert.success(JSON.stringify(res),{autoClose: false})
-        let prevPair = res;  
-        //this.alert.info(JSON.stringify(prevPair),{autoClose: false})
-        let newPair = storePairs.find(a => {return a.key == res.key})
-        for(let i = 0; i < prevPair.value.length; i++) {         
-          let target = prevPair.value[i];          
-          if(target == null) {
-            continue;
-          }     
-          let found = newPair.value.find(a => {return a.text == target.text})
-          //this.alert.info(JSON.stringify(target) + "|" + JSON.stringify(found),{autoClose: false})
-          if(found != undefined) {
-            found.count += target.count
-          } else {
-            newPair.value.push(target)
-          }
-          //this.alert.error(JSON.stringify(newPair))
-        }        
+      next: (res) => {
+        if(res != undefined) {  
+          let prevPair = new DictEntry(res.key,res.variants,res.parallels);
+
+          let newPair: DictEntry = storePairs.find(a => {return a.key == prevPair.key})
+          //this.alert.warn(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
+          prevPair.mergeWith(newPair) 
+          //this.alert.success(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
+          storePairs2.push(prevPair)
+        }   
       },
-      complete: () => {
-        //this.alert.success("blah")
-        let storeOperations = from(storePairs).pipe(
-          concatMap(kv => this.storeService.set(kv['key'],kv['value']))
-        )
+      complete: () => {        
+        //this.alert.info(storePairs.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+        //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
+        let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
             //next: (res) => this.alert.info(JSON.stringify(res),{autoClose: false}),
             //error: (err) => this.alert.error(err,{autoClose: false}),
@@ -613,8 +627,13 @@ export class MainComponent implements OnInit, OnDestroy {
     let resultString = "";
     this.parallelDict.forEach((entry, key) => {
       resultString += "<strong>" + key + "</strong>" + "<br/>";
-      entry.forEach((entry2, key2) => {
-        resultString += entry2 + ":" + key2 + "<br/>";
+      resultString += "<em>"
+      entry.variants.forEach(v => {
+        resultString += v + ","
+      })
+      resultString += "</em><br/>"
+      entry.parallels.forEach(v => {
+        resultString += v.text + ":" + v.count +  "<br/>";
       });
       resultString += "<br/>";
     });
@@ -790,23 +809,10 @@ addToParallelDict(textA: string, textB: string): void {
       return;
     }
     if(!this.parallelDict.has(textA)) {
-      this.parallelDict.set(textA,new Map<string, number>());
+      this.parallelDict.set(textA,new DictEntry(textA,[],[]));
     }
-    if(!this.parallelDict.get(textA).has(textB)) {
-      this.parallelDict.get(textA).set(textB,1);
-    } else {
-      this.parallelDict.get(textA).set(textB, this.parallelDict.get(textA).get(textB) + 1);
-    }
-
-    //if(!this.parallelDict.has(textB)) {
-    //  this.parallelDict.set(textB,new Map<string, number>());
-    //}
-    //if(!this.parallelDict.get(textB).has(textA)) {
-    //  this.parallelDict.get(textB).set(textA,1);
-    //} else {
-    //  this.parallelDict.get(textB).set(textA, this.parallelDict.get(textB).get(textA) + 1);
-    //}
-    
+    this.parallelDict.get(textA).addParallel(textB,1);
+    //this.alert.warn(JSON.stringify(this.parallelDict.get(textA).getParallelArray()),{autoClose: false})
   }
 
   lookupSubfields(fkey: string) {
@@ -832,7 +838,7 @@ addToParallelDict(textA: string, textB: string): void {
         let opts = new Array();
         if(!this.settings.pinyinonly) {
           this.lookupInDictionary(sf.data).then((res) => {
-            //this.alert.info(sf.data + "|" + JSON.stringify(res),{autoClose: false})
+            //this.alert.success(sf.data + "|" + JSON.stringify(res),{autoClose: false})
             for(let j = 0; j < res.length; j++) {   
               let str = res[j]       
               opts.push(str); 

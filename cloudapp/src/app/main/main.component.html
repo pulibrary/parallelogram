@@ -81,10 +81,11 @@
                           <mat-icon>translate</mat-icon>
                         </button>
                         <mat-menu #options="matMenu">
-                          <button mat-menu-item *ngFor="let lookup_value of subfield_options.get(field.key).get(subfield.id)"
-                             (click)="sf.value = lookup_value">
+                          <ng-container *ngFor="let lookup_value of subfield_options.get(field.key).get(subfield.id)">
+                          <button mat-menu-item *ngIf="!lookup_value.includes(deleteMarker)" (click)="sf.value = lookup_value">
                                {{lookup_value}}
                           </button>
+                        </ng-container>
                         </mat-menu>
                         <button mat-stroked-button color="secondary" (click)=removeOption(field.key,subfield.id,sf.value)
                           [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">

@@ -30,6 +30,14 @@ export class MarcDataField {
         }
         return "";
     }
+    setSubfield(id: string, value: string) {
+        for(let i = 0; i < this.subfields.length; i++) {
+            if(id == this.subfields[i].id) {
+                this.subfields[i].data = value
+            }
+        }
+        return "";
+    }
     getSubfieldString(): string {
         let sfstring = "";
         this.subfields.forEach(sf => {
