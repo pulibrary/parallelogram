@@ -85,7 +85,6 @@ export class MainComponent implements OnInit, OnDestroy {
         this.doSearch = false;
       } else if(!this.settings.wckey) {   
         this.router.navigate(['settings'],{relativeTo: this.route})
-        return;
       } 
     });
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
@@ -125,7 +124,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.extractParallelFields(this.bib.anies);
           //this.addParallelDictToStorage();
           this.fieldTable = this.bibUtils.getDatafields(bib);
-          if(this.doSearch) {
+          if(this.doSearch && this.settings.wckey != undefined) {
             this.loading = true;
             let oclcQueries: Array<OclcQuery> = [];
             this.bib.lccns = this.bibUtils.getBibField(bib,"010","a");

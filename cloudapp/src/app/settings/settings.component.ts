@@ -36,14 +36,18 @@ export class SettingsComponent implements OnInit {
     this.appService.setTitle('Settings');
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
-      this.admin = this.isAdmin(); 
-      if(!settings.wckey) {
+      this.admin = this.isAdmin();       
+      if(settings.wckey == undefined) {
         this.configService.getAsFormGroup().subscribe(fg => {
-          this.form.setControl('wckey', fg.get("wckey"))
-          this.form.markAsDirty();
-       },
-       () => {
-          if(!settings.wckey && !settings.pinyinonly) {
+          let adminKey = fg.get("wcKey")
+          if(adminKey != undefined) {
+            this.form.setControl('wckey', adminKey)
+            this.form.markAsDirty();        
+          } 
+        },
+        (err) => this.alert.error(err),
+       () => {         
+          if(settings.wckey == undefined && !settings.pinyinonly) {
             this.alert.warn("No WorldCat API Key has been entered.")
           }
         });
@@ -65,7 +69,8 @@ export class SettingsComponent implements OnInit {
 
   async save() {
     this.saving = true;
-    let wcKey = this.form.get("wckey").value;
+    //this.alert.info(JSON.stringify(this.form.value) + "*",{autoClose: false})
+    let wcKey = this.form.get("wckey").value;    
     //this.alert.info(JSON.stringify(this.form.get("pinyinonly").value));
     if(this.form.get("pinyinonly").value) {
       this.settingsService.set(this.form.value).subscribe(
@@ -73,7 +78,7 @@ export class SettingsComponent implements OnInit {
           this.alert.success('Settings successfully saved.');
           this.form.markAsPristine();
         },
-        err => this.alert.error(err.message),
+        (err) => this.alert.error(err.message),
         ()  => this.saving = false
       );
       return;
