@@ -583,15 +583,18 @@ export class MainComponent implements OnInit, OnDestroy {
   addParallelDictToStorage() {
     this.lookupComplete = new Promise((resolve) => {
     let storePairs: DictEntry[] = [];    
+    let storePairs2: DictEntry[] = []
     this.parallelDict.forEach((entry, key) => {
       entry.consolidate()
       storePairs.push(entry);
+      storePairs2.push(entry);
     });
+    
     let getOperations = from(storePairs).pipe(concatMap(entry => this.storeService.get(entry.key))
     )
     //this.alert.info(JSON.stringify(storePairs),{autoClose: false})
     this.statusString = "Finalizing..."
-    let storePairs2: DictEntry[] = []
+    
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
@@ -601,15 +604,17 @@ export class MainComponent implements OnInit, OnDestroy {
           //this.alert.warn(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
           prevPair.mergeWith(newPair) 
           //this.alert.success(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
-          storePairs2.push(prevPair)
-        }   
+          
+          let i = storePairs2.findIndex(a => {return a.key == prevPair.key})
+          storePairs2[i] = prevPair
+        } 
       },
       complete: () => {        
-        //this.alert.info(storePairs.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+        //this.alert.info(storePairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
         //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
         let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-            //next: (res) => this.alert.info(JSON.stringify(res),{autoClose: false}),
+            //next: (res) => this.alert.success(JSON.stringify(res),{autoClose: false}),
             //error: (err) => this.alert.error(err,{autoClose: false}),
             complete: () => {
               this.loading = false;
