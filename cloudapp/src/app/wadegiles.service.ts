@@ -44,11 +44,25 @@ export class WadegilesService {
   WGLookup(wgstr: string) : string {
     wgstr = wgstr.replace(/[\p{Pf}\p{Pi}\u02BB]/gu, "'");
     wgstr = wgstr.replace(/ü/g,"ü");
+    let startpunct = ""
+    let endpunct = ""
+  
+    let m = wgstr.match(/^[^A-Za-z]+/)
+    if(m) {
+      startpunct = m[0]
+      wgstr = wgstr.substring(startpunct.length)
+    }
+
+    m = wgstr.match(/[^A-Za-z]+$/)
+    if(m) {
+      endpunct = m[0]
+      wgstr = wgstr.substring(0,wgstr.length - endpunct.length)
+    }
 
     if(this.wadegiles.has(wgstr)) {
-      return this.wadegiles.get(wgstr);
+      return startpunct + this.wadegiles.get(wgstr) + endpunct;
     } else {
-      return wgstr;
+      return startpunct + wgstr + endpunct;
     }
   }
 

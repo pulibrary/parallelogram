@@ -150,6 +150,7 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             let titles = [this.bib.title];
             let title_wg = this.wadegiles.WGtoPY(this.bib.title);
+            //this.alert.warn(title_wg,{autoClose: false})
             if(title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
                 titles.push(title_wg);
             }
@@ -587,7 +588,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let storePairs: DictEntry[] = [];    
     let storePairs2: DictEntry[] = []
     this.parallelDict.forEach((entry, key) => {
-      if(key == "" || storePairs.length > 100) {
+      if(key == "" || storePairs.length > 200) {
         this.storeService.remove("")
         return
       }
