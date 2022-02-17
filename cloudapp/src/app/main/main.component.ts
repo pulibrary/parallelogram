@@ -587,15 +587,22 @@ export class MainComponent implements OnInit, OnDestroy {
     let storePairs: DictEntry[] = [];    
     let storePairs2: DictEntry[] = []
     this.parallelDict.forEach((entry, key) => {
-      if(key == "") {
+      if(key == "" || storePairs.length > 100) {
         this.storeService.remove("")
         return
       }
       entry.consolidate()
       //this.alert.info(JSON.stringify(entry),{autoClose: false})
-      storePairs.push(entry);
-      storePairs2.push(entry);
+      let pairExists = storePairs.findIndex(a => {a.key == entry.key})
+      if(pairExists == -1) {
+        storePairs.push(entry);
+        storePairs2.push(entry);
+      } else {
+        storePairs[pairExists].mergeWith(entry)
+        storePairs2[pairExists].mergeWith(entry)
+      }
     });
+    //this.alert.warn(storePairs.length+'',{autoClose: false})
     
     let getOperations = from(storePairs).pipe(concatMap(entry => this.storeService.get(entry.key)))
     //this.alert.info(JSON.stringify(storePairs),{autoClose: false})
@@ -604,7 +611,7 @@ export class MainComponent implements OnInit, OnDestroy {
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
-          //this.alert.info(JSON.stringify(res),{autoClose: false})
+          //this.alert.info(JSON.stringify(res))
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
 
           let newPair: DictEntry = storePairs.find(a => {return a.key == prevPair.key})
@@ -623,7 +630,7 @@ export class MainComponent implements OnInit, OnDestroy {
         //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
         let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-            //next: (res) => this.alert.success(JSON.stringify(res),{autoClose: false}),
+            //next: (res) => this.alert.success(JSON.stringify(res)),
             //error: (err) => this.alert.error(err,{autoClose: false}),
             complete: () => {
               this.loading = false;
