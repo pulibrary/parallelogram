@@ -239,7 +239,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
         if(this.completedSearches == this.totalSearches) {
           this.addParallelDictToStorage();      
-          this.alert.info(this.parallelDictToString(),{autoClose: false})   
+          //this.alert.info(this.parallelDictToString(),{autoClose: false})   
         }
       }
     )
@@ -456,7 +456,7 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             await this.storeService.get(ki).toPromise().then((res) => {
               if(res) {
-                options = res.map(a => a.text);
+                options = res.parallels.map(a => a.text);
               }
             });
           }    
@@ -565,7 +565,7 @@ export class MainComponent implements OnInit, OnDestroy {
     //this.alert.info(JSON.stringify(options_final),{autoClose: false})
     }
     //this.alert.success(JSON.stringify(options_final),{autoClose: false});
-    for(let i = 0; i < options_final.length; i++) {
+    for(let i = 0; i < options_final.length; i++) {      
       m = sfdata.match(this.etal_re);
       if(m) {
         options_final[i] = options_final[i].replace(this.etal_re,m[0]);
@@ -587,19 +587,24 @@ export class MainComponent implements OnInit, OnDestroy {
     let storePairs: DictEntry[] = [];    
     let storePairs2: DictEntry[] = []
     this.parallelDict.forEach((entry, key) => {
+      if(key == "") {
+        this.storeService.remove("")
+        return
+      }
       entry.consolidate()
+      //this.alert.info(JSON.stringify(entry),{autoClose: false})
       storePairs.push(entry);
       storePairs2.push(entry);
     });
     
-    let getOperations = from(storePairs).pipe(concatMap(entry => this.storeService.get(entry.key))
-    )
+    let getOperations = from(storePairs).pipe(concatMap(entry => this.storeService.get(entry.key)))
     //this.alert.info(JSON.stringify(storePairs),{autoClose: false})
     this.statusString = "Finalizing..."
     
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
+          //this.alert.info(JSON.stringify(res),{autoClose: false})
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
 
           let newPair: DictEntry = storePairs.find(a => {return a.key == prevPair.key})
@@ -611,7 +616,9 @@ export class MainComponent implements OnInit, OnDestroy {
           storePairs2[i] = prevPair
         } 
       },
-      complete: () => {        
+      //error: (err) => this.alert.error(err.message,{autoClose: false}),
+      complete: () => {
+        //this.alert.warn("blah")        
         //this.alert.info(storePairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
         //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
         let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
@@ -725,7 +732,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
             if(text_rom_parts.length != text_nonrom_parts.length) {
               if(text_rom != text_nonrom) { //&& text_nonrom.match(this.cjk_re)  
-                            
                 this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
                 this.addToParallelDict(text_nonrom_normal,text_rom_stripped);   
                 //this.addToParallelDict(text_rom_wgpy_normal,text_nonrom);
@@ -773,9 +779,9 @@ export class MainComponent implements OnInit, OnDestroy {
 
                 if(!rpm.match(new RegExp("^" + this.delimiterPattern + "$","u")) && 
                     rpm_normal != cpm_normal) { // && text_nonrom.match(this.cjk_re)) {
-                      this.addToParallelDict(rpm_normal,cpm);
+                      this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal]);
                       this.addToParallelDict(cpm_normal,rpm);
-                      this.addToParallelDict(rpm_wgpy_normal,cpm);
+                      //this.addToParallelDict(rpm_wgpy_normal,cpm);
                 }
                 this.relator_terms.relator_keys_pinyin.forEach((relator) => {
                   let relator_wgpy = this.wadegiles.WGtoPY(relator);
@@ -827,6 +833,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
       entry.addVariant(v)
     })
     entry.addParallel(textB,1)
+    //this.alert.info(JSON.stringify(entry),{autoClose: false})
     entry.variants.forEach(v => {
       if(v != textA) {
         this.parallelDict.set(v,entry)
