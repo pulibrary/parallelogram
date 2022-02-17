@@ -228,16 +228,18 @@ export class MainComponent implements OnInit, OnDestroy {
         })
       )
     ).subscribe(
-      res => {
+      (res) => {
+        //this.alert.success(res,{autoClose: false})
         this.extractParallelFields(res);
       },
-      err => this.alert.error(err.message),
+      (err) => {this.alert.error(err.message)},
       () => {
         this.completedSearches++;
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
         if(this.completedSearches == this.totalSearches) {
-          this.addParallelDictToStorage();         
+          this.addParallelDictToStorage();      
+          this.alert.info(this.parallelDictToString(),{autoClose: false})   
         }
       }
     )
@@ -628,7 +630,11 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   parallelDictToString(): string {
+    //return "done"
     let resultString = "";
+    if(this.parallelDict.size == 0) {
+      return resultString
+    }
     this.parallelDict.forEach((entry, key) => {
       resultString += "<strong>" + key + "</strong>" + "<br/>";
       resultString += "<em>"
@@ -652,6 +658,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   extractParallelFields(xml: string): void {    
+    //this.alert.info(xml,{autoClose: false})
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let records = xmlDOM.getElementsByTagName("record");
@@ -663,13 +670,13 @@ export class MainComponent implements OnInit, OnDestroy {
         let subfields = datafields[j].getElementsByTagName("subfield");
         for(let k = 0; k < subfields.length; k++) {
           let code = subfields[k].getAttribute("code");
-          if(code == "6") {
+          if(code == "6") {            
             let linkage = subfields[k].innerHTML;
             linkage = linkage.substring(4,6);
             datafields[j].removeChild(subfields[k]);
             if(linkage == "00") {
               continue;
-            }
+            }            
             if(!parallelFields.has(linkage)) {
               parallelFields.set(linkage, new Array<Element>());
             }
@@ -719,9 +726,9 @@ export class MainComponent implements OnInit, OnDestroy {
             if(text_rom_parts.length != text_nonrom_parts.length) {
               if(text_rom != text_nonrom) { //&& text_nonrom.match(this.cjk_re)  
                             
-                this.addToParallelDict(text_rom_normal,text_nonrom);   
+                this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
                 this.addToParallelDict(text_nonrom_normal,text_rom_stripped);   
-                this.addToParallelDict(text_rom_wgpy_normal,text_nonrom);
+                //this.addToParallelDict(text_rom_wgpy_normal,text_nonrom);
                 this.relator_terms.relator_keys_pinyin.forEach((relator) => {
                     let relator_wgpy = this.wadegiles.WGtoPY(relator);
                     let relator_nonrom = this.relator_terms.lookup(relator);
@@ -807,16 +814,24 @@ export class MainComponent implements OnInit, OnDestroy {
     }
   }
 
-addToParallelDict(textA: string, textB: string): void {
-    //this.alert.info(textA + "<br>" + textB,{autoClose: false})
-    if(textA == textB) {//} || textA.match(/^[0-9\s]*$/) || textB.match(/^[0-9\s]*$/)) {
+addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
+    if(textA == textB) {
       return;
     }
     if(!this.parallelDict.has(textA)) {
       this.parallelDict.set(textA,new DictEntry(textA,[],[]));
     }
-    this.parallelDict.get(textA).addParallel(textB,1);
-    //this.alert.warn(JSON.stringify(this.parallelDict.get(textA).getParallelArray()),{autoClose: false})
+    let entry = this.parallelDict.get(textA)
+    entry.addVariant(textA)
+    variants.forEach(v =>  {
+      entry.addVariant(v)
+    })
+    entry.addParallel(textB,1)
+    entry.variants.forEach(v => {
+      if(v != textA) {
+        this.parallelDict.set(v,entry)
+      }
+    })
   }
 
   lookupSubfields(fkey: string) {
