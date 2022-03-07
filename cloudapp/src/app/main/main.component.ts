@@ -586,7 +586,7 @@ export class MainComponent implements OnInit, OnDestroy {
   addParallelDictToStorage() {
     this.lookupComplete = new Promise((resolve) => {
     let storePairs: DictEntry[] = [];    
-    let storePairs2: DictEntry[] = []
+    let storePairs2: DictEntry[] = []    
     this.parallelDict.forEach((entry, key) => {
       if(key == "" || storePairs.length > 200) {
         this.storeService.remove("")
@@ -594,11 +594,14 @@ export class MainComponent implements OnInit, OnDestroy {
       }
       entry.consolidate()
       //this.alert.info(JSON.stringify(entry),{autoClose: false})
-      let pairExists = storePairs.findIndex(a => {a.key == entry.key})
+      //this.alert.warn(entry.key + ':' + storePairs.map(a => a.key).join("|"))
+      let pairExists = storePairs.findIndex(a => a.key == entry.key)
       if(pairExists == -1) {
+        //this.alert.warn("push")
         storePairs.push(entry);
         storePairs2.push(entry);
       } else {
+        //this.alert.warn("merge")
         storePairs[pairExists].mergeWith(entry)
         storePairs2[pairExists].mergeWith(entry)
       }
@@ -612,7 +615,9 @@ export class MainComponent implements OnInit, OnDestroy {
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
-          //this.alert.info(JSON.stringify(res))
+          //if(res.key.match(/^yuan/)) {
+          //  this.alert.info(JSON.stringify(res),{autoClose: false})
+          //}
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
 
           let newPair: DictEntry = storePairs.find(a => {return a.key == prevPair.key})
@@ -631,7 +636,7 @@ export class MainComponent implements OnInit, OnDestroy {
         //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
         let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-            //next: (res) => this.alert.success(JSON.stringify(res)),
+            //next: (res) => {if(res.key.match(/^yuan/)) {this.alert.success(JSON.stringify(res),{autoClose: false})}},
             //error: (err) => this.alert.error(err,{autoClose: false}),
             complete: () => {
               this.loading = false;
@@ -740,6 +745,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
             if(text_rom_parts.length != text_nonrom_parts.length) {
               if(text_rom != text_nonrom) { //&& text_nonrom.match(this.cjk_re)  
+                //this.alert.info("add",{autoClose: false})
                 this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
                 this.addToParallelDict(text_nonrom_normal,text_rom_stripped);   
                 //this.addToParallelDict(text_rom_wgpy_normal,text_nonrom);
@@ -832,6 +838,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
     if(textA == textB) {
       return;
     }
+    //this.alert.info(textA+"|"+textB+"|"+variants.join(":"),{autoClose: false})
     if(!this.parallelDict.has(textA)) {
       this.parallelDict.set(textA,new DictEntry(textA,[],[]));
     }
@@ -841,10 +848,19 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
       entry.addVariant(v)
     })
     entry.addParallel(textB,1)
+    //this.parallelDict.set(textA,entry)
     //this.alert.info(JSON.stringify(entry),{autoClose: false})
-    entry.variants.forEach(v => {
+    entry.variants.forEach(v => { 
+      //this.alert.warn(v,{autoClose: false})     
       if(v != textA) {
-        this.parallelDict.set(v,entry)
+        let entry2 = new DictEntry(v,entry.variants,entry.parallels)
+        //if(this.parallelDict.has(v)) {
+        //  entry2.mergeWith(this.parallelDict.get(v))
+        //}
+        //if(v.match(/^yuan/i)) {
+        //  this.alert.warn(v + "<br>" + JSON.stringify(entry2),{autoClose: false})
+        //}
+        this.parallelDict.set(v,entry2)
       }
     })
   }
