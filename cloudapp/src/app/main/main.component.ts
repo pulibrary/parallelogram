@@ -411,7 +411,6 @@ export class MainComponent implements OnInit, OnDestroy {
       let text_normal_d = this.cjkNormalize(sfsections[g]);
       let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
       let search_keys_d = [sfsections[g],text_normal_d,text_normal_wgpy_d];
-      //this.alert.info(JSON.stringify(search_keys_d),{autoClose: false});
       for(let h = 0; h < search_keys_d.length; h++) {
         let hi = search_keys_d[h];        
         if(hi.length == 0) {
@@ -420,27 +419,15 @@ export class MainComponent implements OnInit, OnDestroy {
         if(options_d.length > 0) {
           break;
         }
-        //this.alert.info(hi,{autoClose: false});
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
-          //this.alert.success("*" + JSON.stringify(res),{autoClose: false})
-          if(res != undefined) {  
-            //this.alert.success(JSON.stringify(res),{autoClose: false})          
-            options_d = res.parallels.map(a => a.text)  
-            //this.alert.info(JSON.stringify(options_d),{autoClose: false})      
-            if(deleteEntry != "") {
-              //this.alert.success(deleteEntry + "|" + JSON.stringify(options_d),{autoClose: false})
-              let found = options_d.findIndex(b => b == deleteEntry) 
-              if(found > -1) {
-                options_d.splice(found,1)
-              }
-            }
+          if(res != undefined) {           
+            options_d = res.parallels.map(a => a.text)      
           }
         });
       }
-      //this.alert.warn(JSON.stringify(options_d),{autoClose: false});
+
       if(options_d.length == 0) {
         let sfparts = sfsections[g].split(new RegExp("("+ this.punctuationPattern + ")","u")); 
-        //this.alert.success(JSON.stringify(sfparts),{autoClose: false});
         for(let h = 0; h < sfparts.length; h++) {
           let search_text = sfparts[h];
           let options = new Array<string>();
@@ -455,8 +442,8 @@ export class MainComponent implements OnInit, OnDestroy {
             if(options.length > 0) {
               break;
             }
-            await this.storeService.get(ki).toPromise().then((res) => {
-              if(res) {
+            await this.storeService.get(ki).toPromise().then((res: DictEntry) => {
+              if(res != undefined) {
                 options = res.parallels.map(a => a.text);
               }
             });
@@ -473,65 +460,81 @@ export class MainComponent implements OnInit, OnDestroy {
               if(options.length > 0) {
                 break;
               }
-              await this.storeService.get(text_normal + relator).toPromise().then((res) => {
-                options = res.map(a => a.text.replace(
-                  new RegExp("(" + relator_lookup + ")(\\p{P}*$","")
-                ));
+              await this.storeService.get(text_normal + relator).toPromise().then((res: DictEntry) => {
+                if(res != undefined) {
+                  options = res.parallels.map(a => a.text.replace(
+                    new RegExp("(" + relator_lookup + ")(\\p{P}*$"),"")
+                  );
+                }
               });
               if(options.length > 0) {
                 break;
               }
-              await this.storeService.get(relator + text_normal).toPromise().then((res) => {
-                options = res.map(a => a.text.replace(
-                  new RegExp("(" + relator_lookup + ")","")
-                ));
+              await this.storeService.get(relator + text_normal).toPromise().then((res: DictEntry) => {
+                if(res != undefined) {
+                  options = res.parallels.map(a => a.text.replace(
+                    new RegExp("(" + relator_lookup + ")"),"")
+                  );
+                }
               });
               if(options.length > 0) {
                 break;
               }
-              await this.storeService.get(text_normal_wgpy + relator_wgpy).toPromise().then((res) => {
-                options = res.map(a => a.text.replace(
-                  new RegExp("(" + relator_wgpy_lookup + ")(\\p{P}*$","")
-                ));
+              await this.storeService.get(text_normal_wgpy + relator_wgpy).toPromise().then((res: DictEntry) => {
+                if(res != undefined) {
+                  options = res.parallels.map(a => a.text.replace(
+                    new RegExp("(" + relator_wgpy_lookup + ")(\\p{P}*$"),"")
+                  );
+                }
               });
               if(options.length > 0) {
                 break;
               }
-              await this.storeService.get(relator_wgpy + text_normal_wgpy).toPromise().then((res) => {
-                options = res.map(a => a.text.replace(
-                  new RegExp("(" + relator_wgpy_lookup + ")","")
-                ));
+              await this.storeService.get(relator_wgpy + text_normal_wgpy).toPromise().then((res: DictEntry) => {
+                if(res != undefined) {
+                  options = res.parallels.map(a => a.text.replace(
+                    new RegExp("(" + relator_wgpy_lookup + ")"),"")
+                  );
+                }
               });
 
               if(options.length > 0) {
                 break;
               }
               let trunc = text_normal.replace(new RegExp("^(" + relator + ")"),"");
-              await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
-              });
+              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+                  if(res != undefined) {
+                    options = res.parallels.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                  }
+                });
 
               if(options.length > 0) {
                 break;
               }
               trunc = text_normal.replace(new RegExp("(" + relator + ")$"),"");
-              await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+                if(res != undefined) {
+                  options = res.parallels.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                }
               });
               if(options.length > 0) {
                 break;
               }
               trunc = text_normal.replace(new RegExp("^(" + relator_wgpy + ")"),"");
-              await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+                if(res != undefined) {
+                  options = res.parallels.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                }
               });
 
               if(options.length > 0) {
                 break;
               }
               trunc = text_normal.replace(new RegExp("(" + relator_wgpy + ")$"),"");
-              await this.storeService.get(trunc).toPromise().then((res) => {
-                options = res.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+                if(res != undefined) {
+                  options = res.parallels.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                }
               });
             }
           }
