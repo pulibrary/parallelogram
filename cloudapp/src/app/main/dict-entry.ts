@@ -22,6 +22,13 @@ export class DictEntry {
             this.parallels.push({text: parallel,count: c})
         }
     }
+
+    deleteParallel(parallel: string) {
+        let found = this.parallels.findIndex(a => parallel == a.text)
+        if(found > -1) {
+            this.parallels.splice(found,1)
+        }
+    }
     
     //getParallelArray(): Array<string> {
     //    //return this.parallels.

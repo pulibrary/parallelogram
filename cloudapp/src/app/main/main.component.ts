@@ -1,4 +1,4 @@
-import { concat, identity, Observable, of, Subscription } from 'rxjs';
+import { concat, identity, Observable, of, Subscription, VirtualTimeScheduler } from 'rxjs';
 import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
@@ -16,10 +16,12 @@ import { Settings } from '../models/settings';
 import {OclcQuery} from './oclc-query';
 import {MarcDataField} from './marc-datafield';
 import { SettingsComponent } from '../settings/settings.component';
-import { Router, ActivatedRoute, ParamMap } from '@angular/router';
+import { Router, ActivatedRoute, ParamMap, ResolveEnd } from '@angular/router';
 import { RelatorTermsService } from '../relator_terms.service';
 import { PinyinService } from '../pinyin.service';
 import { MissingTranslationHandler } from '@ngx-translate/core';
+import { MatFormFieldDefaultOptions } from '@angular/material/form-field';
+import { stringify } from 'uuid';
 
 @Component({
   selector: 'app-main',
@@ -51,7 +53,8 @@ export class MainComponent implements OnInit, OnDestroy {
   searchProgress: number = 0;
   lookupComplete: Promise<boolean>;
   showDetails = ""
-  deleteMarker = "**DELETE**"
+
+  deletions: Array<{key: string,value: string}>;
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -90,6 +93,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     this.parallelDict = new Map();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
+    this.deletions = new Array<{key: string,value: string}>();
   }
 
   ngOnDestroy(): void {
@@ -104,6 +108,10 @@ export class MainComponent implements OnInit, OnDestroy {
     this._apiResult = result;
     this.hasApiResult = result && Object.keys(result).length > 0;
   }
+
+  //public enabledCount(arr: string[]): number {
+  //  return arr.filter(a => !a.includes(this.deleteMarker)).length
+  //}
 
   onPageLoad = (pageInfo: PageInfo) => {
     if(this.route.snapshot.queryParamMap.has('doSearch') && this.doSearch) {
@@ -173,8 +181,7 @@ export class MainComponent implements OnInit, OnDestroy {
               .replace(new RegExp("\\\|$"),"");
 
             let names = this.bib.names.split("\\\|");
-            titles.forEach(title => {
-              oclcQueries.push(new OclcQuery("ti","exact",title));
+            titles.forEach(title => {              
               names.forEach( name => {
                 if(name == "") {
                   return;
@@ -188,6 +195,7 @@ export class MainComponent implements OnInit, OnDestroy {
                   tnq_wg.addParams("au","=",name_wg);
                   oclcQueries.push(tnq_wg);
                 }
+                oclcQueries.push(new OclcQuery("ti","exact",title));
               });
             });
 
@@ -300,29 +308,37 @@ export class MainComponent implements OnInit, OnDestroy {
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
   }
 
-  removeOption(fkey: string, sfid: string, optionValue: string) {
-    //let pfkey = (fkey.substring(fkey.length-1) == "P") ? fkey.substring(0,fkey.length-1) : fkey + "P"
-    //let psf = this.fieldTable.get(pfkey).getSubfield(sfid)
+  removeOption(fkey: string, sfid: string, optionValue: string) {    
+    let pfkey = (fkey.substring(fkey.length-1) == "P") ? fkey.substring(0,fkey.length-1) : fkey + "P"
+    let psf = this.fieldTable.get(pfkey).getSubfield(sfid)
     //if(psf && psf != "") {
       //let optionList = this.lookupInDictionary(psf,optionValue);
+    //this.alert.warn(psf + "|" + optionValue)
     let sfo = this.subfield_options.get(fkey).get(sfid)
     let found = sfo.findIndex(a => a == optionValue)
+    //this.alert.success(found+'',{autoClose: false})
     if(found > -1) {
-     sfo[found] = this.deleteMarker + sfo[found]
+     sfo.splice(found,1)
+     //sfo[found] = this.deleteMarker + sfo[found]
     }
-    let newindex = 0;
-    for(let i = 0; i < sfo.length; i++) {
-      if(!sfo[i].includes(this.deleteMarker)) {
-        newindex = i
-        break
-      }
-    }
+    //let newindex = 0;
+    //for(let i = 0; i < sfo.length; i++) {
+    //  if(!sfo[i].includes(this.deleteMarker)) {
+    //    newindex = i
+    //    break
+    //  }
+    //}
+    this.deletions.push({key: psf, value: optionValue})
 
     this.subfield_options.get(fkey).set(sfid,sfo)
-    this.fieldTable.get(fkey).setSubfield(sfid,sfo[newindex])
-      //})
-    //}    
+    this.fieldTable.get(fkey).setSubfield(sfid,sfo[0])
+    //this.alert.info(sfo[0]+"|"+this.fieldTable.get(fkey).getSubfieldString(),{autoClose: false})
   }
+
+  public clearDeletions() {
+    this.deletions = new Array<{key: string,value: string}>();
+  }
+
   saveField(fkey: string) {
     let inputs : NodeListOf<HTMLInputElement> = document.querySelectorAll(".subfieldInput");
     let field = this.fieldTable.get(fkey)
@@ -341,6 +357,62 @@ export class MainComponent implements OnInit, OnDestroy {
     this.bibUtils.replaceFieldInBib(this.bib,fkey,newfield);
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
     this.recordChanged = true;
+
+    this.deletions.sort((a,b) => 0 - (a.key > b.key ? 1 : -1))
+    let prevkey = ""
+    let alldels = new Array<{key: string, dels: Array<string>}>();
+    let kdels = new Array<string>();
+    for(let i = 0; i < this.deletions.length; i++) {
+      let ki = this.deletions[i].key     
+      let k_normal = this.cjkNormalize(ki)
+      let k_wg = this.cjkNormalize(this.wadegiles.WGtoPY(ki))
+      let keys = [ki,k_normal,k_wg]
+      let v = this.deletions[i].value
+      if((i > 0 && prevkey != ki) || i == this.deletions.length - 1) {
+        if(i == this.deletions.length - 1) {
+          kdels.push(v)
+        }
+        for(let j = 0 ; j < keys.length; j++) {
+          let jk = keys[j]          
+          alldels.push({key: jk,dels: kdels})
+        }        
+        kdels = new Array<string>();        
+      } 
+      prevkey = ki
+      kdels.push(v)      
+    }
+    //this.alert.info(JSON.stringify(alldels),{autoClose: false})
+    let getOperations = from(alldels).pipe(concatMap(entry => this.storeService.get(entry.key)))
+    let newEntries = new Array<DictEntry>();
+    getOperations.subscribe({
+      next: (res: DictEntry) => {
+        if(res != undefined) {
+          let ne = new DictEntry(res.key, res.variants, res.parallels)          
+          let these_dels = alldels.find(a => {return a.key == res.key})
+          for(let i = 0; i < these_dels.dels.length; i++) {
+            let d = these_dels.dels[i]
+            let dn = d.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"")
+            dn = dn.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"")
+            dn = dn.replace(/\s*\([^\)]+\)[\s\p{P}]*$/u,"");
+            ne.deleteParallel(d)
+            ne.deleteParallel(dn)
+          }
+          //this.alert.info(JSON.stringify(ne) + "<br>" + these_dels.dels.join("|"),{autoClose: false})
+          newEntries.push(ne)
+        }
+      },
+      complete: () => {
+        //this.alert.info(JSON.stringify(newEntries),{autoClose: false})
+        let storeOperations = from(newEntries).pipe(
+          concatMap(entry => this.storeService.set(entry.key,entry))
+        )
+        storeOperations.subscribe()
+
+      }
+    })
+
+    //this.alert.info(JSON.stringify(alldels),{autoClose: false})
+    this.clearDeletions();
     
   }
 
