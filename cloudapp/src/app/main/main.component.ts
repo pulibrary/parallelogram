@@ -311,28 +311,15 @@ export class MainComponent implements OnInit, OnDestroy {
   removeOption(fkey: string, sfid: string, optionValue: string) {    
     let pfkey = (fkey.substring(fkey.length-1) == "P") ? fkey.substring(0,fkey.length-1) : fkey + "P"
     let psf = this.fieldTable.get(pfkey).getSubfield(sfid)
-    //if(psf && psf != "") {
-      //let optionList = this.lookupInDictionary(psf,optionValue);
-    //this.alert.warn(psf + "|" + optionValue)
     let sfo = this.subfield_options.get(fkey).get(sfid)
     let found = sfo.findIndex(a => a == optionValue)
-    //this.alert.success(found+'',{autoClose: false})
     if(found > -1) {
      sfo.splice(found,1)
-     //sfo[found] = this.deleteMarker + sfo[found]
     }
-    //let newindex = 0;
-    //for(let i = 0; i < sfo.length; i++) {
-    //  if(!sfo[i].includes(this.deleteMarker)) {
-    //    newindex = i
-    //    break
-    //  }
-    //}
     this.deletions.push({key: psf, value: optionValue})
 
     this.subfield_options.get(fkey).set(sfid,sfo)
     this.fieldTable.get(fkey).setSubfield(sfid,sfo[0])
-    //this.alert.info(sfo[0]+"|"+this.fieldTable.get(fkey).getSubfieldString(),{autoClose: false})
   }
 
   public clearDeletions() {
@@ -394,8 +381,9 @@ export class MainComponent implements OnInit, OnDestroy {
             let dn = d.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"")
             dn = dn.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"")
             dn = dn.replace(/\s*\([^\)]+\)[\s\p{P}]*$/u,"");
-            ne.deleteParallel(d)
-            ne.deleteParallel(dn)
+            if(!ne.deleteParallel(d)) {
+              ne.deleteParallel(dn)
+            }
           }
           //this.alert.info(JSON.stringify(ne) + "<br>" + these_dels.dels.join("|"),{autoClose: false})
           newEntries.push(ne)

@@ -23,10 +23,13 @@ export class DictEntry {
         }
     }
 
-    deleteParallel(parallel: string) {
+    deleteParallel(parallel: string): boolean {
         let found = this.parallels.findIndex(a => parallel == a.text)
         if(found > -1) {
             this.parallels.splice(found,1)
+            return true;
+        } else {
+            return false;
         }
     }
     
