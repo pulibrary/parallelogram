@@ -28,10 +28,7 @@
                   <mat-icon>more_horiz</mat-icon>                
                 </button>
                 <mat-menu #fieldOptions="matMenu">
-                  <!--
-                    <button mat-menu-item [routerLink]="['detail', bib.mms_id, field.key]">
-                  -->
-                  <button mat-menu-item (click)="lookupSubfields(field.key);showDetails = field.key">
+                  <button mat-menu-item (click)="lookupSubfields(field.key)">
                     <mat-icon>edit</mat-icon>edit
                   </button>
                   <button mat-menu-item (click)="swapField(field.key)">

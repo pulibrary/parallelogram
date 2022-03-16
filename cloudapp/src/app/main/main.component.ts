@@ -942,14 +942,15 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
       let main_field = this.fieldTable.get(fkey)
       let parallel_field = this.fieldTable.get(pfkey);
       
-      let subfields = parallel_field.subfields;
+      let subfields = parallel_field.subfields.filter(a => a.code != '6' && a.code != '0');
+      
+      //this.alert.info(JSON.stringify(subfields),{autoClose: false})
       for(let i = 0; i < subfields.length; i++) {
-        let sf = subfields[i]
-        if(sf.code == '6' || sf.code == '0') {
-          continue;
-        }
+        //this.alert.info(i+'',{autoClose: false})
+        let sf = subfields[i]  
         let opts = new Array();
         if(!this.settings.pinyinonly) {
+          //this.alert.warn(sf.data,{autoClose: false})
           this.lookupInDictionary(sf.data).then((res) => {
             //this.alert.success(sf.data + "|" + JSON.stringify(res),{autoClose: false})
             for(let j = 0; j < res.length; j++) {   
@@ -957,15 +958,17 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
               opts.push(str); 
             }
           }).finally(() => {
+            
             if(!opts.includes(sf.data)) {
               opts.push(sf.data);
             }    
             sfo.set(sf.id,opts);
             if(i == subfields.length - 1) { 
-              
-              //this.alert.success(fkey + "|" + JSON.stringify(opts),{autoClose: false})
-              this.subfield_options.set(fkey, sfo);      
-           }
+              this.subfield_options.set(fkey, sfo);  
+              this.showDetails = fkey
+              //this.alert.success(fkey + "|" + JSON.stringify(this.subfield_options.get(fkey)),{autoClose: false})                 
+            }           
+           
           });
         } else {
           let pylookup = this.pinyin.lookup(sf.data,parallel_field.tag,parallel_field.ind1,sf.code);
@@ -976,10 +979,13 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
             opts.push(sf.data);
           }
           sfo.set(sf.id,opts);
-          this.alert.success(fkey + "|" + JSON.stringify(sfo),{autoClose: false})
+          //this.alert.success(fkey + "|" + JSON.stringify(sfo),{autoClose: false})
           this.subfield_options.set(fkey, sfo);
+          this.showDetails = fkey
+          //this.alert.info(opts.join("|"),{autoClose: false})
         }  
-      }      
+        //this.alert.info(opts.join("|"),{autoClose: false})
+      }         
     //}
   }
 
