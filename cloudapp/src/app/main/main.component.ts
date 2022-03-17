@@ -132,7 +132,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.extractParallelFields(this.bib.anies);
           //this.addParallelDictToStorage();
           this.fieldTable = this.bibUtils.getDatafields(bib);
-          if(this.doSearch && this.settings.wckey != undefined) {
+          if(this.doSearch && this.settings.wckey != undefined) {            
             this.loading = true;
             let oclcQueries: Array<OclcQuery> = [];
             this.bib.lccns = this.bibUtils.getBibField(bib,"010","a");
@@ -147,7 +147,6 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             this.bib.oclcnos = this.bibUtils.extractOCLCnums(this.bibUtils.getBibField(bib,"035","a"));
             if(this.bib.oclcnos != "") {oclcQueries.push(new OclcQuery("no","any",this.bib.oclcnos))}
-          
             this.bib.title = this.bibUtils.getBibField(bib,"245","a");
             let [t1,t2] = this.bib.title.split(/\s*=\s*/,2);
             if(!t2) {
@@ -162,7 +161,7 @@ export class MainComponent implements OnInit, OnDestroy {
             if(title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
                 titles.push(title_wg);
             }
-            
+                        
             if(t2) {
               let t1wg = this.wadegiles.WGtoPY(t1);
               let t2wg = this.wadegiles.WGtoPY(t2);
@@ -173,14 +172,14 @@ export class MainComponent implements OnInit, OnDestroy {
               if(t2.toLowerCase() != t2wg.toLowerCase()) {
                 titles.push(t2wg);
               }
-            }
-            
+            }            
             this.bib.names = this.bibUtils.getBibField(bib,"100","a") + "|" + 
               this.bibUtils.getBibField(bib,"700","a");
             this.bib.names = this.bib.names.replace(new RegExp("^\\\|"),"")
               .replace(new RegExp("\\\|$"),"");
 
             let names = this.bib.names.split("\\\|");
+
             titles.forEach(title => {              
               names.forEach( name => {
                 if(name == "") {
@@ -194,19 +193,20 @@ export class MainComponent implements OnInit, OnDestroy {
                   let tnq_wg = new OclcQuery("ti","exact",title);
                   tnq_wg.addParams("au","=",name_wg);
                   oclcQueries.push(tnq_wg);
-                }
-                oclcQueries.push(new OclcQuery("ti","exact",title));
+                }                
               });
+              oclcQueries.push(new OclcQuery("ti","exact",title));
             });
 
-            this.completedSearches = 0;  
-            this.totalSearches = oclcQueries.length;
-            if(this.totalSearches > 0) {
-              this.loading = true;
-              this.statusString = "Searching WorldCat: 0% complete";
-            }    
-            
-            oclcQueries.map(oq => this.getOCLCrecords(oq))      
+            if(oclcQueries.length > 0) {
+              this.completedSearches = 0;  
+              this.totalSearches = oclcQueries.length;
+              if(this.totalSearches > 0) {
+                this.loading = true;
+               this.statusString = "Searching WorldCat: 0% complete";
+              }     
+              oclcQueries.map(oq => this.getOCLCrecords(oq))      
+            }
          } 
         }
       })
