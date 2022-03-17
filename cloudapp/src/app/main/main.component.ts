@@ -11,7 +11,7 @@ import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
 import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map } from 'rxjs/operators';
 import { HttpClient, HttpHeaders, JsonpClientBackend } from '@angular/common/http';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormArrayName, ReactiveFormsModule } from '@angular/forms';
 import { Settings } from '../models/settings';
 import {OclcQuery} from './oclc-query';
 import {MarcDataField} from './marc-datafield';
@@ -263,6 +263,10 @@ export class MainComponent implements OnInit, OnDestroy {
     parallel_field.addSubfield("61","6",seq);
     for(let j = 0; j < field.subfields.length; j++) {
       let sf = field.subfields[j];
+      if(sf.code == "0") {
+        parallel_field.addSubfield(sf.id,sf.code,sf.data)
+        continue
+      }
       this.saving = true;
       if(this.settings.pinyinonly) {
         let pylookup = this.pinyin.lookup(sf.data,field.tag,field.ind1,sf.code)
@@ -431,7 +435,7 @@ export class MainComponent implements OnInit, OnDestroy {
     return unusedStr;
   }
 
-  async lookupInDictionary(sfdata: string, deleteEntry = ""): Promise<Array<string>> {
+  async lookupInDictionary(sfdata: string): Promise<Array<string>> {
     //this.alert.warn(sfdata)
     let [startpunct,endpunct] = ["",""]
     let m = sfdata.match(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"))
@@ -448,17 +452,6 @@ export class MainComponent implements OnInit, OnDestroy {
       suffix = m[0];
       sfdata = sfdata.substring(0,sfdata.length - suffix.length);
     }
-    if(deleteEntry != "") {
-      if(deleteEntry.substring(0,startpunct.length) == startpunct) {
-        deleteEntry = deleteEntry.substring(startpunct.length)
-      } 
-     if(deleteEntry.substring(deleteEntry.length - endpunct.length) == endpunct) {
-        deleteEntry = deleteEntry.substring(0,deleteEntry.length - endpunct.length)
-      } 
-      if(deleteEntry.substring(deleteEntry.length - suffix.length) == suffix) {
-        deleteEntry = deleteEntry.substring(0,deleteEntry.length - suffix.length)
-      } 
-    }
 
     let options_final = new Array<string>();
     //let sfparts = sfdata.split(new RegExp("(" + this.punctuationPattern + ")"))
@@ -472,7 +465,8 @@ export class MainComponent implements OnInit, OnDestroy {
       let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
       let search_keys_d = [sfsections[g],text_normal_d,text_normal_wgpy_d];
       for(let h = 0; h < search_keys_d.length; h++) {
-        let hi = search_keys_d[h];        
+        let hi = search_keys_d[h]; 
+        //this.alert.warn(hi,{autoClose: false})       
         if(hi.length == 0) {
           continue;
         }
@@ -480,7 +474,8 @@ export class MainComponent implements OnInit, OnDestroy {
           break;
         }
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
-          if(res != undefined) {           
+          if(res != undefined) {   
+            //this.alert.info(JSON.stringify(res),{autoClose: false})        
             options_d = res.parallels.map(a => a.text)      
           }
         });
@@ -496,6 +491,7 @@ export class MainComponent implements OnInit, OnDestroy {
           let search_keys = [search_text,text_normal,text_normal_wgpy];
           for(let i = 0; i < search_keys.length; i++) {
             let ki = search_keys[i];
+            //this.alert.warn(ki,{autoClose: false})
             if(ki.length == 0) {
               continue;
             }
@@ -504,6 +500,7 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             await this.storeService.get(ki).toPromise().then((res: DictEntry) => {
               if(res != undefined) {
+                //this.alert.info(JSON.stringify(res),{autoClose: false})
                 options = res.parallels.map(a => a.text);
               }
             });
@@ -678,7 +675,7 @@ export class MainComponent implements OnInit, OnDestroy {
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
-          //if(res.key.match(/^yuan/)) {
+          //if(res.key.match(/^wu/)) {
           //  this.alert.info(JSON.stringify(res),{autoClose: false})
           //}
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
@@ -699,7 +696,7 @@ export class MainComponent implements OnInit, OnDestroy {
         //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
         let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-            //next: (res) => {if(res.key.match(/^yuan/)) {this.alert.success(JSON.stringify(res),{autoClose: false})}},
+            //next: (res) => {if(res.key.match(/^wu/)) {this.alert.success(JSON.stringify(res),{autoClose: false})}},
             //error: (err) => this.alert.error(err,{autoClose: false}),
             complete: () => {
               this.loading = false;
@@ -740,6 +737,47 @@ export class MainComponent implements OnInit, OnDestroy {
     return ns[prefix] || null;
   }
 
+  extractLOCvariants(xml: string): void {
+    //this.alert.info(this.bibUtils.xmlEscape(xml),{autoClose: false})
+    let parser = new DOMParser();
+    let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
+    let mainentry = xmlDOM.getElementsByTagName("mads:authority")
+    let main_s = mainentry[0].textContent.trim()
+    //this.alert.info("*"+main_s+"|"+main_s.charCodeAt(0)+"|"+main_s.charCodeAt(main_s.length-1)+"*")
+    let variants = xmlDOM.getElementsByTagName("mads:variant")
+    let var_rom = new Array()
+    let var_nonrom = new Array()
+
+    if(main_s.match(/[\u0370-\uFFFF]/u)) {
+      var_nonrom.push(main_s)
+    } else {
+      var_rom.push(main_s)
+    }
+
+    for(let i = 0; i < variants.length; i++) {
+      let v = variants[i].textContent.trim()
+      if(v.match(/[\u0370-\uFFFF]/u)) {
+        var_nonrom.push(v)
+      } else {
+        var_rom.push(v)
+      }
+    }
+    for(let i = 0; i < var_rom.length; i++) {
+      for(let j = 0; j < var_nonrom.length; j++) {
+        let norm = this.cjkNormalize(var_rom[i])
+        this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
+      }
+    }
+
+    for(let i = 0; i < var_nonrom.length; i++) {
+      for(let j = 0; j < var_rom.length; j++) {
+        let norm = this.cjkNormalize(var_nonrom[i])
+        this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
+      }
+    }
+    //this.alert.info(this.parallelDictToString(),{autoClose: false})
+  }
+
   extractParallelFields(xml: string): void {    
     //this.alert.info(xml,{autoClose: false})
     let parser = new DOMParser();
@@ -753,6 +791,27 @@ export class MainComponent implements OnInit, OnDestroy {
         let subfields = datafields[j].getElementsByTagName("subfield");
         for(let k = 0; k < subfields.length; k++) {
           let code = subfields[k].getAttribute("code");
+          if(code == "0") {
+            let locURL = subfields[k].innerHTML
+            if(locURL.match("id\.loc\.gov")) {
+              locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
+              //this.alert.info(locURL,{autoClose: false})
+              this.eventsService.getAuthToken().pipe(
+                switchMap(token => 
+                  this.http.get(locURL, {
+                    headers: new HttpHeaders({
+                      'X-Proxy-Host': 'id.loc.gov',
+                      'Authorization': 'Bearer ' + token,
+                      'Content-type': 'application/xml'
+                    }),
+                    responseType: 'text'
+                  })
+                )
+              ).subscribe((res) => {
+                  this.extractLOCvariants(res)
+                })
+              }
+          }
           if(code == "6") {            
             let linkage = subfields[k].innerHTML;
             linkage = linkage.substring(4,6);
@@ -943,8 +1002,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
       let parallel_field = this.fieldTable.get(pfkey);
       
       let subfields = parallel_field.subfields.filter(a => a.code != '6' && a.code != '0');
-      
-      //this.alert.info(JSON.stringify(subfields),{autoClose: false})
+            
       for(let i = 0; i < subfields.length; i++) {
         //this.alert.info(i+'',{autoClose: false})
         let sf = subfields[i]  
@@ -1014,7 +1072,6 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
     }
     return outputString;
   }
-
   update(value: any) {
     this.loading = true;
     let requestBody = this.tryParseJson(value);
