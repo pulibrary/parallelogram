@@ -281,7 +281,8 @@ export class MainComponent implements OnInit, OnDestroy {
     field.addSubfield("61","6",seq880,true);
 
     this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
-    this.bibUtils.addFieldToBib(this.bib,parallel_field);   
+    this.bibUtils.addFieldToBib(this.bib,parallel_field);  
+    //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false}) 
  
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
     this.recordChanged = true;

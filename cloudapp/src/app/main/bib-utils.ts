@@ -87,6 +87,8 @@ export class BibUtils {
   getDatafields( bib: Bib ): Map<string,MarcDataField> {
     let fieldTable = new Map<string,MarcDataField>();
     let parallelTable = new Map<string,string>();
+    let unmatched = new Map<string, MarcDataField>();
+    //this.alert.info(this.xmlEscape(bib.anies.toString()),{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tagCount = new Map<string,number>();
 
@@ -135,11 +137,26 @@ export class BibUtils {
         }
         tagCount.set(mdf.tag,tagCount.get(mdf.tag) + 1); 
       }
+      if(seq != "" && seq != "00") {
+        if(unmatched.has(id)) {
+          unmatched.delete(id)
+        } else {
+          unmatched.set(id,mdf)
+        }
+      }
       if(mdf.tag == "880") {
         id += "P"
       }      
       fieldTable.set(id,mdf);
     }
+    unmatched.forEach((v,id) => {
+      //this.alert.warn(id,{autoClose: false})
+      let mdf = fieldTable.get(id);
+      mdf.deleteSubfield("61")
+      mdf.hasParallel = false
+      this.replaceFieldInBib(bib,id,mdf)
+    });
+
     return fieldTable;
   }
 
@@ -184,16 +201,16 @@ export class BibUtils {
     const datafield = dom("datafield", { 
       parent: doc.documentElement, 
       attributes: [ ["tag", field.tag], ["ind1", field.ind1], ["ind2", field.ind2] ]
-    });
+    });    
     field.subfields.forEach(sf => {
       dom("subfield", { 
         parent: datafield, 
-        text: sf.data, 
+        text: this.xmlEscape(sf.data), 
         attributes: [ ["code", sf.code] ]
       });
     });
 
-    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
+    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);    
     return bib;
   }
 

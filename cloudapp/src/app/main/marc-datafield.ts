@@ -38,6 +38,11 @@ export class MarcDataField {
         }
         return "";
     }
+    
+    deleteSubfield(sfid) {
+        this.subfields = this.subfields.filter(a => a.id != sfid)
+    }
+
     getSubfieldString(): string {
         let sfstring = "";
         this.subfields.forEach(sf => {
