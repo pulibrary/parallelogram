@@ -196,10 +196,12 @@ export class BibUtils {
       }
     }
 
+    let prevElement = target_field.previousSibling
     target_field.remove();
 
     const datafield = dom("datafield", { 
       parent: doc.documentElement, 
+      insertBefore: prevElement,
       attributes: [ ["tag", field.tag], ["ind1", field.ind1], ["ind2", field.ind2] ]
     });    
     field.subfields.forEach(sf => {
@@ -210,7 +212,8 @@ export class BibUtils {
       });
     });
 
-    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);    
+    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);   
+    //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false}) 
     return bib;
   }
 
@@ -312,13 +315,19 @@ export class BibUtils {
 }
 
 /** Adds Element to dom and returns it */
-const dom = (name: string, options: {parent?: Element, text?: 
+const dom = (name: string, options: {parent?: Element, insertBefore?: Node, text?: 
   string, className?: string, id?: string, attributes?: string[][]} = {}
   ): Element => {
   let ns = options.parent ? options.parent.namespaceURI : '';
   let element = document.createElementNS(ns, name);
 
-  if (options.parent) options.parent.appendChild(element);
+  if (options.parent) {
+    if(options.insertBefore) {
+      options.parent.insertBefore(element,options.insertBefore)
+    } else {
+      options.parent.appendChild(element);
+    }
+  }
   if (options.text) element.innerHTML = options.text;
   if (options.className) element.className = options.className;
   if (options.id) element.id = options.id;
