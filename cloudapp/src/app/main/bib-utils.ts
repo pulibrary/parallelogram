@@ -196,7 +196,7 @@ export class BibUtils {
       }
     }
 
-    let prevElement = target_field.previousSibling
+    let prevElement = target_field.nextSibling
     target_field.remove();
 
     const datafield = dom("datafield", { 
