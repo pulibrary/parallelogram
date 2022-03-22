@@ -54,6 +54,29 @@ export class DictEntry {
             this.addParallel(newEntry.parallels[i].text,newEntry.parallels[i].count)
         }
     }
+
+    isEqualTo(otherEntry: DictEntry) : boolean {
+        if(this.key != otherEntry.key || this.variants.length != otherEntry.variants.length 
+            || this.parallels.length != otherEntry.parallels.length) {
+             return false
+        }
+        this.variants.sort()
+        otherEntry.variants.sort()
+        for(let i = 0; i < this.variants.length; i++) {
+            if(this.variants[i] != otherEntry.variants[i]) {
+                return false
+            }
+        }
+        this.parallels.sort()
+        otherEntry.parallels.sort()
+        for(let i = 0; i < this.parallels.length; i++) {
+            if(this.parallels[i].text != otherEntry.parallels[i].text) {
+                return false
+            }
+        }
+        return true
+    }
+
     stringify(): string {
         return "key: " + this.key + "<br>variants: " + this.variants.join("|") + 
             "<br>parallels: " + this.parallels.map(a => "{" + a.text + ":" + a.count + "}").join(",")

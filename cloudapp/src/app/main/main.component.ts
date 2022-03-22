@@ -674,23 +674,30 @@ export class MainComponent implements OnInit, OnDestroy {
     
     let getOperations = from(storePairs).pipe(concatMap(entry => this.storeService.get(entry.key)))
     //this.alert.info(JSON.stringify(storePairs),{autoClose: false})
-    this.statusString = "Finalizing..."
+    let getCount = 0
+    let setCount = 0
+    this.statusString = "Finalizing... "
     
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
           //if(res.key.match(/^wu/)) {
-          //  this.alert.info(JSON.stringify(res),{autoClose: false})
+            //getCount++
+            //this.statusString = "Finalizing...GET " + getCount
+            //this.alert.info(JSON.stringify(res),{autoClose: false})
           //}
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
 
           let newPair: DictEntry = storePairs.find(a => {return a.key == prevPair.key})
           //this.alert.warn(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
-          prevPair.mergeWith(newPair) 
-          //this.alert.success(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
-          
           let i = storePairs2.findIndex(a => {return a.key == prevPair.key})
-          storePairs2[i] = prevPair
+          if(!prevPair.isEqualTo(newPair)) {
+            prevPair.mergeWith(newPair) 
+          //this.alert.success(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})  
+            storePairs2[i] = prevPair
+          } else {
+            storePairs2.splice(i,1)
+          }
         } 
       },
       //error: (err) => this.alert.error(err.message,{autoClose: false}),
@@ -700,7 +707,13 @@ export class MainComponent implements OnInit, OnDestroy {
         //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
         let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-            //next: (res) => {if(res.key.match(/^wu/)) {this.alert.success(JSON.stringify(res),{autoClose: false})}},
+            next: (res) => {
+              if(res != undefined) {
+                //setCount++
+                //this.statusString = "Finalizing...SET " + setCount
+              }
+
+            },
             //error: (err) => this.alert.error(err,{autoClose: false}),
             complete: () => {
               this.loading = false;
@@ -746,9 +759,23 @@ export class MainComponent implements OnInit, OnDestroy {
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let mainentry = xmlDOM.getElementsByTagName("mads:authority")
+    let nameParts = mainentry[0].getElementsByTagName("mads:namePart")
+    for(let i = 0; i < nameParts.length; i++) {
+      if(nameParts[i].getAttribute("type") == "date") {
+        nameParts[i].remove()
+      }
+    } 
     let main_s = mainentry[0].textContent.trim()
     //this.alert.info("*"+main_s+"|"+main_s.charCodeAt(0)+"|"+main_s.charCodeAt(main_s.length-1)+"*")
     let variants = xmlDOM.getElementsByTagName("mads:variant")
+    for(let i = 0; i < variants.length; i++) {
+      nameParts = variants[i].getElementsByTagName("mads:namePart")
+      for(let j = 0; j < nameParts.length; j++) {
+        if(nameParts[j].getAttribute("type") == "date") {
+          nameParts[j].remove()
+        }
+      } 
+    }
     let var_rom = new Array()
     let var_nonrom = new Array()
 
