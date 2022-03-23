@@ -924,6 +924,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
                 this.addToParallelDict(text_nonrom_normal,text_rom_stripped);   
                 //this.addToParallelDict(text_rom_wgpy_normal,text_nonrom);
+                /*
                 this.relator_terms.relator_keys_pinyin.forEach((relator) => {
                     let relator_wgpy = this.wadegiles.WGtoPY(relator);
                     let relator_nonrom = this.relator_terms.lookup(relator);
@@ -953,6 +954,7 @@ export class MainComponent implements OnInit, OnDestroy {
                       return;
                     }
                 });
+                */
               }
             } else {
               
