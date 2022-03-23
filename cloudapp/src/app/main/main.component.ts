@@ -131,7 +131,7 @@ export class MainComponent implements OnInit, OnDestroy {
         if(bib.record_format=='marc21') {
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
-          this.extractParallelFields(this.bib.anies);
+          this.extractParallelFields(this.bib.anies, true);
           //this.addParallelDictToStorage();
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch && this.settings.wckey != undefined) {            
@@ -249,6 +249,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
         if(this.completedSearches == this.totalSearches) {
+          //this.alert.info("blah",{autoClose: false})
           this.addParallelDictToStorage();      
           //this.alert.info(this.parallelDictToString(),{autoClose: false})   
         }
@@ -674,6 +675,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let storePairs: DictEntry[] = [];    
     let storePairs2: DictEntry[] = []    
     this.parallelDict.forEach((entry, key) => {
+      //this.alert.info(JSON.stringify(entry),{autoClose: false})
       if(key == "" || storePairs.length > 200) {
         this.storeService.remove("")
         return
@@ -682,6 +684,7 @@ export class MainComponent implements OnInit, OnDestroy {
       //this.alert.info(JSON.stringify(entry),{autoClose: false})
       //this.alert.warn(entry.key + ':' + storePairs.map(a => a.key).join("|"))
       let pairExists = storePairs.findIndex(a => a.key == entry.key)
+      //this.alert.info(storePairs.length + " " + entry.key,{autoClose: false})
       if(pairExists == -1) {
         //this.alert.warn("push")
         storePairs.push(entry);
@@ -818,6 +821,7 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < var_rom.length; i++) {
       for(let j = 0; j < var_nonrom.length; j++) {
         let norm = this.cjkNormalize(var_rom[i])
+        //this.alert.info(var_rom[i]+"|"+var_nonrom[j]+"|"+norm,{autoClose: false})
         this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
       }
     }
@@ -831,7 +835,7 @@ export class MainComponent implements OnInit, OnDestroy {
     //this.alert.info(this.parallelDictToString(),{autoClose: false})
   }
 
-  extractParallelFields(xml: string): void {    
+  extractParallelFields(xml: string, linkedData = false): void {    
     //this.alert.info(xml,{autoClose: false})
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
@@ -844,26 +848,34 @@ export class MainComponent implements OnInit, OnDestroy {
         let subfields = datafields[j].getElementsByTagName("subfield");
         for(let k = 0; k < subfields.length; k++) {
           let code = subfields[k].getAttribute("code");
-          if(code == "0") {
-            let locURL = subfields[k].innerHTML
-            if(locURL.match("id\.loc\.gov")) {
-              locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
-              //this.alert.info(locURL,{autoClose: false})
-              this.eventsService.getAuthToken().pipe(
-                switchMap(token => 
-                  this.http.get(locURL, {
-                    headers: new HttpHeaders({
-                      'X-Proxy-Host': 'id.loc.gov',
-                      'Authorization': 'Bearer ' + token,
-                      'Content-type': 'application/xml'
-                    }),
-                    responseType: 'text'
-                  })
-                )
-              ).subscribe((res) => {
-                  this.extractLOCvariants(res)
+          if(linkedData) {
+            if(code == "0") {
+              let locURL = subfields[k].innerHTML
+              //this.alert.info(locURL, {autoClose: false})
+              if(locURL.match("id\.loc\.gov")) {
+                locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
+                this.eventsService.getAuthToken().pipe(
+                  switchMap(token => 
+                this.http.get(locURL, {
+                  headers: new HttpHeaders({
+                   'X-Proxy-Host': 'id.loc.gov',
+                   'Authorization': 'Bearer ' + token,
+                   'Content-type': 'application/xml'
+                  }),
+                  responseType: 'text'
+                })))
+                .subscribe({
+                  next: (res) => {                  
+                    this.extractLOCvariants(res)
+                  },
+                  error: (err) => {
+                    this.alert.error(err.error,{autoClose: false})
+                  }
                 })
+                  
+                
               }
+            }
           }
           if(code == "6") {            
             let linkage = subfields[k].innerHTML;
