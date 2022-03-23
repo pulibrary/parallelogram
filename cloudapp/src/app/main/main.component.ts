@@ -122,7 +122,6 @@ export class MainComponent implements OnInit, OnDestroy {
     this.wadegiles.ready.then((wg_ready) =>  {
 
     this.pinyin.ready.then((py_ready) => {
-      //this.alert.info(this.relator_terms.relator_terms.size+'',{autoClose: false})
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
     if ((pageInfo.entities || []).length == 1) {
@@ -973,6 +972,7 @@ export class MainComponent implements OnInit, OnDestroy {
                       this.addToParallelDict(cpm_normal,rpm);
                       //this.addToParallelDict(rpm_wgpy_normal,cpm);
                 }
+                /*
                 this.relator_terms.relator_keys_pinyin.forEach((relator) => {
                   let relator_wgpy = this.wadegiles.WGtoPY(relator);
                   let relator_nonrom = this.relator_terms.lookup(relator);
@@ -1002,6 +1002,7 @@ export class MainComponent implements OnInit, OnDestroy {
                     return;
                   }
                 });
+                */
               }
             }      
           }
