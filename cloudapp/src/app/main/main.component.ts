@@ -118,8 +118,11 @@ export class MainComponent implements OnInit, OnDestroy {
       this.doSearch = (this.route.snapshot.queryParamMap.get('doSearch') == "true")
     }
     this.relator_terms.ready.then((rt_ready) => {
+      
     this.wadegiles.ready.then((wg_ready) =>  {
+
     this.pinyin.ready.then((py_ready) => {
+      //this.alert.info(this.relator_terms.relator_terms.size+'',{autoClose: false})
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
     if ((pageInfo.entities || []).length == 1) {
@@ -468,6 +471,7 @@ export class MainComponent implements OnInit, OnDestroy {
       let text_normal_d = this.cjkNormalize(sfsections[g]);
       let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
       let search_keys_d = [sfsections[g],text_normal_d,text_normal_wgpy_d];
+      //this.alert.warn(JSON.stringify(search_keys_d),{autoClose: false})
       for(let h = 0; h < search_keys_d.length; h++) {
         let hi = search_keys_d[h]; 
         //this.alert.warn(hi,{autoClose: false})       
@@ -493,8 +497,9 @@ export class MainComponent implements OnInit, OnDestroy {
           let text_normal = this.cjkNormalize(search_text);
           let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
           let search_keys = [search_text,text_normal,text_normal_wgpy];
+          //this.alert.warn(JSON.stringify(search_keys),{autoClose: false})
           for(let i = 0; i < search_keys.length; i++) {
-            let ki = search_keys[i];
+            let ki = search_keys[i].trim();
             //this.alert.warn(ki,{autoClose: false})
             if(ki.length == 0) {
               continue;
@@ -510,17 +515,24 @@ export class MainComponent implements OnInit, OnDestroy {
             });
           }    
           //this.alert.warn(JSON.stringify(options),{autoClose: false})
-          if(options.length == 0)  {
-            let rlen = this.relator_terms.relator_keys_pinyin.length;
+          /*
+          if(options.length == 0 && text_normal.length != 0)  {
+            let rlen = this.relator_terms.relator_terms.size;
+            //this.alert.info(rlen+'',{autoClose: false})
             for(let i = 0; i < rlen; i++) {      
               let relator = this.relator_terms.relator_keys_pinyin[i];
-              let relator_wgpy = this.wadegiles.WGtoPY(relator);
+              let relator_wgpy = this.wadegiles.WGtoPY(relator);              
               let relator_lookup = this.relator_terms.lookup(relator);
               let relator_wgpy_lookup = this.relator_terms.lookup(relator_wgpy);
+              relator = relator.replace(" ","")
+              relator_wgpy = relator_wgpy.replace(" ","")
+              //this.alert.error(relator,{autoClose: false})                             
 
               if(options.length > 0) {
                 break;
               }
+              /*
+              //this.alert.info("*"+text_normal+"*"+relator,{autoClose: false})
               await this.storeService.get(text_normal + relator).toPromise().then((res: DictEntry) => {
                 if(res != undefined) {
                   options = res.parallels.map(a => a.text.replace(
@@ -557,48 +569,59 @@ export class MainComponent implements OnInit, OnDestroy {
                     new RegExp("(" + relator_wgpy_lookup + ")"),"")
                   );
                 }
-              });
-
+              });                            
               if(options.length > 0) {
                 break;
               }
+              
               let trunc = text_normal.replace(new RegExp("^(" + relator + ")"),"");
-              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+              //this.alert.warn(relator+"|"+trunc,{autoClose: false})
+              if(trunc != "" && trunc != text_normal) {
+                //this.alert.info(relator + "|" + relator_lookup + "|" + trunc + "|",{autoClose: false})
+                await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
                   if(res != undefined) {
                     options = res.parallels.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
                   }
                 });
-
+              }              
               if(options.length > 0) {
                 break;
-              }
+              }            
               trunc = text_normal.replace(new RegExp("(" + relator + ")$"),"");
-              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
-                if(res != undefined) {
-                  options = res.parallels.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
-                }
-              });
+              if(trunc != "" && trunc != text_normal) {
+                await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+                  if(res != undefined) {
+                    options = res.parallels.map(a => relator_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                  }
+                });
+              }
+              if(options.length > 0) {
+                break;
+              }              
+              trunc = text_normal_wgpy.replace(new RegExp("^(" + relator_wgpy + ")"),"");
+              if(trunc != "" && trunc != text_normal) {
+                await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+                  if(res != undefined) {
+                    options = res.parallels.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                  }
+                });
+              }
               if(options.length > 0) {
                 break;
               }
-              trunc = text_normal.replace(new RegExp("^(" + relator_wgpy + ")"),"");
-              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
-                if(res != undefined) {
-                  options = res.parallels.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
-                }
-              });
-
-              if(options.length > 0) {
-                break;
+              trunc = text_normal_wgpy.replace(new RegExp("(" + relator_wgpy + ")$"),"");
+              if(trunc != "" && trunc != text_normal_wgpy) {
+                await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
+                  if(res != undefined) {
+                    options = res.parallels.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
+                  }
+                });              
               }
-              trunc = text_normal.replace(new RegExp("(" + relator_wgpy + ")$"),"");
-              await this.storeService.get(trunc).toPromise().then((res: DictEntry) => {
-                if(res != undefined) {
-                  options = res.parallels.map(a => relator_wgpy_lookup.replace(new RegExp("\\|.*"),"")  + a.text)
-                }
-              });
+              
+              //this.alert.info(relator+"|"+trunc+JSON.stringify(options),{autoClose: false})
             }
           }
+          */
           if(options.length == 0) {
             options = [search_text];
           }

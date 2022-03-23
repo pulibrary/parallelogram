@@ -151,6 +151,8 @@
 	<relatorTerm cjk="編" roman="hen"></relatorTerm>
 	<relatorTerm cjk="編者" roman="henja"></relatorTerm>
 	<relatorTerm cjk="編集" roman="henshu"></relatorTerm>
+	<relatorTerm cjk="編集顧問" roman="henshu komon"></relatorTerm>
+	<relatorTerm cjk="編輯委員" roman="henshu iin"></relatorTerm>
 	<relatorTerm cjk="脚本" roman="kyakuhon"></relatorTerm>
 	<relatorTerm cjk="脚色" roman="kyakushoku"></relatorTerm>
 	<relatorTerm cjk="著" roman="chosha"></relatorTerm>
