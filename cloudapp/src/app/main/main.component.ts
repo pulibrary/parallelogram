@@ -46,12 +46,11 @@ export class MainComponent implements OnInit, OnDestroy {
   bib: Bib;
   languageCode: string;
   fieldTable: Map<string,MarcDataField>;
-  parallelDict: Map<string, DictEntry>;
+  parallelDict: Array<DictEntry>;
   subfield_options: Map<string, Map<string, Array<string>>>;
   statusString: string = "";
   doSearch: boolean = true;
   searchProgress: number = 0;
-  lookupComplete: Promise<boolean>;
   showDetails = ""
 
   deletions: Array<{key: string,value: string}>;
@@ -91,7 +90,7 @@ export class MainComponent implements OnInit, OnDestroy {
       } 
     });
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
-    this.parallelDict = new Map();    
+    this.parallelDict = new Array<DictEntry>();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
     this.deletions = new Array<{key: string,value: string}>();
   }
@@ -250,8 +249,8 @@ export class MainComponent implements OnInit, OnDestroy {
         this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
         if(this.completedSearches == this.totalSearches) {
           //this.alert.info("blah",{autoClose: false})
-          this.addParallelDictToStorage();      
-          //this.alert.info(this.parallelDictToString(),{autoClose: false})   
+          this.statusString = "Finalizing... "
+          this.addParallelDictToStorage().finally(() => {this.loading = false})
         }
       }
     )
@@ -293,9 +292,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   saveRecord() {
     this.saving = true;
-    //this.alert.warn(this.bib.anies,{autoClose: false})
     this.extractParallelFields(this.bib.anies)
-    //this.alert.warn(this.parallelDictToString(),{autoClose: false})
     this.addParallelDictToStorage()
     this.extractParallelFields(this.bib.anies)
     this.bibUtils.updateBib(this.bib).subscribe(() => {
@@ -670,105 +667,87 @@ export class MainComponent implements OnInit, OnDestroy {
     return options_final;
 }
 
-  addParallelDictToStorage() {
-    this.lookupComplete = new Promise((resolve) => {
+  addParallelDictToStorage(): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
     let storePairs: DictEntry[] = [];    
-    let storePairs2: DictEntry[] = []    
-    this.parallelDict.forEach((entry, key) => {
-      //this.alert.info(JSON.stringify(entry),{autoClose: false})
-      if(key == "" || storePairs.length > 200) {
-        this.storeService.remove("")
-        return
-      }
-      entry.consolidate()
-      //this.alert.info(JSON.stringify(entry),{autoClose: false})
-      //this.alert.warn(entry.key + ':' + storePairs.map(a => a.key).join("|"))
+    for(let i = 0; i < this.parallelDict.length && storePairs.length <= 200; i++) {
+      let entry = this.parallelDict[i]
       let pairExists = storePairs.findIndex(a => a.key == entry.key)
-      //this.alert.info(storePairs.length + " " + entry.key,{autoClose: false})
       if(pairExists == -1) {
-        //this.alert.warn("push")
         storePairs.push(entry);
-        storePairs2.push(entry);
       } else {
-        //this.alert.warn("merge")
         storePairs[pairExists].mergeWith(entry)
-        storePairs2[pairExists].mergeWith(entry)
       }
-    });
-    //this.alert.warn(storePairs.length+'',{autoClose: false})
-    
-    let getOperations = from(storePairs).pipe(concatMap(entry => this.storeService.get(entry.key)))
-    //this.alert.info(JSON.stringify(storePairs),{autoClose: false})
+    }
+    //this.alert.warn(storePairs.map(a => a.stringify()).join("<br>"),{autoClose: false})
+    this.addToStorage(storePairs).finally(() => resolve(true))
+  })
+  }
+
+  addToStorage(pairs: Array<DictEntry>): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+    let pairs2 = new Array<DictEntry>();
+    for(let i = 0; i < pairs.length; i++) {
+      pairs2.push(pairs[i])
+    }
+    let getOperations = from(pairs).pipe(concatMap(entry => this.storeService.get(entry.key)))
     let getCount = 0
-    let setCount = 0
-    this.statusString = "Finalizing... "
+    let setCount = 0    
     
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
           //if(res.key.match(/^wu/)) {
-            //getCount++
-            //this.statusString = "Finalizing...GET " + getCount
+            //this.statusString = "Finalizing...GET " + getCount++
             //this.alert.info(JSON.stringify(res),{autoClose: false})
           //}
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
 
-          let newPair: DictEntry = storePairs.find(a => {return a.key == prevPair.key})
+          let newPair: DictEntry = pairs.find(a => {return a.key == prevPair.key})
           //this.alert.warn(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
-          let i = storePairs2.findIndex(a => {return a.key == prevPair.key})
+          let i = pairs2.findIndex(a => {return a.key == prevPair.key})
           if(!prevPair.isEqualTo(newPair)) {
             prevPair.mergeWith(newPair) 
           //this.alert.success(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})  
-            storePairs2[i] = prevPair
+            pairs2[i] = prevPair
           } else {
-            storePairs2.splice(i,1)
+            pairs2.splice(i,1)
           }
         } 
       },
       //error: (err) => this.alert.error(err.message,{autoClose: false}),
-      complete: () => {
-        //this.alert.warn("blah")        
-        //this.alert.info(storePairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
-        //this.alert.success(JSON.stringify(storePairs),{autoClose: false})
-        let storeOperations = from(storePairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
+      complete: () => {      
+        //this.alert.info(pairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+        let storeOperations = from(pairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-            next: (res) => {
-              if(res != undefined) {
-                //setCount++
-                //this.statusString = "Finalizing...SET " + setCount
-              }
-
-            },
-            //error: (err) => this.alert.error(err,{autoClose: false}),
-            complete: () => {
-              this.loading = false;
-              resolve(true);
-            }
-          })
-      //  this.alert.success(JSON.stringify(storePairs),{autoClose: false})
+          //next: (res) => this.statusString = "Finalizing...SET " + setCount++,
+          complete: () => resolve(true)
+        })
       }
     })
-  })
+    })
   }
 
   parallelDictToString(): string {
     //return "done"
     let resultString = "";
-    if(this.parallelDict.size == 0) {
+    if(this.parallelDict.length == 0) {
       return resultString
     }
-    this.parallelDict.forEach((entry, key) => {
-      resultString += "<strong>" + key + "</strong>" + "<br/>";
+    for(let i = 0; i < this.parallelDict.length; i++) {
+      let entry = this.parallelDict[i]
+      resultString += "<strong>" + entry.key + "</strong>" + "<br/>";
       resultString += "<em>"
       entry.variants.forEach(v => {
         resultString += v + ","
       })
       resultString += "</em><br/>"
-      entry.parallels.forEach(v => {
+      for(let j = 0; j < entry.parallels.length; j++) {
+        let v = entry.parallels[i]
         resultString += v.text + ":" + v.count +  "<br/>";
-      });
+      }
       resultString += "<br/>";
-    });
+    }
     return resultString;
   }
   oclcNSresolver(prefix: string): string {
@@ -832,7 +811,6 @@ export class MainComponent implements OnInit, OnDestroy {
         this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
       }
     }
-    //this.alert.info(this.parallelDictToString(),{autoClose: false})
   }
 
   extractParallelFields(xml: string, linkedData = false): void {    
@@ -1029,36 +1007,35 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
     if(textA == textB) {
       return;
     }
-    //this.alert.info(textA+"|"+textB+"|"+variants.join(":"),{autoClose: false})
-    if(!this.parallelDict.has(textA)) {
-      this.parallelDict.set(textA,new DictEntry(textA,[],[]));
+    let found = this.parallelDict.findIndex(a => a.key == textA)
+    let entry: DictEntry;
+    if(found == -1) {
+      entry = new DictEntry(textA,[],[])
+      this.parallelDict.push(entry);
+    } else {
+      entry = this.parallelDict[found]
     }
-    let entry = this.parallelDict.get(textA)
     entry.addVariant(textA)
-    variants.forEach(v =>  {
+    for(let i = 0; i < variants.length; i++) {
+      let v = variants[i]
       entry.addVariant(v)
-    })
+    }
     entry.addParallel(textB,1)
-    //this.parallelDict.set(textA,entry)
-    //this.alert.info(JSON.stringify(entry),{autoClose: false})
-    entry.variants.forEach(v => { 
-      //this.alert.warn(v,{autoClose: false})     
+    entry.variants.forEach(v => {     
       if(v != textA) {
         let entry2 = new DictEntry(v,entry.variants,entry.parallels)
-        //if(this.parallelDict.has(v)) {
-        //  entry2.mergeWith(this.parallelDict.get(v))
-        //}
-        //if(v.match(/^yuan/i)) {
-        //  this.alert.warn(v + "<br>" + JSON.stringify(entry2),{autoClose: false})
-        //}
-        this.parallelDict.set(v,entry2)
+        let found2 = this.parallelDict.findIndex(a => a.key == v)
+        if(found2 == -1) {
+          this.parallelDict.push(entry2)
+        } else {
+          this.parallelDict[found] = entry2
+        }
       }
     })
+    entry.consolidate()
   }
 
   lookupSubfields(fkey: string) {
-    //this.alert.warn(fkey,{autoClose: false})
-    //this.alert.info(this.parallelDictToString(),{autoClose: false})
     //if(!this.subfield_options.has(fkey)) {
       let sfo = new Map<string, Array<string>>();
       let pfkey = fkey;
