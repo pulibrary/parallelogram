@@ -772,8 +772,8 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   getLinkedData(locURL: string): Promise<boolean> {
-    return new Promise((resolve) => {
     //this.alert.info(locURL, {autoClose: false})
+    return new Promise((resolve) => {    
     if(locURL.match("id\.loc\.gov")) {
       locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
       this.eventsService.getAuthToken().pipe(
@@ -789,7 +789,8 @@ export class MainComponent implements OnInit, OnDestroy {
         )
       )
       .subscribe({
-        next: (res) => {                
+        next: (res) => {   
+          //this.alert.info(this.bibUtils.xmlEscape(res),{autoClose: false})             
           let entries = this.extractLOCvariants(res)
           //this.alert.warn(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
           this.addToStorage(entries).finally(() => {
@@ -879,11 +880,12 @@ export class MainComponent implements OnInit, OnDestroy {
       let found = this.parallelDict.findIndex(a => a.key == vi)
       //this.alert.warn(this.parallelDict.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
       //this.alert.info(JSON.stringify(vi) + "|" + found,{autoClose: false})
-      if(found > -1 && entries.find(a => a.key == vi) != undefined) {
+      if(found > -1 && entries.find(a => a.key == vi) == undefined) {
+        //this.alert.info(JSON.stringify(this.parallelDict[found]),{autoClose: false})
         entries.push(this.parallelDict[found])
       }
     }   
-    //this.alert.warn(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+    //this.alert.warn(JSON.stringify(entries),{autoClose: false})
     return entries 
   }
 
