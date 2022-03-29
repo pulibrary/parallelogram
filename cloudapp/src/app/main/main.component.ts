@@ -130,7 +130,7 @@ export class MainComponent implements OnInit, OnDestroy {
         if(bib.record_format=='marc21') {
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
-          this.extractParallelFields(this.bib.anies, true);
+          this.extractParallelFields(this.bib.anies);
           //this.addParallelDictToStorage();
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch && this.settings.wckey != undefined) {            
@@ -256,38 +256,46 @@ export class MainComponent implements OnInit, OnDestroy {
     )
   }
 
-  async lookupField(fkey) {
+  async lookupField(fkey: string) {
+    this.showDetails = ""
     let field = this.fieldTable.get(fkey)
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
     let seqno = this.findUnusedLinkage();
     let seq = field.tag + "-" + seqno;
     let seq880 = "880-" + seqno;    
     parallel_field.addSubfield("61","6",seq);
-    for(let j = 0; j < field.subfields.length; j++) {
-      let sf = field.subfields[j];
-      if(sf.code == "0") {
-        parallel_field.addSubfield(sf.id,sf.code,sf.data)
-        continue
-      }
-      this.saving = true;
-      if(this.settings.pinyinonly) {
+    this.saving = true;
+    if(this.settings.pinyinonly) {
+      for(let j = 0; j < field.subfields.length; j++) {
+        let sf = field.subfields[j];
         let pylookup = this.pinyin.lookup(sf.data,field.tag,field.ind1,sf.code)
         parallel_field.addSubfield(sf.id,sf.code,pylookup)
-      } else {
-        let options = await this.lookupInDictionary(sf.data);        
-        parallel_field.addSubfield(sf.id,sf.code,options[0])
-        
       }
-      this.saving = false;
-    }    
+    } else {
+      let linkedDataURL = field.subfields.find(a => a.code == "0")
+      if(linkedDataURL != undefined) {
+        await this.getLinkedData(linkedDataURL.data)
+      }
+      for(let j = 0; j < field.subfields.length; j++) {
+        let sf = field.subfields[j];
+        if(sf.code == "0") {
+          parallel_field.addSubfield(sf.id,sf.code,sf.data)
+          continue
+        }
+        let options = await this.lookupInDictionary(sf.data);  
+        //this.alert.success(options.join("<br>"),{autoClose: false})      
+        parallel_field.addSubfield(sf.id,sf.code,options[0]) 
+      }
+    }
+    this.saving = false;
     field.addSubfield("61","6",seq880,true);
 
     this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
     this.bibUtils.addFieldToBib(this.bib,parallel_field);  
-    //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false}) 
- 
+    //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})  
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
     this.recordChanged = true;
+    //this.alert.info("done",{autoClose: false})
   }
 
   saveRecord() {
@@ -459,6 +467,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let options_final = new Array<string>();
     //let sfparts = sfdata.split(new RegExp("(" + this.punctuationPattern + ")"))
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
+    //this.alert.warn(sfsections.join("<br>"),{autoClose: false})
     /* THIS TOO
     if(suffix != "") {
       sfsections.push(suffix);
@@ -468,6 +477,7 @@ export class MainComponent implements OnInit, OnDestroy {
       let text_normal_d = this.cjkNormalize(sfsections[g]);
       let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
       let search_keys_d = [sfsections[g],text_normal_d,text_normal_wgpy_d];
+      //this.alert.warn(sfsections[g] + "|" + text_normal_d + "|" + text_normal_wgpy_d,{autoClose: false})
       //this.alert.warn(JSON.stringify(search_keys_d),{autoClose: false})
       for(let h = 0; h < search_keys_d.length; h++) {
         let hi = search_keys_d[h]; 
@@ -478,6 +488,7 @@ export class MainComponent implements OnInit, OnDestroy {
         if(options_d.length > 0) {
           break;
         }
+        //this.alert.warn(hi,{autoClose: false})
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
           if(res != undefined) {   
             //this.alert.info(JSON.stringify(res),{autoClose: false})        
@@ -670,6 +681,7 @@ export class MainComponent implements OnInit, OnDestroy {
   addParallelDictToStorage(): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
     let storePairs: DictEntry[] = [];    
+    //this.alert.info(this.parallelDict.length+'',{autoClose: false})
     for(let i = 0; i < this.parallelDict.length && storePairs.length <= 200; i++) {
       let entry = this.parallelDict[i]
       let pairExists = storePairs.findIndex(a => a.key == entry.key)
@@ -686,6 +698,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   addToStorage(pairs: Array<DictEntry>): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
+    //this.alert.info(pairs.length+'',{autoClose: false})
     let pairs2 = new Array<DictEntry>();
     for(let i = 0; i < pairs.length; i++) {
       pairs2.push(pairs[i])
@@ -758,12 +771,48 @@ export class MainComponent implements OnInit, OnDestroy {
     return ns[prefix] || null;
   }
 
-  extractLOCvariants(xml: string): void {
+  getLinkedData(locURL: string): Promise<boolean> {
+    return new Promise((resolve) => {
+    //this.alert.info(locURL, {autoClose: false})
+    if(locURL.match("id\.loc\.gov")) {
+      locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
+      this.eventsService.getAuthToken().pipe(
+        switchMap(token => 
+          this.http.get(locURL, {
+            headers: new HttpHeaders({
+              'X-Proxy-Host': 'id.loc.gov',
+              'Authorization': 'Bearer ' + token,
+              'Content-type': 'application/xml'
+            }),
+            responseType: 'text'
+          })
+        )
+      )
+      .subscribe({
+        next: (res) => {                
+          let entries = this.extractLOCvariants(res)
+          //this.alert.warn(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+          this.addToStorage(entries).finally(() => {
+            //this.alert.info(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+            resolve(true)
+          })
+          
+        },
+        error: (err) => {
+          this.alert.error(err.error,{autoClose: false})
+        },
+      })   
+    }
+    })
+  }
+
+  extractLOCvariants(xml: string): Array<DictEntry> {
     //this.alert.info(this.bibUtils.xmlEscape(xml),{autoClose: false})
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let mainentry = xmlDOM.getElementsByTagName("mads:authority")
     let nameParts = mainentry[0].getElementsByTagName("mads:namePart")
+    let entries = new Array<DictEntry>();
     for(let i = 0; i < nameParts.length; i++) {
       if(nameParts[i].getAttribute("type") == "date") {
         nameParts[i].remove()
@@ -792,28 +841,53 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < variants.length; i++) {
       let v = variants[i].textContent.trim()
       if(v.match(/[\u0370-\uFFFF]/u)) {
-        var_nonrom.push(v)
+        if(!var_nonrom.includes(v)) {
+          var_nonrom.push(v)
+        }
       } else {
-        var_rom.push(v)
+        if(!var_rom.includes(v)) {
+          var_rom.push(v)
+        }
       }
     }
+    let vnew = new Array<string>()
     for(let i = 0; i < var_rom.length; i++) {
       for(let j = 0; j < var_nonrom.length; j++) {
         let norm = this.cjkNormalize(var_rom[i])
         //this.alert.info(var_rom[i]+"|"+var_nonrom[j]+"|"+norm,{autoClose: false})
-        this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
+        let v = this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
+        vnew.push(...(v.map(a => a.key)))
       }
     }
-
+    //this.alert.info(vnew.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+    var_rom = vnew
+    vnew = new Array<string>()
     for(let i = 0; i < var_nonrom.length; i++) {
       for(let j = 0; j < var_rom.length; j++) {
         let norm = this.cjkNormalize(var_nonrom[i])
-        this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
+        let v = this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
+        vnew.push(...(v.map(a => a.key)))
       }
     }
+    //this.alert.info(vnew.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+    var_nonrom = vnew
+    //this.alert.info(var_rom.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+    //this.alert.info(var_nonrom.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+    let var_all = [main_s,...var_nonrom,...var_rom]    
+    for(let i = 0; i < var_all.length; i++) {
+      let vi = var_all[i]
+      let found = this.parallelDict.findIndex(a => a.key == vi)
+      //this.alert.warn(this.parallelDict.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+      //this.alert.info(JSON.stringify(vi) + "|" + found,{autoClose: false})
+      if(found > -1 && entries.find(a => a.key == vi) != undefined) {
+        entries.push(this.parallelDict[found])
+      }
+    }   
+    //this.alert.warn(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+    return entries 
   }
 
-  extractParallelFields(xml: string, linkedData = false): void {    
+  extractParallelFields(xml: string): void {    
     //this.alert.info(xml,{autoClose: false})
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
@@ -825,36 +899,7 @@ export class MainComponent implements OnInit, OnDestroy {
       for(let j = 0; j < datafields.length; j++) {
         let subfields = datafields[j].getElementsByTagName("subfield");
         for(let k = 0; k < subfields.length; k++) {
-          let code = subfields[k].getAttribute("code");
-          if(linkedData) {
-            if(code == "0") {
-              let locURL = subfields[k].innerHTML
-              //this.alert.info(locURL, {autoClose: false})
-              if(locURL.match("id\.loc\.gov")) {
-                locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
-                this.eventsService.getAuthToken().pipe(
-                  switchMap(token => 
-                this.http.get(locURL, {
-                  headers: new HttpHeaders({
-                   'X-Proxy-Host': 'id.loc.gov',
-                   'Authorization': 'Bearer ' + token,
-                   'Content-type': 'application/xml'
-                  }),
-                  responseType: 'text'
-                })))
-                .subscribe({
-                  next: (res) => {                  
-                    this.extractLOCvariants(res)
-                  },
-                  error: (err) => {
-                    this.alert.error(err.error,{autoClose: false})
-                  }
-                })
-                  
-                
-              }
-            }
-          }
+          let code = subfields[k].getAttribute("code");  
           if(code == "6") {            
             let linkage = subfields[k].innerHTML;
             linkage = linkage.substring(4,6);
@@ -1003,10 +1048,11 @@ export class MainComponent implements OnInit, OnDestroy {
     }
   }
 
-addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
+addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<DictEntry> {
     if(textA == textB) {
       return;
     }
+    //this.alert.warn(textA+"|"+textB+"|"+variants.join(","),{autoClose: false})
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
     if(found == -1) {
@@ -1021,6 +1067,8 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
       entry.addVariant(v)
     }
     entry.addParallel(textB,1)
+    entry.consolidate()
+    let entries_all = [entry]
     entry.variants.forEach(v => {     
       if(v != textA) {
         let entry2 = new DictEntry(v,entry.variants,entry.parallels)
@@ -1030,9 +1078,11 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): void {
         } else {
           this.parallelDict[found] = entry2
         }
+        entries_all.push(entry2)
       }
-    })
-    entry.consolidate()
+    })    
+    //this.alert.info(entry.stringify(),{autoClose: false})
+    return entries_all
   }
 
   lookupSubfields(fkey: string) {
