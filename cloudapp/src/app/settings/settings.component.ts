@@ -36,7 +36,8 @@ export class SettingsComponent implements OnInit {
     this.appService.setTitle('Settings');
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
-      this.admin = this.isAdmin();       
+      //this.alert.info(JSON.stringify(this.form.value),{autoClose: false})
+      this.admin = this.isAdmin();           
       if(settings.wckey == undefined) {
         this.configService.getAsFormGroup().subscribe(fg => {
           let adminKey = fg.get("wcKey")
@@ -53,6 +54,35 @@ export class SettingsComponent implements OnInit {
         });
       }
     });    
+  }
+
+  addPreSearchField(tag = "") {
+    tag = tag.trim()
+    if(tag.length != 3 || !tag.match(/[0-9][0-9Xx][0-9Xx]/)) {
+      this.alert.clear()
+      this.alert.warn("Invalid tag format")
+    } else {
+      this.alert.clear()
+      tag = tag.toLowerCase()
+      let preSearchList: Array<string> = this.form.get("preSearchList").value
+      if(!preSearchList.includes(tag)) {
+        preSearchList.push(tag)
+        preSearchList.sort()
+        this.form.markAsDirty()
+      }
+    }
+    
+  }
+
+  deletePreSearchField(tag) {
+    let preSearchList: Array<string> = this.form.get("preSearchList").value
+    if(tag != undefined) {
+      let found = preSearchList.indexOf(tag)
+      if(found > -1) {
+         preSearchList.splice(found,1)
+         this.form.markAsDirty()
+      }
+    }
   }
 
   isAdmin(): Observable<boolean> {
@@ -84,6 +114,7 @@ export class SettingsComponent implements OnInit {
       return;
     }
     await this.validateWCkey(wcKey);
+    //this.alert.info(this.wcKeyValid+"",{autoClose: false})
     if(this.wcKeyValid) { 
       if(this.form.get("adminWC").value) {
         //this.alert.info("config")
@@ -116,6 +147,7 @@ export class SettingsComponent implements OnInit {
   public async validateWCkey(wcKey: String) {
     let wcURL = Settings.wcBaseURL;
     let authToken = await this.eventsService.getAuthToken().toPromise();
+    //this.alert.info(authToken,{autoClose: false})
     await this.http.get(wcURL, {
       headers: new HttpHeaders({
         'X-Proxy-Host': 'worldcat.org',

@@ -12,3 +12,15 @@
   .full-width {
     width: 100%;
   }
+  
+  .delete-icon {
+    transform: scale(0.5);
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .preSearchTag {
+    border: solid 0.5px gray;
+    padding: 5px;
+    margin: 5px;
+  }

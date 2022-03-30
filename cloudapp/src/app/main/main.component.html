@@ -20,7 +20,7 @@
     <mat-card-content>      
       <div>        
         <table #marcRecord class="marc">
-           <tr *ngFor="let field of fieldTable | keyvalue" 
+           <tr [ngClass]="{'presearch': preSearchFields.has(field.key) == true}" *ngFor="let field of fieldTable | keyvalue" 
               [ngStyle]="{'background-color': generateBGColor(field.value.getSubfield('61'))}">
               <td *ngIf="field.value.hasParallel; else addBlock">
                 <div *ngIf="showDetails != field.key; else detailsButtonBlock">

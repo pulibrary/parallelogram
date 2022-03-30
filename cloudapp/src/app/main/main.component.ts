@@ -22,6 +22,7 @@ import { PinyinService } from '../pinyin.service';
 import { MissingTranslationHandler } from '@ngx-translate/core';
 import { MatFormFieldDefaultOptions } from '@angular/material/form-field';
 import { stringify } from 'uuid';
+import { MapOperator } from 'rxjs/internal/operators/map';
 
 @Component({
   selector: 'app-main',
@@ -54,6 +55,9 @@ export class MainComponent implements OnInit, OnDestroy {
   showDetails = ""
 
   deletions: Array<{key: string,value: string}>;
+  
+  preSearchArray: Array<string>
+  preSearchFields: Map<string,boolean>;
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -88,11 +92,13 @@ export class MainComponent implements OnInit, OnDestroy {
       } else if(!this.settings.wckey) {   
         this.router.navigate(['settings'],{relativeTo: this.route})
       } 
+      this.preSearchArray = this.settings.preSearchList
     });
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     this.parallelDict = new Array<DictEntry>();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
     this.deletions = new Array<{key: string,value: string}>();
+    this.preSearchFields = new Map<string,boolean>()       
   }
 
   ngOnDestroy(): void {
@@ -249,14 +255,48 @@ export class MainComponent implements OnInit, OnDestroy {
         this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
         if(this.completedSearches == this.totalSearches) {
           //this.alert.info("blah",{autoClose: false})
-          this.statusString = "Finalizing... "
-          this.addParallelDictToStorage().finally(() => {this.loading = false})
+          this.statusString = "Analyzing records... "
+          this.addParallelDictToStorage().finally(async () => {  
+            //this.alert.info(JSON.stringify(this.preSearchArray))  
+            if(this.settings.doPresearch) {          
+              for(let i = 0; i < this.preSearchArray.length; i++) {     
+                //this.alert.info(i+'')    
+                let f = this.preSearchArray[i]     
+                f = f.replace(/[Xx]*$/,"")
+                //this.alert.info(f,{autoClose: false})
+                let comp = 0
+                if(f.length == 2) {
+                  comp = 10
+                }
+                if(f.length == 1) {
+                  comp = 100
+                }
+                if(comp > 0) {
+                  for(let j = 0; j < comp; j++) {
+                    let pad = (f.length == 1 && j < 10) ? "0" : ""
+                    let fj = f+pad+j            
+                    //this.alert.info(fj)     
+                    for(let k = 0; this.fieldTable.has(fj+":"+k); k++) {  
+                      this.statusString = "Pre-searching: Field " + fj                  
+                      await this.lookupField(fj+":"+k,true)
+                    }
+                  }
+                } else {              
+                  for(let k = 0; this.fieldTable.has(f+":"+k); k++) {
+                    this.statusString = "Pre-searching: Field " + f
+                    await this.lookupField(f+":"+k,true)
+                  }
+                }
+              }
+            }
+            this.loading = false
+          })
         }
       }
     )
   }
 
-  async lookupField(fkey: string) {
+  async lookupField(fkey: string, presearch = false) {
     this.showDetails = ""
     let field = this.fieldTable.get(fkey)
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
@@ -269,6 +309,10 @@ export class MainComponent implements OnInit, OnDestroy {
       for(let j = 0; j < field.subfields.length; j++) {
         let sf = field.subfields[j];
         let pylookup = this.pinyin.lookup(sf.data,field.tag,field.ind1,sf.code)
+        if(presearch && pylookup != sf.data) {
+          this.preSearchFields.set(fkey,true)
+          break
+        }
         parallel_field.addSubfield(sf.id,sf.code,pylookup)
       }
     } else {
@@ -283,19 +327,26 @@ export class MainComponent implements OnInit, OnDestroy {
           continue
         }
         let options = await this.lookupInDictionary(sf.data);  
-        //this.alert.success(options.join("<br>"),{autoClose: false})      
+        //this.alert.success(options.join("<br>"),{autoClose: false}) 
+        if(presearch && options[0] != sf.data) {
+          this.preSearchFields.set(fkey,true)
+          break
+        }     
         parallel_field.addSubfield(sf.id,sf.code,options[0]) 
       }
     }
     this.saving = false;
-    field.addSubfield("61","6",seq880,true);
+    if(!presearch) {
+      field.addSubfield("61","6",seq880,true);
 
-    this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
-    this.bibUtils.addFieldToBib(this.bib,parallel_field);  
-    //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})  
-    this.fieldTable = this.bibUtils.getDatafields(this.bib)
-    this.recordChanged = true;
-    //this.alert.info("done",{autoClose: false})
+      this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
+      this.bibUtils.addFieldToBib(this.bib,parallel_field);  
+      //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})  
+      this.fieldTable = this.bibUtils.getDatafields(this.bib)
+      this.recordChanged = true;
+      this.preSearchFields.delete(fkey)
+      //this.alert.info("done",{autoClose: false})
+    }
   }
 
   saveRecord() {
