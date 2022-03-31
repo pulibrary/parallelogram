@@ -34,23 +34,11 @@
         </mat-chip-list>
       </mat-form-field>
     </section> 
-    <!--
     <section class="settings-section">
-        <span class="preSearchTag" *ngFor="let field of form.get('preSearchList').value" role="listitem">
-          {{field}} 
-          <span (click)="deletePreSearchField(field)"><mat-icon class="delete-icon">
-            cancel</mat-icon></span></span>    
+      <mat-checkbox formControlName="pinyinonly">Chinese: Don't search WorldCat, only convert characters to Pinyin</mat-checkbox>    
     </section>
     <section class="settings-section">
-      <mat-form-field appearance="standard">
-        <mat-label>Add Tag (e.g. 245, 7xx)</mat-label>
-        <input matInput #addField>
-      </mat-form-field>&nbsp;&nbsp; 
-      <button mat-stroked-button color="secondary" (click)="addPreSearchField(addField.value)"><mat-icon>add</mat-icon></button>
-    </section>
-  -->
-    <section class="settings-section">
-      <mat-checkbox formControlName="pinyinonly">Chinese Pinyin Mode</mat-checkbox>    
+      <mat-checkbox formControlName="searchWG">Chinese: Search for Pinyin equivalents of Wade-Giles text</mat-checkbox> 
     </section>
     <div *ngIf="admin|async">
     <section class="settings-section">

@@ -176,11 +176,13 @@ export class MainComponent implements OnInit, OnDestroy {
               let t1wg = this.wadegiles.WGtoPY(t1);
               let t2wg = this.wadegiles.WGtoPY(t2);
               titles.push(t1,t2);
-              if(t1.toLowerCase() != t1wg.toLowerCase()) {
-                titles.push(t1wg);
-              }
-              if(t2.toLowerCase() != t2wg.toLowerCase()) {
-                titles.push(t2wg);
+              if(this.settings.searchWG) {
+                if(t1.toLowerCase() != t1wg.toLowerCase()) {
+                  titles.push(t1wg);
+                }
+                if(t2.toLowerCase() != t2wg.toLowerCase()) {
+                  titles.push(t2wg);
+                }
               }
             }            
             this.bib.names = this.bibUtils.getBibField(bib,"100","a") + "|" + 
@@ -198,11 +200,13 @@ export class MainComponent implements OnInit, OnDestroy {
                 let tnq = new OclcQuery("ti","exact",title);
                 tnq.addParams("au","=",name);
                 oclcQueries.push(tnq);
-                let name_wg = this.wadegiles.WGtoPY(name);
-                if(name_wg.toLowerCase() != name.toLowerCase()) {
-                  let tnq_wg = new OclcQuery("ti","exact",title);
-                  tnq_wg.addParams("au","=",name_wg);
-                  oclcQueries.push(tnq_wg);
+                if(this.settings.searchWG) {
+                  let name_wg = this.wadegiles.WGtoPY(name);
+                  if(name_wg.toLowerCase() != name.toLowerCase()) {
+                    let tnq_wg = new OclcQuery("ti","exact",title);
+                    tnq_wg.addParams("au","=",name_wg);
+                    oclcQueries.push(tnq_wg);
+                  }
                 }                
               });
               oclcQueries.push(new OclcQuery("ti","exact",title));
@@ -443,8 +447,11 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < this.deletions.length; i++) {
       let ki = this.deletions[i].key     
       let k_normal = this.cjkNormalize(ki)
-      let k_wg = this.cjkNormalize(this.wadegiles.WGtoPY(ki))
-      let keys = [ki,k_normal,k_wg]
+      let keys = [ki,k_normal]
+      if(this.settings.searchWG) {
+        let k_wg = this.cjkNormalize(this.wadegiles.WGtoPY(ki))
+        keys.push(k_wg)
+      }
       let v = this.deletions[i].value
       if((i > 0 && prevkey != ki) || i == this.deletions.length - 1) {
         if(i == this.deletions.length - 1) {
@@ -553,8 +560,11 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let g = 0; g < sfsections.length; g++) {
       let options_d = new Array<string>();
       let text_normal_d = this.cjkNormalize(sfsections[g]);
-      let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
-      let search_keys_d = [sfsections[g],text_normal_d,text_normal_wgpy_d];
+      let search_keys_d = [sfsections[g],text_normal_d];
+      if(this.settings.searchWG) {
+        let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
+        search_keys_d.push(text_normal_wgpy_d);
+      }
       //this.alert.warn(sfsections[g] + "|" + text_normal_d + "|" + text_normal_wgpy_d,{autoClose: false})
       //this.alert.warn(JSON.stringify(search_keys_d),{autoClose: false})
       for(let h = 0; h < search_keys_d.length; h++) {
@@ -581,8 +591,11 @@ export class MainComponent implements OnInit, OnDestroy {
           let search_text = sfparts[h];
           let options = new Array<string>();
           let text_normal = this.cjkNormalize(search_text);
-          let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
-          let search_keys = [search_text,text_normal,text_normal_wgpy];
+          let search_keys = [search_text,text_normal];
+          if(this.settings.searchWG) {
+            let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
+            search_keys.push(text_normal_wgpy);
+          }
           //this.alert.warn(JSON.stringify(search_keys),{autoClose: false})
           for(let i = 0; i < search_keys.length; i++) {
             let ki = search_keys[i].trim();
@@ -1038,7 +1051,11 @@ export class MainComponent implements OnInit, OnDestroy {
             if(text_rom_parts.length != text_nonrom_parts.length) {
               if(text_rom != text_nonrom) { //&& text_nonrom.match(this.cjk_re)  
                 //this.alert.info("add",{autoClose: false})
-                this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
+                if(this.settings.searchWG) {
+                  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
+                } else {
+                  this.addToParallelDict(text_rom_normal,text_nonrom); 
+                }
                 this.addToParallelDict(text_nonrom_normal,text_rom_stripped);   
                 //this.addToParallelDict(text_rom_wgpy_normal,text_nonrom);
                 /*
@@ -1087,7 +1104,11 @@ export class MainComponent implements OnInit, OnDestroy {
 
                 if(!rpm.match(new RegExp("^" + this.delimiterPattern + "$","u")) && 
                     rpm_normal != cpm_normal) { // && text_nonrom.match(this.cjk_re)) {
-                      this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal]);
+                      if(this.settings.searchWG) {
+                        this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal]);
+                      } else {
+                        this.addToParallelDict(rpm_normal,cpm);
+                      }
                       this.addToParallelDict(cpm_normal,rpm);
                       //this.addToParallelDict(rpm_wgpy_normal,cpm);
                 }
