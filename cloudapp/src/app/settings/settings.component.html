@@ -9,14 +9,32 @@
 <div *ngIf="form">
   <form [formGroup]="form">
     <section class="settings-section">
-      <mat-form-field style="width: 725px" appearance="standard">
+      <mat-form-field appearance="fill">
         <mat-label>WorldCat API Key: </mat-label> 
         <input matInput formControlName="wckey">
       </mat-form-field>
     </section>
     <section class="settings-section">
       <mat-checkbox formControlName="doPresearch">Perform pre-search on the following fields:</mat-checkbox>
-    </section>    
+    </section>   
+    <section class="settings-section">
+      <mat-form-field appearance="fill">
+        <mat-chip-list #preSearchTags>
+          <mat-chip 
+            *ngFor="let field of form.get('preSearchList').value"
+            (removed)="deletePreSearchField(field)" >
+            {{field}}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
+          <input matChipInput placeholder="Add Tag (e.g. 245, 7xx)"
+           [matChipInputFor]="preSearchTags"
+           [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+           [matChipInputAddOnBlur]="addOnBlur"
+           (matChipInputTokenEnd)="addPreSearchField($event)">
+        </mat-chip-list>
+      </mat-form-field>
+    </section> 
+    <!--
     <section class="settings-section">
         <span class="preSearchTag" *ngFor="let field of form.get('preSearchList').value" role="listitem">
           {{field}} 
@@ -30,6 +48,7 @@
       </mat-form-field>&nbsp;&nbsp; 
       <button mat-stroked-button color="secondary" (click)="addPreSearchField(addField.value)"><mat-icon>add</mat-icon></button>
     </section>
+  -->
     <section class="settings-section">
       <mat-checkbox formControlName="pinyinonly">Chinese Pinyin Mode</mat-checkbox>    
     </section>

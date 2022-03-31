@@ -1,12 +1,14 @@
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit } from '@angular/core';
 import { AppService } from '../app.service';
 import { FormGroup, FormControl } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AlertService, CloudAppSettingsService, FormGroupUtil, 
   CloudAppEventsService, CloudAppConfigService, CloudAppRestService } from '@exlibris/exl-cloudapp-angular-lib';
 import { Settings } from '../models/settings';
+import {MatChipInputEvent} from '@angular/material/chips'
+import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import { Router } from '@angular/router';
 import { USE_STORE } from '@ngx-translate/core';
 
@@ -21,6 +23,9 @@ export class SettingsComponent implements OnInit {
   running = false;
   wcKeyValid = false;
   admin: Observable<boolean>;
+
+  addOnBlur = true;
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
   constructor(
     private appService: AppService,
@@ -56,8 +61,11 @@ export class SettingsComponent implements OnInit {
     });    
   }
 
-  addPreSearchField(tag = "") {
-    tag = tag.trim()
+  addPreSearchField(event: MatChipInputEvent) {
+    let tag = (event.value || '').trim()
+    if(tag == "") {
+      return
+    }
     if(tag.length != 3 || !tag.match(/[0-9][0-9Xx][0-9Xx]/)) {
       this.alert.clear()
       this.alert.warn("Invalid tag format")
@@ -71,10 +79,11 @@ export class SettingsComponent implements OnInit {
         this.form.markAsDirty()
       }
     }
-    
+    event.input.value = ""
   }
 
-  deletePreSearchField(tag) {
+  deletePreSearchField(tag: string) {
+    //this.alert.info(tag)
     let preSearchList: Array<string> = this.form.get("preSearchList").value
     if(tag != undefined) {
       let found = preSearchList.indexOf(tag)
