@@ -63,3 +63,8 @@ table.parallelOptions td {
 .presearch {
   font-weight: bold
 }
+
+::ng-deep .mat-menu-panel {
+  min-width: 100%!important;
+  max-width: none!important
+}
