@@ -331,8 +331,32 @@ export class MainComponent implements OnInit, OnDestroy {
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
           break
-        }     
-        parallel_field.addSubfield(sf.id,sf.code,options[0]) 
+        }   
+        let best = 0  
+        let bookends = ""
+        if(sf.data.match(/^\p{P}/u)) {
+          bookends += sf.data.charAt(0)
+        }
+        if(sf.data.match(/\p{P}$/u)) {
+          bookends += sf.data.charAt(sf.data.length-1)
+        }
+        //this.alert.warn(options.join("<br>"),{autoClose: false})
+        for(let k = 0; k < options.length; k++) {
+          let opt_k = options[k]
+          let bookends_k = ""
+          if(opt_k.match(/^\p{P}/u)) {
+            bookends_k += opt_k.charAt(0)
+          }
+          if(opt_k.match(/\p{P}$/u)) {
+            bookends_k += opt_k.charAt(opt_k.length-1)
+          }
+          //this.alert.info(bookends + "<br>" + bookends_k + "<br>" + sf.data + "<br>" + opt_k,{autoClose: false})
+          if(bookends == bookends_k) {
+            best = k
+            break
+          }
+        }
+        parallel_field.addSubfield(sf.id,sf.code,options[best]) 
       }
     }
     this.saving = false;
