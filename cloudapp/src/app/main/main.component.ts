@@ -145,19 +145,19 @@ export class MainComponent implements OnInit, OnDestroy {
           if(this.doSearch && this.settings.wckey != undefined) {            
             this.loading = true;
             let oclcQueries: Array<OclcQuery> = [];
-            this.bib.lccns = this.bibUtils.getBibField(bib,"010","a");
+            this.bib.lccns = this.bibUtils.getBibField(bib,"010","a").trim();
             if(this.bib.lccns != "") {oclcQueries.push(new OclcQuery("dn", "exact",this.bib.lccns))}
-            this.bib.isbns = this.bibUtils.getBibField(bib,"020","a");
+            this.bib.isbns = this.bibUtils.getBibField(bib,"020","a").trim();
             if(this.bib.isbns != "") {
               oclcQueries.push(new OclcQuery("bn","any",this.bib.isbns.replace("-","")))
             }
-            this.bib.issns = this.bibUtils.getBibField(bib,"022","a");
+            this.bib.issns = this.bibUtils.getBibField(bib,"022","a").trim();
             if(this.bib.issns != "") {
               oclcQueries.push(new OclcQuery("in","any",this.bib.issns.replace("-","")))
             }
-            this.bib.oclcnos = this.bibUtils.extractOCLCnums(this.bibUtils.getBibField(bib,"035","a"));
+            this.bib.oclcnos = this.bibUtils.extractOCLCnums(this.bibUtils.getBibField(bib,"035","a")).trim();
             if(this.bib.oclcnos != "") {oclcQueries.push(new OclcQuery("no","any",this.bib.oclcnos))}
-            this.bib.title = this.bibUtils.getBibField(bib,"245","a");
+            this.bib.title = this.bibUtils.getBibField(bib,"245","a").trim();
             let [t1,t2] = this.bib.title.split(/\s*=\s*/,2);
             if(!t2) {
               [t1,t2] = this.bib.title.split(/\s*\(/,2);
@@ -185,8 +185,8 @@ export class MainComponent implements OnInit, OnDestroy {
                 }
               }
             }            
-            this.bib.names = this.bibUtils.getBibField(bib,"100","a") + "|" + 
-              this.bibUtils.getBibField(bib,"700","a");
+            this.bib.names = this.bibUtils.getBibField(bib,"100","a".trim()) + "|" + 
+              this.bibUtils.getBibField(bib,"700","a").trim();
             this.bib.names = this.bib.names.replace(new RegExp("^\\\|"),"")
               .replace(new RegExp("\\\|$"),"");
 
@@ -233,7 +233,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   getOCLCrecords(oq: OclcQuery) {
-    //this.alert.info(oq.getQueryString(),{autoClose: false})
+    this.alert.info(oq.getQueryString(),{autoClose: false})
     let wcKey = this.settings.wckey;
     let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
       oq.getQueryString() + Settings.wcOtherParams;
