@@ -854,6 +854,8 @@ export class MainComponent implements OnInit, OnDestroy {
           this.alert.error(err.error,{autoClose: false})
         },
       })   
+    } else {
+      resolve(true)
     }
     })
   }
