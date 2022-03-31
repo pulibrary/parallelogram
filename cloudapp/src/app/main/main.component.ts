@@ -1,5 +1,7 @@
 import { concat, identity, Observable, of, Subscription, VirtualTimeScheduler } from 'rxjs';
-import { Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef, ViewChild, ElementRef } from '@angular/core';
+import { 
+  Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef, 
+  ViewChild, ElementRef, HostListener, Injectable } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
   Entity, EntityType, PageInfo, RestErrorResponse, AlertService, CloudAppConfigService, 
@@ -10,26 +12,19 @@ import { Bib, BibUtils } from './bib-utils';
 import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
 import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map } from 'rxjs/operators';
-import { HttpClient, HttpHeaders, JsonpClientBackend } from '@angular/common/http';
-import { FormArrayName, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Settings } from '../models/settings';
 import {OclcQuery} from './oclc-query';
 import {MarcDataField} from './marc-datafield';
-import { SettingsComponent } from '../settings/settings.component';
 import { Router, ActivatedRoute, ParamMap, ResolveEnd } from '@angular/router';
 import { RelatorTermsService } from '../relator_terms.service';
 import { PinyinService } from '../pinyin.service';
-import { MissingTranslationHandler } from '@ngx-translate/core';
-import { MatFormFieldDefaultOptions } from '@angular/material/form-field';
-import { stringify } from 'uuid';
-import { MapOperator } from 'rxjs/internal/operators/map';
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
-
 
 export class MainComponent implements OnInit, OnDestroy {
   private pageLoad$: Subscription;
@@ -69,7 +64,7 @@ export class MainComponent implements OnInit, OnDestroy {
   cjkPattern = "[\\p{sc=Han}]";
   cjk_re = new RegExp(this.cjkPattern,"u");
 
-  @ViewChild('marcRecord',{static: false}) marcRecordTable: ElementRef;
+  @ViewChild('marcRecord',{static: false}) marcRecordTable: ElementRef;  
 
   constructor(private restService: CloudAppRestService,
     private eventsService: CloudAppEventsService,
@@ -83,6 +78,14 @@ export class MainComponent implements OnInit, OnDestroy {
     private pinyin:PinyinService,
     private relator_terms: RelatorTermsService,
     private router: Router) { }
+
+  //@HostListener('blur',['$event'])
+  canDeactivate(): Observable<boolean> | boolean {
+    if(this.recordChanged) {
+      return confirm('Unsaved changes will be lost.  Are you sure you want to leave this page?');
+    }    
+    return true;
+  }	
 
   ngOnInit() {
     this.settingsService.get().subscribe(stgs => {

@@ -37,6 +37,13 @@ export class SettingsComponent implements OnInit {
     private http: HttpClient,
   ) { }
 
+  canDeactivate(): Observable<boolean> | boolean {
+    if(this.form.dirty) {
+      return confirm('Unsaved changes will be lost.  Are you sure you want to leave this page?');
+    }    
+    return true;
+  }	
+
   ngOnInit() {    
     this.appService.setTitle('Settings');
     this.settingsService.get().subscribe( settings => {

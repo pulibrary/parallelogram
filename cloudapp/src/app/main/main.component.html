@@ -24,7 +24,7 @@
               [ngStyle]="{'background-color': generateBGColor(field.value.getSubfield('61'))}">
               <td *ngIf="field.value.hasParallel; else addBlock">
                 <div *ngIf="showDetails != field.key; else detailsButtonBlock">
-                <button mat-stroked-button color="secondary" [matMenuTriggerFor]="fieldOptions" [disabled]="showDetails == field.key">
+                <button mat-stroked-button color="secondary" [matMenuTriggerFor]="fieldOptions" [disabled]="showDetails != ''">
                   <mat-icon>more_horiz</mat-icon>                
                 </button>
                 <mat-menu #fieldOptions="matMenu">
@@ -55,7 +55,7 @@
               </td>
               <ng-template #addBlock>
               <td>
-                <button mat-stroked-button color="secondary" (click)="lookupField(field.key)">
+                <button mat-stroked-button color="secondary" (click)="lookupField(field.key)" [disabled]="showDetails != ''">
                   <mat-icon>add</mat-icon>
                 </button>
               </td>
