@@ -18,7 +18,7 @@ export class MarcDataField {
         } else {
             this.subfields.push({id: id, code: code, data: data});
         }
-        if(code == '6' && data.match(/[0-9][0-9][0-9]-[0-9][0-9]/)) {
+        if(code == '6' && data.match(/[0-9][0-9][0-9]-[0-9][0-9]/) && !data.match(/[0-9][0-9][0-9]-00/)) {
             this.hasParallel = true;
         }
     }

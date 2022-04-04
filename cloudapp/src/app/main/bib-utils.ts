@@ -88,6 +88,7 @@ export class BibUtils {
     let fieldTable = new Map<string,MarcDataField>();
     let parallelTable = new Map<string,string>();
     let unmatched = new Map<string, MarcDataField>();
+    //this.alert.clear()
     //this.alert.info(this.xmlEscape(bib.anies.toString()),{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tagCount = new Map<string,number>();
@@ -120,12 +121,12 @@ export class BibUtils {
       let seq = ""
       let id = ""
       if(linkage != "") {
-        if(true_tag == "880") {
+        seq = linkage.substring(4,6)
+        if(true_tag == "880" && seq != "00") {
           true_tag = linkage.substring(0,3)
         }
-        seq = linkage.substring(4,6)
       }
-      if(parallelTable.has(seq)) {
+      if(parallelTable.has(seq) && seq != "00") {
         id = parallelTable.get(seq);
       } else {
         if(!tagCount.has(true_tag)) {
@@ -144,10 +145,11 @@ export class BibUtils {
           unmatched.set(id,mdf)
         }
       }
-      if(mdf.tag == "880") {
+      if(mdf.tag == "880" && seq != "00") {
         id += "P"
       }      
-      fieldTable.set(id,mdf);
+      fieldTable.set(id,mdf);      
+      //this.alert.info(id+":" + JSON.stringify(mdf),{autoClose: false})
     }
     unmatched.forEach((v,id) => {
       //this.alert.warn(id,{autoClose: false})
@@ -155,8 +157,7 @@ export class BibUtils {
       mdf.deleteSubfield("61")
       mdf.hasParallel = false
       this.replaceFieldInBib(bib,id,mdf)
-    });
-
+    });   
     return fieldTable;
   }
 
@@ -235,6 +236,40 @@ export class BibUtils {
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
     return bib;
   }  
+
+  unlinkFields(bib: Bib, field_id: string) { 
+    const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
+    let tag = field_id.substring(0,3);
+    let tag_seq = field_id.substring(4,5);
+    
+    let main_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
+    let linkage = main_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
+    
+    let parallel_field: Element;
+
+    let parfields = doc.querySelectorAll("datafield[tag='880']");
+    for(let i = 0; i < parfields.length; i++) {
+      let linkageElement = parfields[i].querySelector("subfield[code='6']")
+      if(!linkageElement) {
+        continue;
+      }
+      let linkageVal = linkageElement.innerHTML.substring(4,6);
+      if(linkage == linkageVal && linkageVal != "00") {
+        parallel_field = parfields[i];
+        break;
+      }
+    }
+    
+    //this.alert.info("remove " + this.xmlEscape(parallel_field.querySelector("subfield[code='6']").outerHTML),{autoClose: false})
+    //this.alert.info("remove " + this.xmlEscape(main_field.outerHTML),{autoClose: false})
+    
+    main_field.querySelector("subfield[code='6']").remove();
+    let plink = parallel_field.querySelector("subfield[code='6'").innerHTML
+    parallel_field.querySelector("subfield[code='6'").innerHTML = plink.replace(/^(...)-../,"$1-00");
+    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
+    return bib;
+  }
+
   deleteField(bib: Bib, field_id: string) {
     //this.alert.warn(field_id,{autoClose: false})
     if(field_id.substring(5) != "P") {
@@ -256,7 +291,7 @@ export class BibUtils {
         continue;
       }
       let linkageVal = linkageElement.innerHTML.substring(4,6);
-      if(linkage == linkageVal) {
+      if(linkage == linkageVal && linkageVal != "00") {
         parallel_field = parfields[i];
         break;
       }
@@ -289,7 +324,7 @@ export class BibUtils {
         continue;
       }
       let linkageVal = linkageElement.innerHTML.substring(4,6);
-      if(linkage == linkageVal) {
+      if(linkage == linkageVal && linkageVal != "00") {
         parallel_field = parfields[i];
         break;
       }

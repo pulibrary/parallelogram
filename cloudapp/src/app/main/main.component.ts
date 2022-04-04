@@ -414,6 +414,12 @@ export class MainComponent implements OnInit, OnDestroy {
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
   }
 
+  unlinkFields(fkey: string) {
+    this.recordChanged = true;
+    this.bibUtils.unlinkFields(this.bib, fkey); 
+    this.fieldTable = this.bibUtils.getDatafields(this.bib)
+  }
+
   deleteField(fkey: string) {
     this.recordChanged = true;
     this.bibUtils.deleteField(this.bib, fkey); 
