@@ -18,7 +18,8 @@
     </div>
     <div><br/></div>
     <mat-card-content>      
-      <div>        
+      <div>   
+        <div class="mms_id">MMS ID:  {{bib.mms_id}}</div>
         <table #marcRecord class="marc">
            <tr [ngClass]="{'presearch': preSearchFields.has(field.key) == true}" *ngFor="let field of fieldTable | keyvalue" 
               [ngStyle]="{'background-color': generateBGColor(field.value.getSubfield('61'))}">
