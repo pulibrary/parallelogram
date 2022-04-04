@@ -9,6 +9,8 @@ export class Settings {
     pinyinonly: boolean = false;
     searchWG: boolean = false;
     doPresearch: boolean = false;
+    doSwap: boolean = false;
+    swapType: string = "nonroman"
     preSearchList: Array<string> = ["1xx","245","26x","7xx"]
     adminWC: boolean = false;
 }

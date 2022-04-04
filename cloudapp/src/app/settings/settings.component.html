@@ -35,6 +35,15 @@
       </mat-form-field>
     </section> 
     <section class="settings-section">
+      <mat-checkbox formControlName="doSwap">After adding a parallel field, swap original field and 880 (if needed) so that:</mat-checkbox>
+    </section>
+    <section class="settings-section">
+      <mat-radio-group formControlName="swapType">
+        &nbsp;&nbsp;<mat-radio-button value="roman">Roman text is in field 880</mat-radio-button>&nbsp;&nbsp;
+        &nbsp;&nbsp;<mat-radio-button value="nonroman">Non-roman text is in field 880</mat-radio-button>
+      </mat-radio-group>
+    </section>
+    <section class="settings-section">
       <mat-checkbox formControlName="pinyinonly">Chinese: Don't search WorldCat, only convert characters to Pinyin</mat-checkbox>    
     </section>
     <section class="settings-section">

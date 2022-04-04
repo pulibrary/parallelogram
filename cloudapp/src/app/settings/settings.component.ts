@@ -49,14 +49,21 @@ export class SettingsComponent implements OnInit {
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       //this.alert.info(JSON.stringify(this.form.value),{autoClose: false})
-      this.admin = this.isAdmin();           
+      this.admin = this.isAdmin(); 
+      this.form.get("doSwap").valueChanges.subscribe(v => {
+        if(v) {
+          this.form.get("swapType").enable()
+        } else {
+          this.form.get("swapType").disable()
+        }
+      })      
       if(settings.wckey == undefined) {
         this.configService.getAsFormGroup().subscribe(fg => {
           let adminKey = fg.get("wcKey")
           if(adminKey != undefined) {
             this.form.setControl('wckey', adminKey)
             this.form.markAsDirty();        
-          } 
+          }           
         },
         (err) => this.alert.error(err),
        () => {         

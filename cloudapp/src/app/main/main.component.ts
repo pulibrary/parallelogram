@@ -233,7 +233,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   getOCLCrecords(oq: OclcQuery) {
-    this.alert.info(oq.getQueryString(),{autoClose: false})
+    //this.alert.info(oq.getQueryString(),{autoClose: false})
     let wcKey = this.settings.wckey;
     let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
       oq.getQueryString() + Settings.wcOtherParams;
@@ -372,12 +372,29 @@ export class MainComponent implements OnInit, OnDestroy {
 
       this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
       this.bibUtils.addFieldToBib(this.bib,parallel_field);  
+      if(this.settings.doSwap) {
+        this.doParallelSwap(fkey,field.getSubfieldString(),parallel_field.getSubfieldString())
+      }
+
       //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})  
       this.fieldTable = this.bibUtils.getDatafields(this.bib)
       this.recordChanged = true;
       this.preSearchFields.delete(fkey)
       //this.alert.info("done",{autoClose: false})
     }
+  }
+
+  doParallelSwap(fkey: string, fdata: string, pfdata: string) {
+    //this.alert.info(fdata + "|" + pfdata),{autoClose: false}
+    let roman_count = (fdata.match(/[A-Za-z]/g) || [] ).length
+    let p_roman_count = (pfdata.match(/[A-Za-z]/g) || []).length
+    let p_roman = p_roman_count > roman_count
+    //this.alert.info(roman_count + "|" + p_roman_count)
+    if((this.settings.swapType == "roman" && !p_roman) ||
+      this.settings.swapType == "nonroman" && p_roman) {
+        this.swapField(fkey)
+    }
+  
   }
 
   saveRecord() {
