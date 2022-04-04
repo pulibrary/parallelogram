@@ -126,17 +126,19 @@ export class BibUtils {
           true_tag = linkage.substring(0,3)
         }
       }
-      if(parallelTable.has(seq) && seq != "00") {
+      if(parallelTable.has(seq)) {
         id = parallelTable.get(seq);
+        //this.alert.success(true_tag + "|" + seq + "|" + id,{autoClose: false})
       } else {
         if(!tagCount.has(true_tag)) {
           tagCount.set(true_tag,0);
         }
         id = true_tag + ":" + tagCount.get(true_tag);  
-        if(seq != "") {
+        if(seq != "" && seq != "00") {
           parallelTable.set(seq,id)
         }
-        tagCount.set(mdf.tag,tagCount.get(mdf.tag) + 1); 
+        //this.alert.warn(true_tag + "|" + seq + "|" + tagCount.get(true_tag),{autoClose: false})
+        tagCount.set(true_tag,tagCount.get(true_tag) + 1); 
       }
       if(seq != "" && seq != "00") {
         if(unmatched.has(id)) {
@@ -174,6 +176,7 @@ export class BibUtils {
   }    
 
   replaceFieldInBib(bib: Bib, field_id: string, field: MarcDataField) {
+    //this.alert.warn(field_id + "|" + JSON.stringify(field),{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
     let tag_seq = field_id.substring(4,5);
@@ -219,6 +222,7 @@ export class BibUtils {
   }
 
   addFieldToBib(bib: Bib, field: MarcDataField) {
+    //this.alert.success(JSON.stringify(field),{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     const datafield = dom("datafield", { 
       parent: doc.documentElement, 
@@ -271,15 +275,18 @@ export class BibUtils {
   }
 
   deleteField(bib: Bib, field_id: string) {
-    //this.alert.warn(field_id,{autoClose: false})
     if(field_id.substring(5) != "P") {
       this.swapParallelFields(bib,field_id)
     }
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
+    //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false})
     let tag = field_id.substring(0,3);
     let tag_seq = field_id.substring(4,5);
+    //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false})
+    this.alert.info
     
     let main_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
+    //this.alert.info(this.xmlEscape(main_field.innerHTML),{autoClose: false})
     let linkage = main_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
     
     let parallel_field: Element;
@@ -329,11 +336,14 @@ export class BibUtils {
         break;
       }
     }
+    let t = parallel_field.innerHTML
+    parallel_field.innerHTML = target_field.innerHTML
     parallel_field.querySelector("subfield[code='6']").innerHTML = "880-" + linkage;
-    parallel_field.setAttribute("tag",tag);
+    //parallel_field.setAttribute("tag",tag);
 
+    target_field.innerHTML = t
     target_field.querySelector("subfield[code='6']").innerHTML = tag + "-" + linkage;
-    target_field.setAttribute("tag","880");
+    //target_field.setAttribute("tag","880");
 
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
     //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false});
