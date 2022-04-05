@@ -1215,8 +1215,10 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
     return entries_all
   }
 
-  lookupSubfields(fkey: string) {
+  async lookupSubfields(fkey: string) {
     //if(!this.subfield_options.has(fkey)) {
+      this.statusString = ""
+      this.saving = true
       let sfo = new Map<string, Array<string>>();
       let pfkey = fkey;
       if(pfkey.substring(pfkey.length-1) == "P") {
@@ -1235,7 +1237,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
         let opts = new Array();
         if(!this.settings.pinyinonly) {
           //this.alert.warn(sf.data,{autoClose: false})
-          this.lookupInDictionary(sf.data).then((res) => {
+          await this.lookupInDictionary(sf.data).then((res) => {
             //this.alert.success(sf.data + "|" + JSON.stringify(res),{autoClose: false})
             for(let j = 0; j < res.length; j++) {   
               let str = res[j]       
@@ -1249,6 +1251,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
             sfo.set(sf.id,opts);
             if(i == subfields.length - 1) { 
               this.subfield_options.set(fkey, sfo);  
+              this.saving = false
               this.showDetails = fkey
               //this.alert.success(fkey + "|" + JSON.stringify(this.subfield_options.get(fkey)),{autoClose: false})                 
             }           
@@ -1264,7 +1267,8 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
           }
           sfo.set(sf.id,opts);
           //this.alert.success(fkey + "|" + JSON.stringify(sfo),{autoClose: false})
-          this.subfield_options.set(fkey, sfo);
+          this.subfield_options.set(fkey, sfo);  
+          this.saving = false        
           this.showDetails = fkey
           //this.alert.info(opts.join("|"),{autoClose: false})
         }  
