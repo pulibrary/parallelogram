@@ -744,10 +744,12 @@ export class MainComponent implements OnInit, OnDestroy {
             }
           }
           */
+         options = options.filter(a => !a.trim().match(/^<>/))
           if(options.length == 0) {
             options = [search_text];
           }
           //this.alert.warn(JSON.stringify(options),{autoClose: false})
+          options_d = options_d.filter(a => !a.trim().match(/^<>/))
           if(options_d.length == 0) {
             options_d = options;
           } else {
@@ -789,6 +791,8 @@ export class MainComponent implements OnInit, OnDestroy {
       options_final[i] = startpunct + options_final[i] + endpunct;
     }
     //this.alert.success(JSON.stringify(options_final),{autoClose: false});
+    
+    options_final = options_final.filter(a=> !a.trim().match(/^<>/))
     return options_final;
 }
 
