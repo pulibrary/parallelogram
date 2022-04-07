@@ -58,10 +58,13 @@ export class SettingsComponent implements OnInit {
         }
       })      
       if(settings.wckey == undefined) {
-        this.configService.getAsFormGroup().subscribe(fg => {
-          let adminKey = fg.get("wcKey")
+        this.configService.get().subscribe(fg => {          
+          let adminKey: string = fg.wckey
           if(adminKey != undefined) {
-            this.form.setControl('wckey', adminKey)
+            //this.alert.success(fg.wckey,{autoClose: false})
+            this.form.get('wckey').setValue(adminKey)
+            settings.wckey = adminKey
+            this.alert.info("WorldCat API Key has been set by the Administrator.",{autoClose: false})
             this.form.markAsDirty();        
           }           
         },
@@ -121,6 +124,7 @@ export class SettingsComponent implements OnInit {
   }
 
   async save() {
+    this.alert.clear()
     this.saving = true;
     //this.alert.info(JSON.stringify(this.form.value) + "*",{autoClose: false})
     let wcKey = this.form.get("wckey").value;    
