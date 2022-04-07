@@ -53,6 +53,7 @@ export class MainComponent implements OnInit, OnDestroy {
   
   preSearchArray: Array<string>
   preSearchFields: Map<string,boolean>;
+  fieldCache: Map<string,Map<string,Array<string>>>
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -101,7 +102,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.parallelDict = new Array<DictEntry>();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
     this.deletions = new Array<{key: string,value: string}>();
-    this.preSearchFields = new Map<string,boolean>()       
+    this.preSearchFields = new Map<string,boolean>()    
   }
 
   ngOnDestroy(): void {
@@ -117,10 +118,6 @@ export class MainComponent implements OnInit, OnDestroy {
     this.hasApiResult = result && Object.keys(result).length > 0;
   }
 
-  //public enabledCount(arr: string[]): number {
-  //  return arr.filter(a => !a.includes(this.deleteMarker)).length
-  //}
-
   onPageLoad = (pageInfo: PageInfo) => {
     if(this.route.snapshot.queryParamMap.has('doSearch') && this.doSearch) {
       this.doSearch = (this.route.snapshot.queryParamMap.get('doSearch') == "true")
@@ -131,6 +128,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
     this.pinyin.ready.then((py_ready) => {
     this.bibUtils = new BibUtils(this.restService,this.alert);
+    this.fieldCache = new Map<string,Map<string,Array<string>>>()   
+
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
     if ((pageInfo.entities || []).length == 1) {
       const entity = pageInfo.entities[0];
@@ -293,8 +292,8 @@ export class MainComponent implements OnInit, OnDestroy {
                     this.statusString = "Pre-searching: Field " + f
                     await this.lookupField(f+":"+k,true)
                   }
-                }
-              }
+                }                
+              }              
             }
             this.loading = false
           })
@@ -312,6 +311,18 @@ export class MainComponent implements OnInit, OnDestroy {
     let seq880 = "880-" + seqno;    
     parallel_field.addSubfield("61","6",seq);
     this.saving = true;
+
+    let pfkey = fkey;
+    if(pfkey.substring(pfkey.length-1) == "P") {
+      pfkey = pfkey.substring(0,pfkey.length - 1);
+    } else {
+      pfkey = pfkey + "P";
+    }
+
+    let options_map = new Map<string, Array<string>>()
+    let cached_options = this.fieldCache.get(fkey)
+
+
     if(this.settings.pinyinonly) {
       for(let j = 0; j < field.subfields.length; j++) {
         let sf = field.subfields[j];
@@ -333,11 +344,16 @@ export class MainComponent implements OnInit, OnDestroy {
           parallel_field.addSubfield(sf.id,sf.code,sf.data)
           continue
         }
-        let options = await this.lookupInDictionary(sf.data);  
+        let options = new Array<string>()
+        if(cached_options != undefined && cached_options.has(sf.id)) {
+          options = cached_options.get(sf.id)
+        } else {
+          options = await this.lookupInDictionary(sf.data);  
+        }
         //this.alert.success(options.join("<br>"),{autoClose: false}) 
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
-          break
+          //break
         }   
         let best = 0  
         let bookends = ""
@@ -364,6 +380,8 @@ export class MainComponent implements OnInit, OnDestroy {
           }
         }
         parallel_field.addSubfield(sf.id,sf.code,options[best]) 
+        //this.alert.info(fkey + ":" + sf.id + ":" + options.join("|"),{autoClose: false})
+        options_map.set(sf.id,options)   
       }
     }
     this.saving = false;
@@ -382,6 +400,7 @@ export class MainComponent implements OnInit, OnDestroy {
       this.preSearchFields.delete(fkey)
       //this.alert.info("done",{autoClose: false})
     }
+    this.fieldCache.set(fkey,options_map)
   }
 
   doParallelSwap(fkey: string, fdata: string, pfdata: string) {
@@ -394,7 +413,6 @@ export class MainComponent implements OnInit, OnDestroy {
       this.settings.swapType == "nonroman" && p_roman) {
         this.swapField(fkey)
     }
-  
   }
 
   saveRecord() {
@@ -1215,7 +1233,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
     return entries_all
   }
 
-  async lookupSubfields(fkey: string) {
+  async lookupSubfields(fkey: string) {    
     //if(!this.subfield_options.has(fkey)) {
       this.statusString = ""
       this.saving = true
@@ -1237,14 +1255,9 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
         let opts = new Array();
         if(!this.settings.pinyinonly) {
           //this.alert.warn(sf.data,{autoClose: false})
-          await this.lookupInDictionary(sf.data).then((res) => {
-            //this.alert.success(sf.data + "|" + JSON.stringify(res),{autoClose: false})
-            for(let j = 0; j < res.length; j++) {   
-              let str = res[j]       
-              opts.push(str); 
-            }
-          }).finally(() => {
-            
+          let cached_options = this.fieldCache.get(pfkey)
+          if(cached_options != undefined && cached_options.has(sf.id)) {
+            opts = cached_options.get(sf.id)
             if(!opts.includes(sf.data)) {
               opts.push(sf.data);
             }    
@@ -1253,10 +1266,28 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
               this.subfield_options.set(fkey, sfo);  
               this.saving = false
               this.showDetails = fkey
-              //this.alert.success(fkey + "|" + JSON.stringify(this.subfield_options.get(fkey)),{autoClose: false})                 
-            }           
-           
-          });
+            }
+          } else {
+            await this.lookupInDictionary(sf.data).then((res) => {
+              //this.alert.success(sf.data + "|" + JSON.stringify(res),{autoClose: false})
+              for(let j = 0; j < res.length; j++) {   
+                let str = res[j]       
+                opts.push(str); 
+              }
+            }).finally(() => {
+            
+              if(!opts.includes(sf.data)) {
+                opts.push(sf.data);
+              }    
+              sfo.set(sf.id,opts);
+              if(i == subfields.length - 1) { 
+                this.subfield_options.set(fkey, sfo);  
+                this.saving = false
+                this.showDetails = fkey
+                //this.alert.success(fkey + "|" + JSON.stringify(this.subfield_options.get(fkey)),{autoClose: false})                 
+              }            
+            });
+          }
         } else {
           let pylookup = this.pinyin.lookup(sf.data,parallel_field.tag,parallel_field.ind1,sf.code);
           if(pylookup != sf.data && !opts.includes(pylookup)) {
