@@ -167,7 +167,7 @@ export class MainComponent implements OnInit, OnDestroy {
             let titles = [this.bib.title];
             let title_wg = this.wadegiles.WGtoPY(this.bib.title);
             //this.alert.warn(title_wg,{autoClose: false})
-            if(title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
+            if(this.settings.searchWG && title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
                 titles.push(title_wg);
             }
                         
@@ -210,7 +210,7 @@ export class MainComponent implements OnInit, OnDestroy {
               });
               oclcQueries.push(new OclcQuery("ti","exact",title));
             });
-
+            //this.alert.info(JSON.stringify(oclcQueries),{autoClose: false})
             if(oclcQueries.length > 0) {
               this.completedSearches = 0;  
               this.totalSearches = oclcQueries.length;
