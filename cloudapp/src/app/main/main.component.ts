@@ -48,12 +48,15 @@ export class MainComponent implements OnInit, OnDestroy {
   doSearch: boolean = true;
   searchProgress: number = 0;
   showDetails = ""
+  authToken = ""
+  authToken_ready: Promise<string>
 
   deletions: Array<{key: string,value: string}>;
   
   preSearchArray: Array<string>
   preSearchFields: Map<string,boolean>;
   fieldCache: Map<string,Map<string,Array<string>>>
+  linkedDataCache: Array<string>
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -102,7 +105,8 @@ export class MainComponent implements OnInit, OnDestroy {
     this.parallelDict = new Array<DictEntry>();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
     this.deletions = new Array<{key: string,value: string}>();
-    this.preSearchFields = new Map<string,boolean>()    
+    this.preSearchFields = new Map<string,boolean>()   
+    this.authToken_ready = this.eventsService.getAuthToken().toPromise()
   }
 
   ngOnDestroy(): void {
@@ -127,8 +131,11 @@ export class MainComponent implements OnInit, OnDestroy {
     this.wadegiles.ready.then((wg_ready) =>  {
 
     this.pinyin.ready.then((py_ready) => {
+    this.authToken_ready.then((aut) => {
+    this.authToken = aut
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.fieldCache = new Map<string,Map<string,Array<string>>>()   
+    this.linkedDataCache = new Array<string>()
 
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
     if ((pageInfo.entities || []).length == 1) {
@@ -229,6 +236,7 @@ export class MainComponent implements OnInit, OnDestroy {
   });
   });
   });
+  });
   }
 
   getOCLCrecords(oq: OclcQuery) {
@@ -237,19 +245,15 @@ export class MainComponent implements OnInit, OnDestroy {
     let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
       oq.getQueryString() + Settings.wcOtherParams;
     //this.alert.info(wcURL,{autoClose: false});
-    this.eventsService.getAuthToken().pipe(
-      switchMap(token => 
-        this.http.get(wcURL, {
+    this.http.get(wcURL, {
           headers: new HttpHeaders({
             'X-Proxy-Host': 'worldcat.org',
             'wskey': wcKey.toString(),
-            'Authorization': 'Bearer ' + token,
+            'Authorization': 'Bearer ' + this.authToken,
             'Content-type': 'application/xml'
           }),
           responseType: 'text'
-        })
-      )
-    ).subscribe(
+        }).subscribe(
       (res) => {
         //this.alert.success(res,{autoClose: false})
         this.extractParallelFields(res);
@@ -335,8 +339,10 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     } else {
       let linkedDataURL = field.subfields.find(a => a.code == "0")
-      if(linkedDataURL != undefined) {
+      if(linkedDataURL != undefined && !this.linkedDataCache.includes(linkedDataURL.data)) {
         await this.getLinkedData(linkedDataURL.data)
+        this.linkedDataCache.push(linkedDataURL.data)
+
       }
       for(let j = 0; j < field.subfields.length; j++) {
         let sf = field.subfields[j];
@@ -912,25 +918,19 @@ export class MainComponent implements OnInit, OnDestroy {
     return new Promise((resolve) => {    
     if(locURL.match("id\.loc\.gov")) {
       locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
-      this.eventsService.getAuthToken().pipe(
-        switchMap(token => 
-          this.http.get(locURL, {
-            headers: new HttpHeaders({
-              'X-Proxy-Host': 'id.loc.gov',
-              'Authorization': 'Bearer ' + token,
-              'Content-type': 'application/xml'
-            }),
-            responseType: 'text'
-          })
-        )
-      )
-      .subscribe({
-        next: (res) => {   
-          //this.alert.info(this.bibUtils.xmlEscape(res),{autoClose: false})             
+      //this.alert.info(locURL, {autoClose: false})
+      this.http.get(locURL, {
+        headers: new HttpHeaders({
+          'X-Proxy-Host': 'id.loc.gov',
+          'Authorization': 'Bearer ' + this.authToken,
+          'Content-type': 'application/xml'
+        }),
+        responseType: 'text'
+      }).subscribe({
+        next: (res) => {  
+          //this.alert.info(this.bibUtils.xmlEscape(res),{autoClose: false})            
           let entries = this.extractLOCvariants(res)
-          //this.alert.warn(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
           this.addToStorage(entries).finally(() => {
-            //this.alert.info(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
             resolve(true)
           })
           
