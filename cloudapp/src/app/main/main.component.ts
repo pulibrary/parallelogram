@@ -913,40 +913,29 @@ export class MainComponent implements OnInit, OnDestroy {
     return ns[prefix] || null;
   }
 
-  getLinkedData(locURL: string): Promise<boolean> {
-    //this.alert.info(locURL, {autoClose: false})
-    return new Promise((resolve) => {    
+  async getLinkedData(locURL: string) { 
     if(locURL.match("id\.loc\.gov")) {
       locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
-      //this.alert.info(locURL, {autoClose: false})
-      this.http.get(locURL, {
+      await this.http.get(locURL, {
         headers: new HttpHeaders({
           'X-Proxy-Host': 'id.loc.gov',
           'Authorization': 'Bearer ' + this.authToken,
           'Content-type': 'application/xml'
         }),
         responseType: 'text'
-      }).subscribe({
-        next: (res) => {  
+      }).toPromise().then(async (res) => {  
           //this.alert.info(this.bibUtils.xmlEscape(res),{autoClose: false})            
           let entries = this.extractLOCvariants(res)
-          this.addToStorage(entries).finally(() => {
-            resolve(true)
-          })
-          
-        },
-        error: (err) => {
-          this.alert.error(err.error,{autoClose: false})
-        },
+          //this.alert.success(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
+          await this.addToStorage(entries)
+      }).catch((err) => {
+        this.alert.error(err.error,{autoClose: false})
       })   
-    } else {
-      resolve(true)
-    }
-    })
+    } 
   }
 
   extractLOCvariants(xml: string): Array<DictEntry> {
-    //this.alert.info(this.bibUtils.xmlEscape(xml),{autoClose: false})
+    //this.alert.info(this.bibUtils.xmlEscape(xml),{autoClose: false})    
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let mainentry = xmlDOM.getElementsByTagName("mads:authority")
@@ -956,11 +945,12 @@ export class MainComponent implements OnInit, OnDestroy {
       if(nameParts[i].getAttribute("type") == "date") {
         nameParts[i].remove()
       }
-    } 
+    }     
     let main_s = mainentry[0].textContent.trim()
     //this.alert.info("*"+main_s+"|"+main_s.charCodeAt(0)+"|"+main_s.charCodeAt(main_s.length-1)+"*")
-    let variants = xmlDOM.getElementsByTagName("mads:variant")
+    let variants = xmlDOM.getElementsByTagName("mads:variant")    
     for(let i = 0; i < variants.length; i++) {
+      //this.alert.info(i+'',{autoClose: false})
       nameParts = variants[i].getElementsByTagName("mads:namePart")
       for(let j = 0; j < nameParts.length; j++) {
         if(nameParts[j].getAttribute("type") == "date") {
@@ -968,18 +958,19 @@ export class MainComponent implements OnInit, OnDestroy {
         }
       } 
     }
+    
     let var_rom = new Array()
     let var_nonrom = new Array()
 
-    if(main_s.match(/[\u0370-\uFFFF]/u)) {
+    if(main_s.match(/[\u0370-\u1CFF\u1F00-\uFFFF]/u)) {
       var_nonrom.push(main_s)
     } else {
       var_rom.push(main_s)
-    }
+    }    
 
     for(let i = 0; i < variants.length; i++) {
       let v = variants[i].textContent.trim()
-      if(v.match(/[\u0370-\uFFFF]/u)) {
+      if(v.match(/[\u0370-\u1CFF\u1F00-\uFFFF]/u)) {
         if(!var_nonrom.includes(v)) {
           var_nonrom.push(v)
         }
@@ -988,7 +979,8 @@ export class MainComponent implements OnInit, OnDestroy {
           var_rom.push(v)
         }
       }
-    }
+    }    
+
     let vnew = new Array<string>()
     for(let i = 0; i < var_rom.length; i++) {
       for(let j = 0; j < var_nonrom.length; j++) {
@@ -1001,13 +993,15 @@ export class MainComponent implements OnInit, OnDestroy {
     //this.alert.info(vnew.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
     var_rom = vnew
     vnew = new Array<string>()
+    
     for(let i = 0; i < var_nonrom.length; i++) {
       for(let j = 0; j < var_rom.length; j++) {
-        let norm = this.cjkNormalize(var_nonrom[i])
+        let norm = this.cjkNormalize(var_nonrom[i])       
         let v = this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
         vnew.push(...(v.map(a => a.key)))
       }
-    }
+    }    
+
     //this.alert.info(vnew.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
     var_nonrom = vnew
     //this.alert.info(var_rom.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
@@ -1199,7 +1193,7 @@ export class MainComponent implements OnInit, OnDestroy {
 addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<DictEntry> {
     if(textA == textB) {
       return;
-    }
+    }    
     //this.alert.warn(textA+"|"+textB+"|"+variants.join(","),{autoClose: false})
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
@@ -1215,20 +1209,21 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
       entry.addVariant(v)
     }
     entry.addParallel(textB,1)
-    entry.consolidate()
+    entry.consolidate()    
     let entries_all = [entry]
-    entry.variants.forEach(v => {     
+    for(let i = 0; i < entry.variants.length; i++) {
+      let v = entry.variants[i]  
       if(v != textA) {
         let entry2 = new DictEntry(v,entry.variants,entry.parallels)
         let found2 = this.parallelDict.findIndex(a => a.key == v)
         if(found2 == -1) {
           this.parallelDict.push(entry2)
         } else {
-          this.parallelDict[found] = entry2
+          this.parallelDict[found2] = entry2
         }
         entries_all.push(entry2)
       }
-    })    
+    }   
     //this.alert.info(entry.stringify(),{autoClose: false})
     return entries_all
   }
