@@ -13,6 +13,7 @@ export class MarcDataField {
         this.hasParallel = false;
     }
     addSubfield(id: string, code: string, data: string, front: boolean = false) {
+        data = data.trim()
         if(front) {
             this.subfields.unshift({id: id, code: code, data: data});
         } else {
@@ -31,6 +32,7 @@ export class MarcDataField {
         return "";
     }
     setSubfield(id: string, value: string) {
+        value = value.trim()
         for(let i = 0; i < this.subfields.length; i++) {
             if(id == this.subfields[i].id) {
                 this.subfields[i].data = value

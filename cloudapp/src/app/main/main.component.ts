@@ -349,13 +349,13 @@ export class MainComponent implements OnInit, OnDestroy {
         if(sf.code == "0") {
           parallel_field.addSubfield(sf.id,sf.code,sf.data)
           continue
-        }
+        }        
         let options = new Array<string>()
         if(cached_options != undefined && cached_options.has(sf.id)) {
           options = cached_options.get(sf.id)
         } else {
           options = await this.lookupInDictionary(sf.data);  
-        }
+        }        
         //this.alert.success(options.join("<br>"),{autoClose: false}) 
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
@@ -607,10 +607,15 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let g = 0; g < sfsections.length; g++) {
       let options_d = new Array<string>();
       let text_normal_d = this.cjkNormalize(sfsections[g]);
-      let search_keys_d = [sfsections[g],text_normal_d];
+      let search_keys_d = [sfsections[g]];
+      if(text_normal_d != sfsections[g]) {
+        search_keys_d.push(text_normal_d)
+      }
       if(this.settings.searchWG) {
         let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
-        search_keys_d.push(text_normal_wgpy_d);
+        if(text_normal_wgpy_d != text_normal_d) {
+          search_keys_d.push(text_normal_wgpy_d);
+        }
       }
       //this.alert.warn(sfsections[g] + "|" + text_normal_d + "|" + text_normal_wgpy_d,{autoClose: false})
       //this.alert.warn(JSON.stringify(search_keys_d),{autoClose: false})
@@ -630,8 +635,9 @@ export class MainComponent implements OnInit, OnDestroy {
             options_d = res.parallels.map(a => a.text)      
           }
         });
+        //this.alert.info(options_d.join("<br>"))
       }
-
+      options_d = options_d.filter(a => !a.match(/^<>/))
       if(options_d.length == 0) {
         let sfparts = sfsections[g].split(new RegExp("("+ this.punctuationPattern + ")","u")); 
         for(let h = 0; h < sfparts.length; h++) {
@@ -768,6 +774,7 @@ export class MainComponent implements OnInit, OnDestroy {
             }
           }
           */
+        //this.alert.warn(JSON.stringify(options),{autoClose: false})
          options = options.filter(a => !a.trim().match(/^<>/))
           if(options.length == 0) {
             options = [search_text];
