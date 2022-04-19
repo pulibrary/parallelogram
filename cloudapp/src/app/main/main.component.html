@@ -20,6 +20,7 @@
     <mat-card-content>      
       <div>   
         <div class="mms_id">MMS ID:  {{bib.mms_id}}</div>
+        <div class="ps_fields" *ngIf="this.settings.doPresearch">(Pre-search fields: {{preSearchArray.join(", ")}})</div>
         <table #marcRecord class="marc">
            <tr [ngClass]="{'presearch': preSearchFields.has(field.key) == true}" *ngFor="let field of fieldTable | keyvalue" 
               [ngStyle]="{'background-color': generateBGColor(field.value.getSubfield('61'))}">
