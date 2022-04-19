@@ -6,6 +6,7 @@ import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
   Entity, EntityType, PageInfo, RestErrorResponse, AlertService, CloudAppConfigService, 
   CloudAppStoreService,
+  InitData,
 } from '@exlibris/exl-cloudapp-angular-lib';
 import {WadegilesService} from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
@@ -18,6 +19,9 @@ import {OclcQuery} from './oclc-query';
 import {MarcDataField} from './marc-datafield';
 import { Router, ActivatedRoute, ParamMap, ResolveEnd } from '@angular/router';
 import { PinyinService } from '../pinyin.service';
+import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
+import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
+import {AppService} from '../app.service'
 
 @Component({
   selector: 'app-main',
@@ -29,6 +33,8 @@ export class MainComponent implements OnInit, OnDestroy {
   private pageLoad$: Subscription;
   pageEntities: Entity[];
   private _apiResult: any;
+  initData: InitData
+  defaultLang: string
 
   hasApiResult: boolean = false;
   loading = false;
@@ -72,6 +78,8 @@ export class MainComponent implements OnInit, OnDestroy {
   constructor(private restService: CloudAppRestService,
     private eventsService: CloudAppEventsService,
     private settingsService: CloudAppSettingsService,
+    private translate: TranslateService,
+    private appService: AppService,
     private configService: CloudAppConfigService,
     private alert: AlertService,
     private storeService: CloudAppStoreService,
@@ -99,6 +107,11 @@ export class MainComponent implements OnInit, OnDestroy {
       } 
       this.preSearchArray = this.settings.preSearchList
     });
+    
+    this.eventsService.getInitData().subscribe(data=> {
+      this.initData = data
+      this.defaultLang = this.initData.lang      
+    });      
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     this.parallelDict = new Array<DictEntry>();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
@@ -109,6 +122,10 @@ export class MainComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pageLoad$.unsubscribe();
+  }
+
+  setLang(lang: string) {
+    this.translate.use(lang);
   }
 
   get apiResult() {

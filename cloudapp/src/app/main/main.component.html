@@ -9,12 +9,20 @@
   <mat-card>
     <div>
       <button mat-flat-button color="secondary" (click)="saveRecord()" [disabled]="!recordChanged">
-        <mat-icon>save</mat-icon> Save Record
+        <mat-icon>save</mat-icon> {{'Translate.SaveRecord' | translate}}
       </button>
       &nbsp;
       <button mat-flat-button color="secondary" routerLink="/settings">
-        <mat-icon>settings</mat-icon> Settings
-      </button>
+        <mat-icon>settings</mat-icon> {{'Translate.Settings' | translate}}
+      </button>     
+      &nbsp; 
+      <mat-form-field appeearance="fill">
+        <mat-label>{{'Translate.Language' | translate}}</mat-label>
+        <mat-select [(value)]="defaultLang">
+          <mat-option (click)="setLang('en')" value="en">English</mat-option>
+          <mat-option (click)="setLang('zh-CN')" value="zh-CN">中文</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
     <div><br/></div>
     <mat-card-content>      
