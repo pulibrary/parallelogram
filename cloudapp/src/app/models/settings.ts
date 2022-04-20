@@ -12,5 +12,6 @@ export class Settings {
     doSwap: boolean = false;
     swapType: string = "nonroman"
     preSearchList: Array<string> = ["1xx","245","26x","7xx"]
+    interfaceLang: string = ""
     adminWC: boolean = false;
 }

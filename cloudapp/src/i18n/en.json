@@ -1,5 +1,7 @@
 {
     "Translate" : {
+        "Homepage": "Home",
+        "Save": "Save",
         "SaveRecord": "Save Record",
         "Settings": "Settings",
         "Language": "Language"

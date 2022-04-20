@@ -106,12 +106,15 @@ export class MainComponent implements OnInit, OnDestroy {
         this.router.navigate(['settings'],{relativeTo: this.route})
       } 
       this.preSearchArray = this.settings.preSearchList
+      if(this.settings.interfaceLang == "") {
+        this.eventsService.getInitData().subscribe(data=> {
+          this.initData = data
+          this.settings.interfaceLang = this.initData.lang      
+        });
+      }  
+      this.translate.use(this.settings.interfaceLang)   
     });
-    
-    this.eventsService.getInitData().subscribe(data=> {
-      this.initData = data
-      this.defaultLang = this.initData.lang      
-    });      
+     
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     this.parallelDict = new Array<DictEntry>();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
@@ -122,10 +125,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pageLoad$.unsubscribe();
-  }
-
-  setLang(lang: string) {
-    this.translate.use(lang);
   }
 
   get apiResult() {

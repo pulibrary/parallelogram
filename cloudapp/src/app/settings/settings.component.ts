@@ -9,6 +9,8 @@ import { AlertService, CloudAppSettingsService, FormGroupUtil,
 import { Settings } from '../models/settings';
 import {MatChipInputEvent} from '@angular/material/chips'
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
+import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
+import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import { Router } from '@angular/router';
 import { USE_STORE } from '@ngx-translate/core';
 
@@ -32,6 +34,7 @@ export class SettingsComponent implements OnInit {
     private settingsService: CloudAppSettingsService,
     private eventsService: CloudAppEventsService,
     private configService: CloudAppConfigService,
+    private translate: TranslateService,
     private restService: CloudAppRestService,
     private alert: AlertService,
     private http: HttpClient,
@@ -44,8 +47,12 @@ export class SettingsComponent implements OnInit {
     return true;
   }	
 
+  setLang(lang: string) {
+    this.translate.use(lang)
+  }
+
   ngOnInit() {    
-    this.appService.setTitle('Settings');
+    this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       //this.alert.info(JSON.stringify(this.form.value),{autoClose: false})

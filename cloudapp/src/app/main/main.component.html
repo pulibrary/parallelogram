@@ -6,16 +6,7 @@
   <div class="loading-shade" *ngIf="saving">
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
   </div>
-  <mat-card>
-    <div>
-      <mat-form-field appeearance="fill">
-        <mat-label>{{'Translate.Language' | translate}}</mat-label>
-        <mat-select [(value)]="defaultLang">
-          <mat-option (click)="setLang('en')" value="en">English</mat-option>
-          <mat-option (click)="setLang('zh-CN')" value="zh-CN">中文</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
+  <mat-card>    
     <div>
       <button mat-flat-button color="secondary" (click)="saveRecord()" [disabled]="!recordChanged">
         <mat-icon>save</mat-icon> {{'Translate.SaveRecord' | translate}}

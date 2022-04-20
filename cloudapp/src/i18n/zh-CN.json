@@ -1,5 +1,7 @@
 {
     "Translate" : {
+        "Homepage": "首页",
+        "Save": "保存",
         "SaveRecord": "保存记录",
         "Settings": "设置",
         "Language": "语言"

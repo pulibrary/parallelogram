@@ -1,13 +1,28 @@
-<app-topmenu>
-  <div buttons>
-    <button mat-flat-button type="button" color="primary" (click)="save()" [disabled]="!(form?.dirty)">Save</button>
+<div>
+  <div class="eca-actions">
+    <button mat-flat-button color="secondary" [routerLink]="['/']">
+      <mat-icon>arrow_back</mat-icon>
+      {{'Translate.Homepage' | translate}}
+    </button>
+    <button mat-flat-button type="button" color="primary" (click)="save()" [disabled]="!(form?.dirty)">
+      {{'Translate.Save' | translate}}</button>
   </div>
-</app-topmenu>
+  <h1>{{ 'Translate.Settings' | translate }}</h1>
+</div>
 <div class="loading-shade" *ngIf="saving">
   <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
 </div>
 <div *ngIf="form">
   <form [formGroup]="form">
+    <section class="settings-section" style="width: 100px">
+      <mat-form-field appeearance="fill">
+        <mat-label>{{'Translate.Language' | translate}}</mat-label>
+        <mat-select formControlName="interfaceLang">
+          <mat-option (click)="setLang('en')" value="en">English</mat-option>
+          <mat-option (click)="setLang('zh-CN')" value="zh-CN">中文</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </section>
     <section class="settings-section">
       <mat-form-field appearance="fill">
         <mat-label>WorldCat API Key: </mat-label> 
