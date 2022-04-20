@@ -32,10 +32,6 @@ export class DictEntry {
             return false;
         }
     }
-    
-    //getParallelArray(): Array<string> {
-    //    //return this.parallels.
-   // }
 
     consolidate() {
         this.parallels = this.parallels.filter((v,i,a) => a.findIndex(b => v.text == b.text) == i)

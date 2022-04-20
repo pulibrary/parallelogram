@@ -55,7 +55,6 @@ export class SettingsComponent implements OnInit {
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
-      //this.alert.info(JSON.stringify(this.form.value),{autoClose: false})
       this.admin = this.isAdmin(); 
       this.form.get("doSwap").valueChanges.subscribe(v => {
         if(v) {
@@ -68,7 +67,6 @@ export class SettingsComponent implements OnInit {
         this.configService.get().subscribe(fg => {          
           let adminKey: string = fg.wckey
           if(adminKey != undefined) {
-            //this.alert.success(fg.wckey,{autoClose: false})
             this.form.get('wckey').setValue(adminKey)
             settings.wckey = adminKey
             this.alert.info("WorldCat API Key has been set by the Administrator.",{autoClose: false})
@@ -107,7 +105,6 @@ export class SettingsComponent implements OnInit {
   }
 
   deletePreSearchField(tag: string) {
-    //this.alert.info(tag)
     let preSearchList: Array<string> = this.form.get("preSearchList").value
     if(tag != undefined) {
       let found = preSearchList.indexOf(tag)
@@ -133,9 +130,7 @@ export class SettingsComponent implements OnInit {
   async save() {
     this.alert.clear()
     this.saving = true;
-    //this.alert.info(JSON.stringify(this.form.value) + "*",{autoClose: false})
     let wcKey = this.form.get("wckey").value;    
-    //this.alert.info(JSON.stringify(this.form.get("pinyinonly").value));
     if(this.form.get("pinyinonly").value) {
       this.settingsService.set(this.form.value).subscribe(
         response => {
@@ -148,18 +143,12 @@ export class SettingsComponent implements OnInit {
       return;
     }
     await this.validateWCkey(wcKey);
-    //this.alert.info(this.wcKeyValid+"",{autoClose: false})
     if(this.wcKeyValid) { 
       if(this.form.get("adminWC").value) {
-        //this.alert.info("config")
         let configForm: FormGroup = new FormGroup({wckey: new FormControl(wcKey)})
         
         this.configService.set(configForm.value).subscribe(
-          res => {
-            this.configService.get().subscribe(v => {
-              //this.alert.success(JSON.stringify(v));
-            });
-          },
+          res => {},
           err => {this.alert.error("Could not write config")}
         );
         
@@ -181,7 +170,6 @@ export class SettingsComponent implements OnInit {
   public async validateWCkey(wcKey: String) {
     let wcURL = Settings.wcBaseURL;
     let authToken = await this.eventsService.getAuthToken().toPromise();
-    //this.alert.info(authToken,{autoClose: false})
     await this.http.get(wcURL, {
       headers: new HttpHeaders({
         'X-Proxy-Host': 'worldcat.org',

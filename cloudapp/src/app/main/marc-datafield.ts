@@ -48,9 +48,6 @@ export class MarcDataField {
     getSubfieldString(): string {
         let sfstring = "";
         this.subfields.forEach(sf => {
-            //if(sf.code == '6') {
-                //return;
-            //}
             sfstring += String.fromCodePoint(8206) + "$" + sf.code + " " + sf.data + " ";
         });
         return sfstring;

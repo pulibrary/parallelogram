@@ -158,7 +158,6 @@ export class MainComponent implements OnInit, OnDestroy {
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
           this.extractParallelFields(this.bib.anies);
-          //this.addParallelDictToStorage();
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch && this.settings.wckey != undefined) {            
             this.loading = true;
@@ -185,7 +184,6 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             let titles = [this.bib.title];
             let title_wg = this.wadegiles.WGtoPY(this.bib.title);
-            //this.alert.warn(title_wg,{autoClose: false})
             if(this.settings.searchWG && title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
                 titles.push(title_wg);
             }
@@ -229,7 +227,6 @@ export class MainComponent implements OnInit, OnDestroy {
               });
               oclcQueries.push(new OclcQuery("ti","exact",title));
             });
-            //this.alert.info(JSON.stringify(oclcQueries),{autoClose: false})
             if(oclcQueries.length > 0) {
               this.completedSearches = 0;  
               this.totalSearches = oclcQueries.length;
@@ -251,11 +248,9 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   getOCLCrecords(oq: OclcQuery) {
-    //this.alert.info(oq.getQueryString(),{autoClose: false})
     let wcKey = this.settings.wckey;
     let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
       oq.getQueryString() + Settings.wcOtherParams;
-    //this.alert.info(wcURL,{autoClose: false});
     this.http.get(wcURL, {
           headers: new HttpHeaders({
             'X-Proxy-Host': 'worldcat.org',
@@ -266,7 +261,6 @@ export class MainComponent implements OnInit, OnDestroy {
           responseType: 'text'
         }).subscribe(
       (res) => {
-        //this.alert.success(res,{autoClose: false})
         this.extractParallelFields(res);
       },
       (err) => {this.alert.error(err.message)},
@@ -275,16 +269,12 @@ export class MainComponent implements OnInit, OnDestroy {
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
         if(this.completedSearches == this.totalSearches) {
-          //this.alert.info("blah",{autoClose: false})
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
           this.addParallelDictToStorage().finally(async () => {  
-            //this.alert.info(JSON.stringify(this.preSearchArray))  
             if(this.settings.doPresearch) {          
-              for(let i = 0; i < this.preSearchArray.length; i++) {     
-                //this.alert.info(i+'')    
+              for(let i = 0; i < this.preSearchArray.length; i++) {       
                 let f = this.preSearchArray[i]     
                 f = f.replace(/[Xx]*$/,"")
-                //this.alert.info(f,{autoClose: false})
                 let comp = 0
                 if(f.length == 2) {
                   comp = 10
@@ -295,17 +285,16 @@ export class MainComponent implements OnInit, OnDestroy {
                 if(comp > 0) {
                   for(let j = 0; j < comp; j++) {
                     let pad = (f.length == 1 && j < 10) ? "0" : ""
-                    let fj = f+pad+j            
-                    //this.alert.info(fj)     
+                    let fj = f+pad+j               
                     for(let k = 0; this.fieldTable.has(fj+":"+k); k++) {  
-                      this.statusString = this.translate.instant('Translate.Presearching') + " " + 
+                      this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
                         this.translate.instant('Translate.Field') + " "  + fj                  
                       await this.lookupField(fj+":"+k,true)
                     }
                   }
                 } else {              
                   for(let k = 0; this.fieldTable.has(f+":"+k); k++) {
-                    this.statusString = this.translate.instant('Translate.Presearching') + " " + 
+                    this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
                       this.translate.instant('Translate.Field') + " " + f
                     await this.lookupField(f+":"+k,true)
                   }
@@ -369,10 +358,8 @@ export class MainComponent implements OnInit, OnDestroy {
         } else {
           options = await this.lookupInDictionary(sf.data);  
         }        
-        //this.alert.success(options.join("<br>"),{autoClose: false}) 
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
-          //break
         }   
         let best = 0  
         let bookends = ""
@@ -382,7 +369,6 @@ export class MainComponent implements OnInit, OnDestroy {
         if(sf.data.match(/\p{P}$/u)) {
           bookends += sf.data.charAt(sf.data.length-1)
         }
-        //this.alert.warn(options.join("<br>"),{autoClose: false})
         for(let k = 0; k < options.length; k++) {
           let opt_k = options[k]
           let bookends_k = ""
@@ -392,14 +378,12 @@ export class MainComponent implements OnInit, OnDestroy {
           if(opt_k.match(/\p{P}$/u)) {
             bookends_k += opt_k.charAt(opt_k.length-1)
           }
-          //this.alert.info(bookends + "<br>" + bookends_k + "<br>" + sf.data + "<br>" + opt_k,{autoClose: false})
-          if(bookends == bookends_k) {
+       if(bookends == bookends_k) {
             best = k
             break
           }
         }
         parallel_field.addSubfield(sf.id,sf.code,options[best]) 
-        //this.alert.info(fkey + ":" + sf.id + ":" + options.join("|"),{autoClose: false})
         options_map.set(sf.id,options)   
       }
     }
@@ -412,22 +396,18 @@ export class MainComponent implements OnInit, OnDestroy {
       if(this.settings.doSwap) {
         this.doParallelSwap(fkey,field.getSubfieldString(),parallel_field.getSubfieldString())
       }
-
-      //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})  
+ 
       this.fieldTable = this.bibUtils.getDatafields(this.bib)
       this.recordChanged = true;
       this.preSearchFields.delete(fkey)
-      //this.alert.info("done",{autoClose: false})
     }
     this.fieldCache.set(fkey,options_map)
   }
 
   doParallelSwap(fkey: string, fdata: string, pfdata: string) {
-    //this.alert.info(fdata + "|" + pfdata),{autoClose: false}
     let roman_count = (fdata.match(/[A-Za-z]/g) || [] ).length
     let p_roman_count = (pfdata.match(/[A-Za-z]/g) || []).length
     let p_roman = p_roman_count > roman_count
-    //this.alert.info(roman_count + "|" + p_roman_count)
     if((this.settings.swapType == "roman" && !p_roman) ||
       this.settings.swapType == "nonroman" && p_roman) {
         this.swapField(fkey)
@@ -526,7 +506,6 @@ export class MainComponent implements OnInit, OnDestroy {
       prevkey = ki
       kdels.push(v)      
     }
-    //this.alert.info(JSON.stringify(alldels),{autoClose: false})
     let getOperations = from(alldels).pipe(concatMap(entry => this.storeService.get(entry.key)))
     let newEntries = new Array<DictEntry>();
     getOperations.subscribe({
@@ -543,12 +522,10 @@ export class MainComponent implements OnInit, OnDestroy {
               ne.deleteParallel(dn)
             }
           }
-          //this.alert.info(JSON.stringify(ne) + "<br>" + these_dels.dels.join("|"),{autoClose: false})
           newEntries.push(ne)
         }
       },
       complete: () => {
-        //this.alert.info(JSON.stringify(newEntries),{autoClose: false})
         let storeOperations = from(newEntries).pipe(
           concatMap(entry => this.storeService.set(entry.key,entry))
         )
@@ -556,8 +533,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
       }
     })
-
-    //this.alert.info(JSON.stringify(alldels),{autoClose: false})
     this.clearDeletions();
     
   }
@@ -610,9 +585,7 @@ export class MainComponent implements OnInit, OnDestroy {
     */
 
     let options_final = new Array<string>();
-    //let sfparts = sfdata.split(new RegExp("(" + this.punctuationPattern + ")"))
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
-    //this.alert.warn(sfsections.join("<br>"),{autoClose: false})
     /* THIS TOO
     if(suffix != "") {
       sfsections.push(suffix);
@@ -630,25 +603,19 @@ export class MainComponent implements OnInit, OnDestroy {
           search_keys_d.push(text_normal_wgpy_d);
         }
       }
-      //this.alert.warn(sfsections[g] + "|" + text_normal_d + "|" + text_normal_wgpy_d,{autoClose: false})
-      //this.alert.warn(JSON.stringify(search_keys_d),{autoClose: false})
       for(let h = 0; h < search_keys_d.length; h++) {
-        let hi = search_keys_d[h]; 
-        //this.alert.warn(hi,{autoClose: false})       
+        let hi = search_keys_d[h];      
         if(hi.length == 0) {
           continue;
         }
         if(options_d.length > 0) {
           break;
         }
-        //this.alert.warn(hi,{autoClose: false})
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
-          if(res != undefined) {   
-            //this.alert.info(JSON.stringify(res),{autoClose: false})        
+          if(res != undefined) {        
             options_d = res.parallels.map(a => a.text)      
           }
         });
-        //this.alert.info(options_d.join("<br>"))
       }
       options_d = options_d.filter(a => !a.match(/^<>/))
       if(options_d.length == 0) {
@@ -662,10 +629,8 @@ export class MainComponent implements OnInit, OnDestroy {
             let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
             search_keys.push(text_normal_wgpy);
           }
-          //this.alert.warn(JSON.stringify(search_keys),{autoClose: false})
           for(let i = 0; i < search_keys.length; i++) {
             let ki = search_keys[i].trim();
-            //this.alert.warn(ki,{autoClose: false})
             if(ki.length == 0) {
               continue;
             }
@@ -674,7 +639,6 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             await this.storeService.get(ki).toPromise().then((res: DictEntry) => {
               if(res != undefined) {
-                //this.alert.info(JSON.stringify(res),{autoClose: false})
                 options = res.parallels.map(a => a.text);
               }
             });
@@ -683,7 +647,6 @@ export class MainComponent implements OnInit, OnDestroy {
           if(options.length == 0) {
             options = [search_text];
           }
-          //this.alert.warn(JSON.stringify(options),{autoClose: false})
           options_d = options_d.filter(a => !a.trim().match(/^<>/))
           if(options_d.length == 0) {
             options_d = options;
@@ -709,9 +672,7 @@ export class MainComponent implements OnInit, OnDestroy {
         });
         options_final = options_temp;
       }
-    //this.alert.info(JSON.stringify(options_final),{autoClose: false})
     }
-    //this.alert.success(JSON.stringify(options_final),{autoClose: false});
     for(let i = 0; i < options_final.length; i++) {      
       m = sfdata.match(this.etal_re);
       if(m) {
@@ -725,7 +686,6 @@ export class MainComponent implements OnInit, OnDestroy {
       }
       options_final[i] = startpunct + options_final[i] + endpunct;
     }
-    //this.alert.success(JSON.stringify(options_final),{autoClose: false});
     
     options_final = options_final.filter(a=> !a.trim().match(/^<>/))
     return options_final;
@@ -734,7 +694,6 @@ export class MainComponent implements OnInit, OnDestroy {
   addParallelDictToStorage(): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
     let storePairs: DictEntry[] = [];    
-    //this.alert.info(this.parallelDict.length+'',{autoClose: false})
     for(let i = 0; i < this.parallelDict.length && storePairs.length <= 200; i++) {
       let entry = this.parallelDict[i]
       let pairExists = storePairs.findIndex(a => a.key == entry.key)
@@ -744,49 +703,36 @@ export class MainComponent implements OnInit, OnDestroy {
         storePairs[pairExists].mergeWith(entry)
       }
     }
-    //this.alert.warn(storePairs.map(a => a.stringify()).join("<br>"),{autoClose: false})
     this.addToStorage(storePairs).finally(() => resolve(true))
   })
   }
 
   addToStorage(pairs: Array<DictEntry>): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
-    //this.alert.info(pairs.length+'',{autoClose: false})
     let pairs2 = new Array<DictEntry>();
     for(let i = 0; i < pairs.length; i++) {
       pairs2.push(pairs[i])
     }
-    let getOperations = from(pairs).pipe(concatMap(entry => this.storeService.get(entry.key)))
-    let getCount = 0
-    let setCount = 0    
+    let getOperations = from(pairs).pipe(concatMap(entry => this.storeService.get(entry.key)))   
     
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
-          //if(res.key.match(/^wu/)) {
-            //this.statusString = "Finalizing...GET " + getCount++
-            //this.alert.info(JSON.stringify(res),{autoClose: false})
-          //}
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
 
           let newPair: DictEntry = pairs.find(a => {return a.key == prevPair.key})
-          //this.alert.warn(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})
           let i = pairs2.findIndex(a => {return a.key == prevPair.key})
           if(!prevPair.isEqualTo(newPair)) {
-            prevPair.mergeWith(newPair) 
-          //this.alert.success(prevPair.stringify() + "<br>" + newPair.stringify(),{autoClose: false})  
+            prevPair.mergeWith(newPair)  
             pairs2[i] = prevPair
           } else {
             pairs2.splice(i,1)
           }
         } 
       },
-      //error: (err) => this.alert.error(err.message,{autoClose: false}),
       complete: () => {      
-        //this.alert.info(pairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
         let storeOperations = from(pairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-          //next: (res) => this.statusString = "Finalizing...SET " + setCount++,
           complete: () => resolve(true)
         })
       }
@@ -795,7 +741,6 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   parallelDictToString(): string {
-    //return "done"
     let resultString = "";
     if(this.parallelDict.length == 0) {
       return resultString
@@ -834,10 +779,8 @@ export class MainComponent implements OnInit, OnDestroy {
           'Content-type': 'application/xml'
         }),
         responseType: 'text'
-      }).toPromise().then(async (res) => {  
-          //this.alert.info(this.bibUtils.xmlEscape(res),{autoClose: false})            
+      }).toPromise().then(async (res) => {             
           let entries = this.extractLOCvariants(res)
-          //this.alert.success(entries.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
           await this.addToStorage(entries)
       }).catch((err) => {
         this.alert.error(err.error,{autoClose: false})
@@ -845,8 +788,7 @@ export class MainComponent implements OnInit, OnDestroy {
     } 
   }
 
-  extractLOCvariants(xml: string): Array<DictEntry> {
-    //this.alert.info(this.bibUtils.xmlEscape(xml),{autoClose: false})    
+  extractLOCvariants(xml: string): Array<DictEntry> {  
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let mainentry = xmlDOM.getElementsByTagName("mads:authority")
@@ -858,10 +800,8 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     }     
     let main_s = mainentry[0].textContent.trim()
-    //this.alert.info("*"+main_s+"|"+main_s.charCodeAt(0)+"|"+main_s.charCodeAt(main_s.length-1)+"*")
     let variants = xmlDOM.getElementsByTagName("mads:variant")    
     for(let i = 0; i < variants.length; i++) {
-      //this.alert.info(i+'',{autoClose: false})
       nameParts = variants[i].getElementsByTagName("mads:namePart")
       for(let j = 0; j < nameParts.length; j++) {
         if(nameParts[j].getAttribute("type") == "date") {
@@ -896,12 +836,10 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < var_rom.length; i++) {
       for(let j = 0; j < var_nonrom.length; j++) {
         let norm = this.cjkNormalize(var_rom[i])
-        //this.alert.info(var_rom[i]+"|"+var_nonrom[j]+"|"+norm,{autoClose: false})
         let v = this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
         vnew.push(...(v.map(a => a.key)))
       }
     }
-    //this.alert.info(vnew.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
     var_rom = vnew
     vnew = new Array<string>()
     
@@ -913,27 +851,19 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     }    
 
-    //this.alert.info(vnew.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
     var_nonrom = vnew
-    //this.alert.info(var_rom.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
-    //this.alert.info(var_nonrom.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
     let var_all = [main_s,...var_nonrom,...var_rom]    
     for(let i = 0; i < var_all.length; i++) {
       let vi = var_all[i]
       let found = this.parallelDict.findIndex(a => a.key == vi)
-      //this.alert.warn(this.parallelDict.map(a => a.stringify()).join("<br><br>"),{autoClose: false})
-      //this.alert.info(JSON.stringify(vi) + "|" + found,{autoClose: false})
       if(found > -1 && entries.find(a => a.key == vi) == undefined) {
-        //this.alert.info(JSON.stringify(this.parallelDict[found]),{autoClose: false})
         entries.push(this.parallelDict[found])
       }
     }   
-    //this.alert.warn(JSON.stringify(entries),{autoClose: false})
     return entries 
   }
 
   extractParallelFields(xml: string): void {    
-    //this.alert.info(xml,{autoClose: false})
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let records = xmlDOM.getElementsByTagName("record");
@@ -963,7 +893,6 @@ export class MainComponent implements OnInit, OnDestroy {
         if(value.length != 2) {
           return;
         }
-        //this.alert.info(value.map<string>((str) => str.innerHTML).join("<br>"))
         let subfields_a = value[0].getElementsByTagName("subfield");
         let subfields_b = value[1].getElementsByTagName("subfield");
         let sfcount = Math.min(subfields_a.length, subfields_b.length);
@@ -983,7 +912,6 @@ export class MainComponent implements OnInit, OnDestroy {
             text_nonrom = sfka.textContent;
           }
           if(text_rom != text_nonrom) {
-            //this.alert.info(text_rom + "<br>" + text_nonrom,{autoClose: false})
             let text_rom_stripped = text_rom.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"");
             text_rom_stripped = text_rom_stripped.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"");
             let text_rom_wgpy = this.wadegiles.WGtoPY(text_rom);
@@ -999,8 +927,7 @@ export class MainComponent implements OnInit, OnDestroy {
             let text_nonrom_parts: string[] = text_nonrom.split(new RegExp("(" + this.delimiterPattern + ")","u"));
 
             if(text_rom_parts.length != text_nonrom_parts.length) {
-              if(text_rom != text_nonrom) { //&& text_nonrom.match(this.cjk_re)  
-                //this.alert.info("add",{autoClose: false})
+              if(text_rom != text_nonrom) { 
                 if(this.settings.searchWG) {
                   this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
                 } else {
@@ -1015,19 +942,16 @@ export class MainComponent implements OnInit, OnDestroy {
                 let cpm = text_nonrom_parts[m];
                 let rpm_normal = this.cjkNormalize(rpm);
                 let rpm_wgpy_normal = this.cjkNormalize(rpm_wgpy);
-                let cpm_normal = this.cjkNormalize(cpm);
-
-                //this.alert.success(rpm_normal + "<br>" + cpm_normal,{autoClose: false})  
+                let cpm_normal = this.cjkNormalize(cpm); 
 
                 if(!rpm.match(new RegExp("^" + this.delimiterPattern + "$","u")) && 
-                    rpm_normal != cpm_normal) { // && text_nonrom.match(this.cjk_re)) {
+                    rpm_normal != cpm_normal) { 
                       if(this.settings.searchWG) {
                         this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal]);
                       } else {
                         this.addToParallelDict(rpm_normal,cpm);
                       }
                       this.addToParallelDict(cpm_normal,rpm);
-                      //this.addToParallelDict(rpm_wgpy_normal,cpm);
                 }                
               }
             }      
@@ -1041,7 +965,6 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
     if(textA == textB) {
       return;
     }    
-    //this.alert.warn(textA+"|"+textB+"|"+variants.join(","),{autoClose: false})
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
     if(found == -1) {
@@ -1071,12 +994,10 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
         entries_all.push(entry2)
       }
     }   
-    //this.alert.info(entry.stringify(),{autoClose: false})
     return entries_all
   }
 
   async lookupSubfields(fkey: string) {    
-    //if(!this.subfield_options.has(fkey)) {
       this.statusString = ""
       this.saving = true
       let sfo = new Map<string, Array<string>>();
@@ -1092,11 +1013,9 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
       let subfields = parallel_field.subfields.filter(a => a.code != '6' && a.code != '0');
             
       for(let i = 0; i < subfields.length; i++) {
-        //this.alert.info(i+'',{autoClose: false})
         let sf = subfields[i]  
         let opts = new Array();
         if(!this.settings.pinyinonly) {
-          //this.alert.warn(sf.data,{autoClose: false})
           let cached_options = this.fieldCache.get(pfkey)
           if(cached_options != undefined && cached_options.has(sf.id)) {
             opts = cached_options.get(sf.id)
@@ -1111,7 +1030,6 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
             }
           } else {
             await this.lookupInDictionary(sf.data).then((res) => {
-              //this.alert.success(sf.data + "|" + JSON.stringify(res),{autoClose: false})
               for(let j = 0; j < res.length; j++) {   
                 let str = res[j]       
                 opts.push(str); 
@@ -1126,7 +1044,6 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
                 this.subfield_options.set(fkey, sfo);  
                 this.saving = false
                 this.showDetails = fkey
-                //this.alert.success(fkey + "|" + JSON.stringify(this.subfield_options.get(fkey)),{autoClose: false})                 
               }            
             });
           }
@@ -1139,15 +1056,11 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
             opts.push(sf.data);
           }
           sfo.set(sf.id,opts);
-          //this.alert.success(fkey + "|" + JSON.stringify(sfo),{autoClose: false})
           this.subfield_options.set(fkey, sfo);  
           this.saving = false        
           this.showDetails = fkey
-          //this.alert.info(opts.join("|"),{autoClose: false})
         }  
-        //this.alert.info(opts.join("|"),{autoClose: false})
       }         
-    //}
   }
 
   generateBGColor(linkage: string) {
@@ -1205,7 +1118,6 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
     };
     this.restService.call(request).subscribe({
       next: result => {
-        //this.apiResult = result;
         this.refreshPage();
       },
       error: (e: RestErrorResponse) => {
