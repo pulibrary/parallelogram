@@ -4,6 +4,11 @@
         "Save": "Save",
         "SaveRecord": "Save Record",
         "Settings": "Settings",
-        "Language": "Language"
+        "Language": "Language",
+        "Field": "Field",
+        "Presearching": "Pre-searching",
+        "PresearchFields": "Pre-search fields",
+        "AnalyzingRecords": "Analyzing Records",
+        "Searching": "Searching"
     }
 }

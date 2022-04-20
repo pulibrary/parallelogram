@@ -4,6 +4,11 @@
         "Save": "保存",
         "SaveRecord": "保存记录",
         "Settings": "设置",
-        "Language": "语言"
+        "Language": "语言",
+        "Field": "字段",
+        "Presearching": "初步搜索",
+        "PresearchFields": "初步搜索的字段",
+        "AnalyzingRecords": "分析记录",
+        "Searching": "搜索"
     }
 }

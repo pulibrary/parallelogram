@@ -235,7 +235,7 @@ export class MainComponent implements OnInit, OnDestroy {
               this.totalSearches = oclcQueries.length;
               if(this.totalSearches > 0) {
                 this.loading = true;
-               this.statusString = "Searching WorldCat: 0% complete";
+               this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: 0%";
               }     
               oclcQueries.map(oq => this.getOCLCrecords(oq))      
             }
@@ -273,10 +273,10 @@ export class MainComponent implements OnInit, OnDestroy {
       () => {
         this.completedSearches++;
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
-        this.statusString = "Searching WorldCat: " + this.searchProgress  + "% complete";
+        this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
         if(this.completedSearches == this.totalSearches) {
           //this.alert.info("blah",{autoClose: false})
-          this.statusString = "Analyzing records... "
+          this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
           this.addParallelDictToStorage().finally(async () => {  
             //this.alert.info(JSON.stringify(this.preSearchArray))  
             if(this.settings.doPresearch) {          
@@ -298,13 +298,15 @@ export class MainComponent implements OnInit, OnDestroy {
                     let fj = f+pad+j            
                     //this.alert.info(fj)     
                     for(let k = 0; this.fieldTable.has(fj+":"+k); k++) {  
-                      this.statusString = "Pre-searching: Field " + fj                  
+                      this.statusString = this.translate.instant('Translate.Presearching') + " " + 
+                        this.translate.instant('Translate.Field') + " "  + fj                  
                       await this.lookupField(fj+":"+k,true)
                     }
                   }
                 } else {              
                   for(let k = 0; this.fieldTable.has(f+":"+k); k++) {
-                    this.statusString = "Pre-searching: Field " + f
+                    this.statusString = this.translate.instant('Translate.Presearching') + " " + 
+                      this.translate.instant('Translate.Field') + " " + f
                     await this.lookupField(f+":"+k,true)
                   }
                 }                
