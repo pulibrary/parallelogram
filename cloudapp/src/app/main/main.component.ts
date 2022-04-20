@@ -462,20 +462,19 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   saveField(fkey: string) {
-    let inputs : NodeListOf<HTMLInputElement> = document.querySelectorAll(".subfieldInput");
+    let inputs : NodeListOf<HTMLInputElement> = document.querySelectorAll(".subfield_input");
     let field = this.fieldTable.get(fkey)
     let newfield = new MarcDataField(field.tag,field.ind1,field.ind2)
     let fieldUpdates = new Map<string,string>();
 
     for(let i = 0; i < inputs.length; i++) { 
-      let id = inputs.item(i).id.replace('input-'+fkey+'-',"");
+      let id = inputs.item(i).id.replace('input-'+fkey+'-',"");      
       fieldUpdates.set(id,inputs.item(i).value)      
     }
     field.subfields.forEach(sf => {
       let newvalue = fieldUpdates.has(sf.id) ? fieldUpdates.get(sf.id) : sf.data;
       newfield.addSubfield(sf.id,sf.code,newvalue);
     })
-
     this.bibUtils.replaceFieldInBib(this.bib,fkey,newfield);
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
     this.recordChanged = true;
@@ -565,7 +564,6 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async lookupInDictionary(sfdata: string): Promise<Array<string>> {
-    //this.alert.warn(sfdata)
     let [startpunct,endpunct] = ["",""]
     let m = sfdata.match(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"))
     if(m) {
