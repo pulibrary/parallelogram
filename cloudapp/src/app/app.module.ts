@@ -9,7 +9,6 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { MainComponent } from './main/main.component';
 import { SettingsComponent } from './settings/settings.component';
-import { TopmenuComponent } from './topmenu/topmenu.component';
 
 
 @NgModule({
@@ -17,7 +16,6 @@ import { TopmenuComponent } from './topmenu/topmenu.component';
     AppComponent,
     MainComponent,
     SettingsComponent,
-    TopmenuComponent,
   ],
   imports: [
     MaterialModule,
