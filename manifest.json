@@ -17,7 +17,7 @@
    },
    "icon": {
       "type": "url",
-      "value": "/assets/parallelogram2.png"
+      "value": "/assets/parallelogram.png"
    },
    "fullscreen": {
       "allow": true,
