@@ -47,7 +47,7 @@ export class SettingsComponent implements OnInit {
 
   canDeactivate(): Observable<boolean> | boolean {
     if(this.form.dirty) {
-      return confirm(this.translate.instant('Translate.CloseConfirm'));
+      return confirm(this.translate.instant('Translate.ConfirmClose'));
     }    
     return true;
   }	
