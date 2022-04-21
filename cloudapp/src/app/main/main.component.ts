@@ -269,6 +269,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
         if(this.completedSearches == this.totalSearches) {
+          this.saving = true
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
           this.addParallelDictToStorage().finally(async () => {  
             if(this.settings.doPresearch) {          
