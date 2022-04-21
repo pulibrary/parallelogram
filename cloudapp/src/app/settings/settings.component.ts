@@ -29,6 +29,11 @@ export class SettingsComponent implements OnInit {
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
+  languages = [
+    {code: 'en', name: 'English'},
+    {code: 'zh-CN', name: '中文简体'},
+  ]
+
   constructor(
     private appService: AppService,
     private settingsService: CloudAppSettingsService,
@@ -42,7 +47,7 @@ export class SettingsComponent implements OnInit {
 
   canDeactivate(): Observable<boolean> | boolean {
     if(this.form.dirty) {
-      return confirm('Unsaved changes will be lost.  Are you sure you want to leave this page?');
+      return confirm(this.translate.instant('Translate.CloseConfirm'));
     }    
     return true;
   }	
@@ -69,14 +74,14 @@ export class SettingsComponent implements OnInit {
           if(adminKey != undefined) {
             this.form.get('wckey').setValue(adminKey)
             settings.wckey = adminKey
-            this.alert.info("WorldCat API Key has been set by the Administrator.",{autoClose: false})
+            this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
             this.form.markAsDirty();        
           }           
         },
         (err) => this.alert.error(err),
        () => {         
           if(settings.wckey == undefined && !settings.pinyinonly) {
-            this.alert.warn("No WorldCat API Key has been entered.")
+            this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
           }
         });
       }
@@ -90,7 +95,7 @@ export class SettingsComponent implements OnInit {
     }
     if(tag.length != 3 || !tag.match(/[0-9][0-9Xx][0-9Xx]/)) {
       this.alert.clear()
-      this.alert.warn("Invalid tag format")
+      this.alert.warn(this.translate.instant("Translate.InvalidTagFormat"))
     } else {
       this.alert.clear()
       tag = tag.toLowerCase()
@@ -134,7 +139,7 @@ export class SettingsComponent implements OnInit {
     if(this.form.get("pinyinonly").value) {
       this.settingsService.set(this.form.value).subscribe(
         response => {
-          this.alert.success('Settings successfully saved.');
+          this.alert.success(this.translate.instant("Translate.SettingsSaved"));
           this.form.markAsPristine();
         },
         (err) => this.alert.error(err.message),
@@ -147,22 +152,19 @@ export class SettingsComponent implements OnInit {
       if(this.form.get("adminWC").value) {
         let configForm: FormGroup = new FormGroup({wckey: new FormControl(wcKey)})
         
-        this.configService.set(configForm.value).subscribe(
-          res => {},
-          err => {this.alert.error("Could not write config")}
-        );
-        
+        this.configService.set(configForm.value)        
       }
       this.settingsService.set(this.form.value).subscribe(
         response => {
-          this.alert.success('WorldCat API Key Valid. Settings successfully saved.');
+          this.alert.success(this.translate.instant("Translate.WCAPIValid") + " " + 
+            this.translate.instant("Translate.SettingsSaved"));
           this.form.markAsPristine();
         },
         err => this.alert.error(err.message),
         ()  => this.saving = false
       );
     } else {
-      this.alert.error("WorldCat API Key Not Valid.");
+      this.alert.error(this.translate.instant("Translate.WCAPIInvalid"));
       this.saving = false;
     }
   }

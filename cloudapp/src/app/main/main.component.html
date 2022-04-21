@@ -31,16 +31,16 @@
                 </button>
                 <mat-menu #fieldOptions="matMenu">
                   <button mat-menu-item (click)="lookupSubfields(field.key)">
-                    <mat-icon>edit</mat-icon>edit
+                    <mat-icon>edit</mat-icon>{{'Translate.Edit' | translate}}
                   </button>
                   <button mat-menu-item (click)="swapField(field.key)">
-                    <mat-icon>swap_vert</mat-icon>swap
+                    <mat-icon>swap_vert</mat-icon>{{'Translate.Swap' | translate}}
                   </button>
                   <button mat-menu-item (click)="unlinkFields(field.key)">
-                    <mat-icon>link_off</mat-icon>unlink
+                    <mat-icon>link_off</mat-icon>{{'Translate.Unlink' | translate}}
                   </button>
                   <button mat-menu-item (click)="deleteField(field.key)">
-                    <mat-icon>delete</mat-icon>delete
+                    <mat-icon>delete</mat-icon>{{'Translate.Delete' | translate}}
                   </button>
                 </mat-menu>
                 </div>

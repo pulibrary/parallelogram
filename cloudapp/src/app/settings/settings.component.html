@@ -18,19 +18,18 @@
       <mat-form-field appeearance="fill">
         <mat-label>{{'Translate.Language' | translate}}</mat-label>
         <mat-select formControlName="interfaceLang">
-          <mat-option (click)="setLang('en')" value="en">English</mat-option>
-          <mat-option (click)="setLang('zh-CN')" value="zh-CN">中文</mat-option>
+          <mat-option *ngFor="let lang of languages" (click)="setLang(lang.code)" [value]="lang.code">{{lang.name}}</mat-option>
         </mat-select>
       </mat-form-field>
     </section>
     <section class="settings-section">
       <mat-form-field appearance="fill">
-        <mat-label>WorldCat API Key: </mat-label> 
+        <mat-label>{{'Translate.WCAPIKey' | translate}}: </mat-label> 
         <input matInput formControlName="wckey">
       </mat-form-field>
     </section>
     <section class="settings-section">
-      <mat-checkbox formControlName="doPresearch">Perform pre-search on the following fields:</mat-checkbox>
+      <mat-checkbox formControlName="doPresearch">{{'Translate.PerformPresearch' | translate}}</mat-checkbox>
     </section>   
     <section class="settings-section">
       <mat-form-field appearance="fill">
@@ -41,7 +40,7 @@
             {{field}}
             <mat-icon matChipRemove>cancel</mat-icon>
           </mat-chip>
-          <input matChipInput placeholder="Add Tag (e.g. 245, 7xx)"
+          <input matChipInput [placeholder]="'Translate.AddTag' | translate"
            [matChipInputFor]="preSearchTags"
            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
            [matChipInputAddOnBlur]="addOnBlur"
@@ -50,23 +49,23 @@
       </mat-form-field>
     </section> 
     <section class="settings-section">
-      <mat-checkbox formControlName="doSwap">After adding a parallel field, swap original field and 880 (if needed) so that:</mat-checkbox>
+      <mat-checkbox formControlName="doSwap">{{'Translate.Swap880Option' | translate}}</mat-checkbox>
     </section>
     <section class="settings-section">
       <mat-radio-group formControlName="swapType">
-        &nbsp;&nbsp;<mat-radio-button value="roman">Roman text is in field 880</mat-radio-button>&nbsp;&nbsp;
-        &nbsp;&nbsp;<mat-radio-button value="nonroman">Non-roman text is in field 880</mat-radio-button>
+        &nbsp;&nbsp;<mat-radio-button value="roman">{{'Translate.Roman880' | translate}}</mat-radio-button>&nbsp;&nbsp;
+        &nbsp;&nbsp;<mat-radio-button value="nonroman">{{'Translate.NonRoman880' | translate}}</mat-radio-button>
       </mat-radio-group>
     </section>
     <section class="settings-section">
-      <mat-checkbox formControlName="pinyinonly">Chinese: Don't search WorldCat, only convert characters to Pinyin</mat-checkbox>    
+      <mat-checkbox formControlName="pinyinonly">{{'Translate.PinyinOnly' | translate}}</mat-checkbox>    
     </section>
     <section class="settings-section">
-      <mat-checkbox formControlName="searchWG">Chinese: Search for Pinyin equivalents of Wade-Giles text</mat-checkbox> 
+      <mat-checkbox formControlName="searchWG">{{'Translate.WadeGilesSearch' | translate}}</mat-checkbox> 
     </section>
     <div *ngIf="admin|async">
     <section class="settings-section">
-      <mat-checkbox formControlName="adminWC">Set WC Key for all users (Admin only)</mat-checkbox>  
+      <mat-checkbox formControlName="adminWC">{{'Translate.WCAPIAdminSet' | translate}}</mat-checkbox>  
     </section>
     </div>
   </form>

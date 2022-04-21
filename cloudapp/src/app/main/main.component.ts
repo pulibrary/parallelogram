@@ -92,7 +92,7 @@ export class MainComponent implements OnInit, OnDestroy {
   //@HostListener('blur',['$event'])
   canDeactivate(): Observable<boolean> | boolean {
     if(this.recordChanged) {
-      return confirm('Unsaved changes will be lost.  Are you sure you want to leave this page?');
+      return confirm(this.translate.instant('Translate.ConfirmClose'));
     }    
     return true;
   }	
@@ -422,6 +422,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.bibUtils.updateBib(this.bib).subscribe(() => {
       this.saving = false;
       this.recordChanged = false;
+      this.alert.success(this.translate.instant('Translate.RecordSaved')+"!")
     }) 
   }
 
