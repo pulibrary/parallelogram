@@ -12,7 +12,7 @@ import {WadegilesService} from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
 import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
-import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map } from 'rxjs/operators';
+import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map, takeWhile } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Settings } from '../models/settings';
 import {OclcQuery} from './oclc-query';
@@ -42,8 +42,8 @@ export class MainComponent implements OnInit, OnDestroy {
   recordChanged = false;
   completedSearches = 0;
   totalSearches = 0;
-  private bibUtils: BibUtils;
-  private settings: Settings;
+  bibUtils: BibUtils;
+  settings: Settings;
   bib: Bib;
   languageCode: string;
   fieldTable: Map<string,MarcDataField>;
