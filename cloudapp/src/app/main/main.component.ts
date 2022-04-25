@@ -818,7 +818,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let var_rom = new Array()
     let var_nonrom = new Array()
 
-    if(main_s.match(/[\u0370-\u1CFF\u1F00-\uFFFF]/u)) {
+    if(main_s.match(/[\u0370-\u1CFF\u1F00-\uFE19\uFE30-\uFFFF]/u)) {
       var_nonrom.push(main_s)
     } else {
       var_rom.push(main_s)
@@ -826,7 +826,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     for(let i = 0; i < variants.length; i++) {
       let v = variants[i].textContent.trim()
-      if(v.match(/[\u0370-\u1CFF\u1F00-\uFFFF]/u)) {
+      if(v.match(/[\u0370-\u1CFF\u1F00-\uFE19\uFE30-\uFFFF]/u)) {
         if(!var_nonrom.includes(v)) {
           var_nonrom.push(v)
         }
