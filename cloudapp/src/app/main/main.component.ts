@@ -13,7 +13,7 @@ import { Bib, BibUtils } from './bib-utils';
 import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
 import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map, takeWhile } from 'rxjs/operators';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, JsonpClientBackend } from '@angular/common/http';
 import { Settings } from '../models/settings';
 import {OclcQuery} from './oclc-query';
 import {MarcDataField} from './marc-datafield';
@@ -714,12 +714,15 @@ export class MainComponent implements OnInit, OnDestroy {
       pairs2.push(pairs[i])
     }
     let getOperations = from(pairs).pipe(concatMap(entry => this.storeService.get(entry.key)))   
-    
+
+    let getCount = 0
+    let setCount = 0
+
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
+          //this.statusString = "GET " + getCount++
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
-
           let newPair: DictEntry = pairs.find(a => {return a.key == prevPair.key})
           let i = pairs2.findIndex(a => {return a.key == prevPair.key})
           if(!prevPair.isEqualTo(newPair)) {
@@ -730,9 +733,11 @@ export class MainComponent implements OnInit, OnDestroy {
           }
         } 
       },
-      complete: () => {      
+      complete: () => {   
+        //this.alert.info(pairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})   
         let storeOperations = from(pairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
+          //next: (res) => {this.statusString = "SET " + setCount++},
           complete: () => resolve(true)
         })
       }
@@ -836,7 +841,8 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < var_rom.length; i++) {
       for(let j = 0; j < var_nonrom.length; j++) {
         let norm = this.cjkNormalize(var_rom[i])
-        let v = this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
+        let v = this.addToParallelDict(norm,var_nonrom[j])
+        //let v = this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
         vnew.push(...(v.map(a => a.key)))
       }
     }
@@ -845,8 +851,9 @@ export class MainComponent implements OnInit, OnDestroy {
     
     for(let i = 0; i < var_nonrom.length; i++) {
       for(let j = 0; j < var_rom.length; j++) {
-        let norm = this.cjkNormalize(var_nonrom[i])       
-        let v = this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
+        let norm = this.cjkNormalize(var_nonrom[i])  
+        let v = this.addToParallelDict(norm,var_rom[j])     
+        //let v = this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
         vnew.push(...(v.map(a => a.key)))
       }
     }    
