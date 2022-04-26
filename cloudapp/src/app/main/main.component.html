@@ -5,6 +5,7 @@
   </div>
   <div class="loading-shade" *ngIf="saving">
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    <div class="spinnerText">{{statusString}}</div>
   </div>
   <mat-card>    
     <div>

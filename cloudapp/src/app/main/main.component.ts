@@ -136,6 +136,19 @@ export class MainComponent implements OnInit, OnDestroy {
     this.hasApiResult = result && Object.keys(result).length > 0;
   }
 
+  changeSpinner(state: string) {
+    if(state == "loading") {
+      this.saving = false
+      this.loading = true
+    } else if(state == "saving") {
+      this.saving = true
+      this.loading = false
+    } else if (state == "clear") {
+      this.saving = false
+      this.loading = false
+    }
+  }
+
   onPageLoad = (pageInfo: PageInfo) => {
     if(this.route.snapshot.queryParamMap.has('doSearch') && this.doSearch) {
       this.doSearch = (this.route.snapshot.queryParamMap.get('doSearch') == "true")
@@ -160,7 +173,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.extractParallelFields(this.bib.anies);
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch && this.settings.wckey != undefined) {            
-            this.loading = true;
+            this.changeSpinner("loading")
             let oclcQueries: Array<OclcQuery> = [];
             this.bib.lccns = this.bibUtils.getBibField(bib,"010","a").trim();
             if(this.bib.lccns != "") {oclcQueries.push(new OclcQuery("dn", "exact",this.bib.lccns))}
@@ -231,7 +244,7 @@ export class MainComponent implements OnInit, OnDestroy {
               this.completedSearches = 0;  
               this.totalSearches = oclcQueries.length;
               if(this.totalSearches > 0) {
-                this.loading = true;
+                this.changeSpinner("loading")
                this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: 0%";
               }     
               oclcQueries.map(oq => this.getOCLCrecords(oq))      
@@ -269,7 +282,7 @@ export class MainComponent implements OnInit, OnDestroy {
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
         if(this.completedSearches == this.totalSearches) {
-          this.saving = true
+          this.changeSpinner("saving")
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
           this.addParallelDictToStorage().finally(async () => { 
             if(this.settings.doPresearch) {    
@@ -302,8 +315,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 }                
               }              
             }
-            this.loading = false
-            this.saving = false
+            this.changeSpinner("clear")
           })
         }
       }
@@ -318,7 +330,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let seq = field.tag + "-" + seqno;
     let seq880 = "880-" + seqno;    
     parallel_field.addSubfield("61","6",seq);
-    this.saving = true;
+    this.changeSpinner("saving")
 
     let pfkey = fkey;
     if(pfkey.substring(pfkey.length-1) == "P") {
@@ -389,7 +401,7 @@ export class MainComponent implements OnInit, OnDestroy {
         options_map.set(sf.id,options)   
       }
     }
-    this.saving = false;
+    this.changeSpinner("clear")
     if(!presearch) {
       field.addSubfield("61","6",seq880,true);
 
@@ -417,12 +429,12 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   saveRecord() {
-    this.saving = true;
+    this.changeSpinner("saving")
     this.extractParallelFields(this.bib.anies)
     this.addParallelDictToStorage()
     this.extractParallelFields(this.bib.anies)
     this.bibUtils.updateBib(this.bib).subscribe(() => {
-      this.saving = false;
+      this.changeSpinner("clear")
       this.recordChanged = false;
       this.alert.success(this.translate.instant('Translate.RecordSaved')+"!")
     }) 
@@ -1007,7 +1019,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
 
   async lookupSubfields(fkey: string) {    
       this.statusString = ""
-      this.saving = true
+      this.changeSpinner("saving")
       let sfo = new Map<string, Array<string>>();
       let pfkey = fkey;
       if(pfkey.substring(pfkey.length-1) == "P") {
@@ -1033,7 +1045,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
             sfo.set(sf.id,opts);
             if(i == subfields.length - 1) { 
               this.subfield_options.set(fkey, sfo);  
-              this.saving = false
+              this.changeSpinner("clear")
               this.showDetails = fkey
             }
           } else {
@@ -1050,7 +1062,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
               sfo.set(sf.id,opts);
               if(i == subfields.length - 1) { 
                 this.subfield_options.set(fkey, sfo);  
-                this.saving = false
+                this.changeSpinner("clear")
                 this.showDetails = fkey
               }            
             });
@@ -1065,7 +1077,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
           }
           sfo.set(sf.id,opts);
           this.subfield_options.set(fkey, sfo);  
-          this.saving = false        
+          this.changeSpinner("clear")     
           this.showDetails = fkey
         }  
       }         
@@ -1097,24 +1109,24 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
     return outputString;
   }
   update(value: any) {
-    this.loading = true;
+    this.changeSpinner("saving")
     let requestBody = this.tryParseJson(value);
     if (!requestBody) {
-      this.loading = false;
+      this.changeSpinner("clear")
       return this.alert.error('Failed to parse json');
     }
     this.sendUpdateRequest(requestBody);
   }
 
   refreshPage = () => {
-    this.loading = true;
+    this.changeSpinner("saving")
     this.eventsService.refreshPage().subscribe({
       next: () => this.alert.success('Success!'),
       error: e => {
         console.error(e);
         this.alert.error('Failed to refresh page');
       },
-      complete: () => this.loading = false
+      complete: () => this.changeSpinner("clear")
     });
   }
 
@@ -1131,7 +1143,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
       error: (e: RestErrorResponse) => {
         this.alert.error('Failed to update data');
         console.error(e);
-        this.loading = false;
+        this.changeSpinner("clear")
       }
     });
   }
