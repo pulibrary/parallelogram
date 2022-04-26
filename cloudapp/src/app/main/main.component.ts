@@ -271,8 +271,8 @@ export class MainComponent implements OnInit, OnDestroy {
         if(this.completedSearches == this.totalSearches) {
           this.saving = true
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
-          this.addParallelDictToStorage().finally(async () => {  
-            if(this.settings.doPresearch) {          
+          this.addParallelDictToStorage().finally(async () => { 
+            if(this.settings.doPresearch) {    
               for(let i = 0; i < this.preSearchArray.length; i++) {       
                 let f = this.preSearchArray[i]     
                 f = f.replace(/[Xx]*$/,"")
@@ -282,7 +282,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 }
                 if(f.length == 1) {
                   comp = 100
-                }
+                }                
                 if(comp > 0) {
                   for(let j = 0; j < comp; j++) {
                     let pad = (f.length == 1 && j < 10) ? "0" : ""
@@ -303,6 +303,7 @@ export class MainComponent implements OnInit, OnDestroy {
               }              
             }
             this.loading = false
+            this.saving = false
           })
         }
       }
@@ -703,7 +704,7 @@ export class MainComponent implements OnInit, OnDestroy {
         storePairs[pairExists].mergeWith(entry)
       }
     }
-    this.addToStorage(storePairs).finally(() => resolve(true))
+    let t = this.addToStorage(storePairs).finally(() => resolve(true))
   })
   }
 
@@ -733,8 +734,8 @@ export class MainComponent implements OnInit, OnDestroy {
           }
         } 
       },
-      complete: () => {   
-        //this.alert.info(pairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})   
+      complete: () => {  
+        //this.alert.info(pairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})  
         let storeOperations = from(pairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
           //next: (res) => {this.statusString = "SET " + setCount++},
@@ -742,7 +743,7 @@ export class MainComponent implements OnInit, OnDestroy {
         })
       }
     })
-    })
+  })
   }
 
   parallelDictToString(): string {
