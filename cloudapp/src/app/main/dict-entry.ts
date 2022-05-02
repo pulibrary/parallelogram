@@ -21,6 +21,7 @@ export class DictEntry {
         } else {
             this.parallels.push({text: parallel,count: c})
         }
+        this.parallels.sort((a,b) => (b.count - a.count))
     }
 
     deleteParallel(parallel: string): boolean {

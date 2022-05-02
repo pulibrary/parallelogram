@@ -25,6 +25,8 @@
         "WCAPIInvalid": "WorldCat API Key is not valid.",
         "PerformPresearch": "Perform pre-search on the following fields:",
         "AddTag": "Add Tag (e.g. 245, 7xx)",
+        "PreferInstitutions": "Give preference to WorldCat records from the following institutions:",
+        "AddPreferredInstitution": "Add institution code",
         "Swap880Option": "After adding a parallel field, swap original field and 880 (if needed) so that:",
         "Roman880": "Roman text is in field 880",
         "NonRoman880": "Non-roman text is in field 880",

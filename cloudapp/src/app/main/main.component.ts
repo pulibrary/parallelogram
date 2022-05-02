@@ -62,6 +62,8 @@ export class MainComponent implements OnInit, OnDestroy {
   preSearchFields: Map<string,boolean>;
   fieldCache: Map<string,Map<string,Array<string>>>
   linkedDataCache: Array<string>
+  preferredWCscore = 10
+  preferredLOCscore = 5
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -275,7 +277,7 @@ export class MainComponent implements OnInit, OnDestroy {
           responseType: 'text'
         }).subscribe(
       (res) => {
-        this.extractParallelFields(res);
+        this.extractParallelFields(res, true);        
       },
       (err) => {this.alert.error(err.message)},
       () => {
@@ -324,6 +326,9 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async lookupField(fkey: string, presearch = false) {
+    //if(!presearch) {
+    //  this.alert.warn(this.parallelDictToString())
+   //}
     this.showDetails = ""
     let field = this.fieldTable.get(fkey)
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
@@ -372,6 +377,7 @@ export class MainComponent implements OnInit, OnDestroy {
           options = cached_options.get(sf.id)
         } else {
           options = await this.lookupInDictionary(sf.data);  
+          //this.alert.warn(options.join("<br>"))
         }        
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
@@ -626,7 +632,8 @@ export class MainComponent implements OnInit, OnDestroy {
           break;
         }
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
-          if(res != undefined) {        
+          if(res != undefined) {    
+            //this.alert.warn(JSON.stringify(res))   
             options_d = res.parallels.map(a => a.text)      
           }
         });
@@ -775,7 +782,7 @@ export class MainComponent implements OnInit, OnDestroy {
       })
       resultString += "</em><br/>"
       for(let j = 0; j < entry.parallels.length; j++) {
-        let v = entry.parallels[i]
+        let v = entry.parallels[j]
         resultString += v.text + ":" + v.count +  "<br/>";
       }
       resultString += "<br/>";
@@ -857,8 +864,7 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < var_rom.length; i++) {
       for(let j = 0; j < var_nonrom.length; j++) {
         let norm = this.cjkNormalize(var_rom[i])
-        let v = this.addToParallelDict(norm,var_nonrom[j])
-        //let v = this.addToParallelDict(var_rom[i],var_nonrom[j],[norm])
+        let v = this.addToParallelDict(norm,var_nonrom[j],[],this.preferredLOCscore)
         vnew.push(...(v.map(a => a.key)))
       }
     }
@@ -868,8 +874,8 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < var_nonrom.length; i++) {
       for(let j = 0; j < var_rom.length; j++) {
         let norm = this.cjkNormalize(var_nonrom[i])  
-        let v = this.addToParallelDict(norm,var_rom[j])     
-        //let v = this.addToParallelDict(var_nonrom[i],var_rom[j],[norm])
+        let v = this.addToParallelDict(norm,var_rom[j],[],this.preferredLOCscore)     
+
         vnew.push(...(v.map(a => a.key)))
       }
     }    
@@ -886,18 +892,26 @@ export class MainComponent implements OnInit, OnDestroy {
     return entries 
   }
 
-  extractParallelFields(xml: string): void {    
+  extractParallelFields(xml: string, isOCLC = false): void {    
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
-    let records = xmlDOM.getElementsByTagName("record");
+    let records = xmlDOM.getElementsByTagName("record");    
     for(let i = 0; i < records.length; i++) {
       let reci = records[i];
+      let isPreferredInst = false
       let datafields = reci.getElementsByTagName("datafield");
       let parallelFields = new Map<string,Array<Element>>();
       for(let j = 0; j < datafields.length; j++) {
-        let subfields = datafields[j].getElementsByTagName("subfield");
+        let subfields = datafields[j].getElementsByTagName("subfield");        
         for(let k = 0; k < subfields.length; k++) {
-          let code = subfields[k].getAttribute("code");  
+          let code = subfields[k].getAttribute("code");
+          if(isOCLC && this.settings.preferInstitutions && datafields[j].getAttribute("tag") == "040" &&
+            (code == "a" || code == "c")) {
+              let inst = subfields[k].innerHTML
+              if(this.settings.preferredInstitutionList.includes(inst)) {
+                isPreferredInst = true
+              }
+            }  
           if(code == "6") {            
             let linkage = subfields[k].innerHTML;
             linkage = linkage.substring(4,6);
@@ -912,6 +926,7 @@ export class MainComponent implements OnInit, OnDestroy {
           }
         }
       }
+      let score = (isPreferredInst) ? this.preferredWCscore : 1
       parallelFields.forEach((value, key) => {
         if(value.length != 2) {
           return;
@@ -952,11 +967,11 @@ export class MainComponent implements OnInit, OnDestroy {
             if(text_rom_parts.length != text_nonrom_parts.length) {
               if(text_rom != text_nonrom) { 
                 if(this.settings.searchWG) {
-                  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal]);   
+                  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal], score);   
                 } else {
-                  this.addToParallelDict(text_rom_normal,text_nonrom); 
+                  this.addToParallelDict(text_rom_normal,text_nonrom, [], score); 
                 }
-                this.addToParallelDict(text_nonrom_normal,text_rom_stripped);   
+                this.addToParallelDict(text_nonrom_normal,text_rom_stripped, [], score);   
               }
             } else {            
               for(let m = 0; m < text_rom_parts.length; m++) {
@@ -970,11 +985,11 @@ export class MainComponent implements OnInit, OnDestroy {
                 if(!rpm.match(new RegExp("^" + this.delimiterPattern + "$","u")) && 
                     rpm_normal != cpm_normal) { 
                       if(this.settings.searchWG) {
-                        this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal]);
+                        this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal], score);
                       } else {
-                        this.addToParallelDict(rpm_normal,cpm);
+                        this.addToParallelDict(rpm_normal,cpm, [], score);
                       }
-                      this.addToParallelDict(cpm_normal,rpm);
+                      this.addToParallelDict(cpm_normal,rpm, [], score);
                 }                
               }
             }      
@@ -984,10 +999,11 @@ export class MainComponent implements OnInit, OnDestroy {
     }
   }
 
-addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<DictEntry> {
+addToParallelDict(textA: string, textB: string, variants: string[] = [], score = 1): Array<DictEntry> {
     if(textA == textB) {
       return;
     }    
+    //this.alert.warn(textA+"<br>"+textB+"<br>"+score)
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
     if(found == -1) {
@@ -1001,7 +1017,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = []): Array<
       let v = variants[i]
       entry.addVariant(v)
     }
-    entry.addParallel(textB,1)
+    entry.addParallel(textB,score)
     entry.consolidate()    
     let entries_all = [entry]
     for(let i = 0; i < entry.variants.length; i++) {

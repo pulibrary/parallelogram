@@ -25,6 +25,8 @@
         "WCAPIInvalid": "WorldCat应用程式介面号码不正确.",
         "PerformPresearch": "初步搜索以下的的字段",
         "AddTag": "输入字段好 (例如 245, 7xx)",
+        "PreferInstitutions": "首选一下图书馆的记录:",
+        "AddPreferredInstitution": "图书馆号码",
         "Swap880Option": "加平行字段后，交换字段让：",
         "Roman880": "罗马字在字段880",
         "NonRoman880": "非罗马字在字段880",

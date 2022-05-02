@@ -120,6 +120,32 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  addPreferredInstitution(event: MatChipInputEvent) {
+    let code = (event.value || '').trim()
+    if(code == "") {
+      return
+    }
+    this.alert.clear()
+    let preferredInstitutionList: Array<string> = this.form.get("preferredInstitutionList").value
+    if(!preferredInstitutionList.includes(code)) {
+      preferredInstitutionList.push(code)
+      preferredInstitutionList.sort()
+      this.form.markAsDirty()
+    }
+    event.input.value = ""
+  }
+
+  deletePreferredInstitution(code: string) {
+    let preferredInstitutionList: Array<string> = this.form.get("preferredInstitutionList").value
+    if(code != undefined) {
+      let found = preferredInstitutionList.indexOf(code)
+      if(found > -1) {
+         preferredInstitutionList.splice(found,1)
+         this.form.markAsDirty()
+      }
+    }
+  }
+
   isAdmin(): Observable<boolean> {
     return this.eventsService.getInitData().pipe(
       switchMap( initData => this.restService.call(`/users/${initData.user.primaryId}`)),
