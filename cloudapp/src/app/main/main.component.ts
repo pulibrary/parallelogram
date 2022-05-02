@@ -264,6 +264,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let wcKey = this.settings.wckey;
     let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
       oq.getQueryString() + Settings.wcOtherParams;
+    //this.alert.info(wcURL,{autoClose: false})
     this.http.get(wcURL, {
           headers: new HttpHeaders({
             'X-Proxy-Host': 'worldcat.org',
@@ -432,7 +433,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.changeSpinner("saving")
     this.extractParallelFields(this.bib.anies)
     this.addParallelDictToStorage()
-    this.extractParallelFields(this.bib.anies)
+    //this.extractParallelFields(this.bib.anies)
     this.bibUtils.updateBib(this.bib).subscribe(() => {
       this.changeSpinner("clear")
       this.recordChanged = false;
@@ -580,11 +581,11 @@ export class MainComponent implements OnInit, OnDestroy {
 
   async lookupInDictionary(sfdata: string): Promise<Array<string>> {
     let [startpunct,endpunct] = ["",""]
-    let m = sfdata.match(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"))
+    let m = sfdata.match(new RegExp("[\\s\\p{P}]+$","u"))
     if(m) {
       endpunct = m[0];
     }
-    m = sfdata.match(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"))
+    m = sfdata.match(new RegExp("^[\\s\\p{P}]+","u"))
     if(m) {
       startpunct = m[0];
     }
@@ -686,15 +687,17 @@ export class MainComponent implements OnInit, OnDestroy {
         options_final = options_temp;
       }
     }
-    for(let i = 0; i < options_final.length; i++) {      
+    //this.alert.warn(startpunct + "*" + endpunct + "*" + sfdata)
+    for(let i = 0; i < options_final.length; i++) {    
+      //this.alert.error(options_final[i])  
       m = sfdata.match(this.etal_re);
       if(m) {
         options_final[i] = options_final[i].replace(this.etal_re,m[0]);
       }
-      if(options_final[i].substr(options_final[i].length - endpunct.length) == endpunct) {
+      if(options_final[i].substring(options_final[i].length - endpunct.length) == endpunct) {
         endpunct = "";
       }
-      if(options_final[i].substr(0,startpunct.length) == startpunct) {
+      if(options_final[i].substring(0,startpunct.length) == startpunct) {
         startpunct = "";
       }
       options_final[i] = startpunct + options_final[i] + endpunct;
