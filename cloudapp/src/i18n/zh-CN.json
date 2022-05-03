@@ -9,6 +9,7 @@
         "Field": "字段",
         "Presearching": "初步搜索",
         "PresearchFields": "初步搜索的字段",
+        "NoPresearchFields": "初步搜索禁用了",
         "AnalyzingRecords": "分析记录",
         "Searching": "搜索",
         "Edit": "编辑",

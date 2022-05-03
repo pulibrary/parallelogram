@@ -9,6 +9,7 @@
         "Field": "Field",
         "Presearching": "Pre-searching",
         "PresearchFields": "Pre-search fields",
+        "NoPresearchFields": "Pre-searching disabled",
         "AnalyzingRecords": "Analyzing Records",
         "Searching": "Searching",
         "Edit": "edit",
