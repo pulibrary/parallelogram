@@ -332,11 +332,17 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async lookupField(fkey: string, presearch = false) {
-    //if(!presearch) {
-    //  this.alert.warn(this.parallelDictToString())
-   //}
     this.showDetails = ""
     let field = this.fieldTable.get(fkey)
+    if(field.tag == "880") {
+      let t = field.getSubfield("61")
+      if(t == "") {
+          t = "500"
+      }
+      t = t.substring(0,3)
+      field.tag = t
+      field.deleteSubfield("61")
+    }
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
     let seqno = this.findUnusedLinkage();
     let seq = field.tag + "-" + seqno;
