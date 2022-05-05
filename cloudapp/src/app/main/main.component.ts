@@ -66,6 +66,7 @@ export class MainComponent implements OnInit, OnDestroy {
   linkedDataCache: Array<string>
   preferredWCscore = 10
   preferredLOCscore = 5
+  dictMax = 200
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -729,7 +730,7 @@ export class MainComponent implements OnInit, OnDestroy {
   addParallelDictToStorage(): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
     let storePairs: DictEntry[] = [];    
-    for(let i = 0; i < this.parallelDict.length && storePairs.length <= 200; i++) {
+    for(let i = 0; i < this.parallelDict.length && storePairs.length <= this.dictMax; i++) {
       let entry = this.parallelDict[i]
       let pairExists = storePairs.findIndex(a => a.key == entry.key)
       if(pairExists == -1) {
@@ -744,6 +745,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   addToStorage(pairs: Array<DictEntry>): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
+    //this.alert.info(pairs.map(a=>a.stringify()).join("<br><br>"),{autoClose: false})
     let pairs2 = new Array<DictEntry>();
     for(let i = 0; i < pairs.length; i++) {
       pairs2.push(pairs[i])
