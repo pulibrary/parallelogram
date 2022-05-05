@@ -20,8 +20,8 @@
     <div><br/></div>
     <mat-card-content>      
       <div>   
-        <div class="mms_id">MMS ID:  {{bib.mms_id}}</div>
-        <div class="ps_fields" *ngIf="this.settings.doPresearch; else presearchDisabled">({{'Translate.PresearchFields' | translate}}: {{preSearchArray.join(", ")}})</div>
+        <div class="mms_id">MMS ID:  {{mms_id}}</div>
+        <div class="ps_fields" *ngIf="doPresearch; else presearchDisabled">({{'Translate.PresearchFields' | translate}}: {{preSearchArray.join(", ")}})</div>
         <ng-template #presearchDisabled>
           <div class="ps_fields">({{'Translate.NoPresearchFields' | translate}})</div>
         </ng-template>

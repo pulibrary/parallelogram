@@ -44,7 +44,9 @@ export class MainComponent implements OnInit, OnDestroy {
   totalSearches = 0;
   bibUtils: BibUtils;
   settings: Settings;
+  doPresearch: boolean;
   bib: Bib;
+  mms_id: string;
   languageCode: string;
   fieldTable: Map<string,MarcDataField>;
   parallelDict: Array<DictEntry>;
@@ -102,6 +104,7 @@ export class MainComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
+      this.doPresearch = this.settings.doPresearch;      
       if(this.settings.pinyinonly) {
         this.doSearch = false;
       } else if(!this.settings.wckey) {   
@@ -165,13 +168,16 @@ export class MainComponent implements OnInit, OnDestroy {
     this.linkedDataCache = new Array<string>()
 
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
-    if ((pageInfo.entities || []).length == 1) {
+    //this.alert.warn(JSON.stringify(this.pageEntities))
+    if ((pageInfo.entities || []).length >= 1) {
       const entity = pageInfo.entities[0];
       this.bibUtils.getBib(entity.id).subscribe(bib=> {
         this.bib = null;
         if(bib.record_format=='marc21') {
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
+          this.mms_id = bib.mms_id;
+          //this.alert.warn(this.mms_id)
           this.extractParallelFields(this.bib.anies);
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch && this.settings.wckey != undefined) {            
