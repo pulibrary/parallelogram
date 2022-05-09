@@ -1,4 +1,4 @@
-# "Parallelogram" Cloud App for Generating Parallel Fields
+## "Parallelogram" Cloud App for Generating Parallel Fields
 
 ### Introduction
 
@@ -28,4 +28,7 @@ The testing environment uses the sandbox, not the production version of Alma.  
 
 Before opening the app, you must first navigate to the bibliographic record you are interested in enhancing.  The record can either be open in the MDE or in read-only mode (what you see if you click the title of the record in a results list).  Alternatively, if you launch the app with a list of search results open, it will select the first record in the list.  To launch the app, open the Cloud Apps Center using this icon in the upper right of the Alma window. 
 
-![Cloud Apps Icon](docs/images/screenshot1.png)
+|![Cloud Apps Icon](docs/images/screenshot1.png)|
+|-|
+
+
