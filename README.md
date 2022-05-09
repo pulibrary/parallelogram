@@ -54,7 +54,7 @@ After adding all of the desired parallel fields, click the "Save Record" button 
 
 Once a field has imported parallel data, the button to the left turns from a plus into an ellipsis.  Clicking it will open the menu below:
 
-|<img src="docs/images/screenshot5.png" width=75></img>|
+|<img src="docs/images/screenshot5.png" width=100></img>|
 |-|
 
 These menu options do the following:
