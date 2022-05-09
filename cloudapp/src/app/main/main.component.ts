@@ -334,6 +334,9 @@ export class MainComponent implements OnInit, OnDestroy {
 
   async lookupField(fkey: string, presearch = false) {
     this.showDetails = ""
+    if(!presearch) {
+      this.statusString = ""
+    }
     let field = this.fieldTable.get(fkey)
     if(field.tag == "880") {
       let t = field.getSubfield("61")
