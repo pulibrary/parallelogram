@@ -22,7 +22,7 @@ Once this tool is released to the public, it can be installed easily by any user
 
 3. After about a minute, a browser window will open displaying the login screen for the Alma sandbox. You will not be able to log in using your usual credentials.  Tom will provide you with credentials specifically for testing.
 
-The testing environment uses the sandbox, not the production version of Alma.  Because of this, the catalog data may not be exactly the same as what is in the public catalog.  (It is based on a snapshot of the catalog from a few months ago).  However, it also means you are free to experiment and change records as you wish without worrying about corrupting the catalog or causing other problems.
+The testing environment uses the sandbox, not the production version of Alma.  Because of this, the catalog data may not be exactly the same as what is in the public catalog.  (It is based on a snapshot of the catalog from a few months ago).  However, this also means you are free to experiment and change records as you wish without worrying about corrupting the catalog or causing other problems.
 
 ### Launching the App
 
