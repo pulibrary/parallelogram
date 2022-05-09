@@ -6,7 +6,7 @@ The "Parallelogram" Cloud App for Alma is used to automatically generate paralle
 
 #### *Advantage*
 
-The above approach allows the tool to be used for a variety of different languages without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  Though language-independent, it also has some features specific to the Chinese language, and can be used as a "pinyin converter", similar to the other tools that Princeton has created for [MarcEdit](https://library.princeton.edu/eastasian/addpinyin-plugin-marcedit) and [OCLC Connexion Client](https://library.princeton.edu/eastasian/oclcpinyin).
+The above approach allows the tool to be used for a variety of different languages without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  Though language-independent, it also has some features specific to Chinese, and can be used as a "pinyin converter", similar to the other tools that Princeton University Library has created for [MarcEdit](https://library.princeton.edu/eastasian/addpinyin-plugin-marcedit) and [OCLC Connexion Client](https://library.princeton.edu/eastasian/oclcpinyin).
 
 #### *Caveat and solution*
 
