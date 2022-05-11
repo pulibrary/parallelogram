@@ -18,12 +18,12 @@
         "Delete": "delete",
         "ConfirmClose": "Unsaved changes will be lost.  Are you sure you want to leave this page?",
         "WCAPIKey": "WorldCat API Key",
-        "AdminSetWCAPI": "WorldCat API Key has been set by the Administrator.",
-        "NoWCAPI": "No WorldCat API Key has been entered.",
+        "AdminSetWCAPI": "WorldCat API Key has been set by the Administrator",
+        "NoWCAPI": "No WorldCat API Key has been entered",
         "InvalidTagFormat": "Invalid tag format",
-        "SettingsSaved": "Settings successfully saved.",
-        "WCAPIValid": "WorldCat API Key is valid.",
-        "WCAPIInvalid": "WorldCat API Key is not valid.",
+        "SettingsSaved": "Settings successfully saved",
+        "WCAPIValid": "WorldCat API Key is valid",
+        "WCAPIInvalid": "WorldCat API Key is not valid",
         "PerformPresearch": "Perform pre-search on the following fields:",
         "AddTag": "Add Tag (e.g. 245, 7xx)",
         "PreferInstitutions": "Give preference to WorldCat records from the following institutions:",
@@ -33,7 +33,7 @@
         "NonRoman880": "Non-roman text is in field 880",
         "PinyinOnly": "Chinese: Don't search WorldCat, only convert characters to Pinyin",
         "WadeGilesSearch": "Chinese: Search for Pinyin equivalents of Wade-Giles text",
-        "WCAPIAdminSet": "Set WC Key for all users (Admin only)"
+        "WCAPIAdminSet": "Set WorldCat API Key for all users (Admin only)"
 
     }
 }
