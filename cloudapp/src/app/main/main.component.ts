@@ -1,7 +1,5 @@
-import { concat, identity, Observable, of, Subscription, VirtualTimeScheduler } from 'rxjs';
-import { 
-  Component, OnInit, OnDestroy, ɵɵCopyDefinitionFeature, resolveForwardRef, 
-  ViewChild, ElementRef, HostListener, Injectable } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
   Entity, EntityType, PageInfo, RestErrorResponse, AlertService, CloudAppConfigService, 
@@ -12,14 +10,14 @@ import {WadegilesService} from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
 import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
-import { elementAt, finalize, switchMap, concatMap, timeout, timestamp, concatAll, map, takeWhile } from 'rxjs/operators';
-import { HttpClient, HttpHeaders, JsonpClientBackend } from '@angular/common/http';
+import { concatMap } from 'rxjs/operators';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Settings } from '../models/settings';
 import {OclcQuery} from './oclc-query';
 import {MarcDataField} from './marc-datafield';
-import { Router, ActivatedRoute, ParamMap, ResolveEnd } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PinyinService } from '../pinyin.service';
-import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import {AppService} from '../app.service'
 

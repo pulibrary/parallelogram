@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient,HttpHeaders } from '@angular/common/http'; 
-import { from, ObjectUnsubscribedError, Observable, of, ReplaySubject } from 'rxjs';
-import { NgIfContext } from '@angular/common';
-import { mixinInitialized } from '@angular/material/core';
 import { AlertService } from '@exlibris/exl-cloudapp-angular-lib';
-import { throwIfEmpty } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'

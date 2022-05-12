@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { Component, EventEmitter, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AppService } from '../app.service';
 import { FormGroup, FormControl } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -11,8 +11,6 @@ import {MatChipInputEvent} from '@angular/material/chips'
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
-import { Router } from '@angular/router';
-import { USE_STORE } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',

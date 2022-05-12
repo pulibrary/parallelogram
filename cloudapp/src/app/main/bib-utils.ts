@@ -1,8 +1,5 @@
 import { CloudAppRestService, AlertService, HttpMethod } from "@exlibris/exl-cloudapp-angular-lib";
-import {MarcDataField} from './marc-datafield';
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
-import { NgIfContext, NumberSymbol } from "@angular/common";
+import { MarcDataField } from './marc-datafield';
 
 export interface Bib {
   link: string,

@@ -1,5 +1,3 @@
-import { Observable, of } from "rxjs";
-
 export class Settings {
     static readonly wcBaseURL: string = "https://nga1cj08ih.execute-api.us-east-2.amazonaws.com/webservices/catalog/search/sru";
     static readonly awsBaseURL: string = "https://nga1cj08ih.execute-api.us-east-2.amazonaws.com/"
