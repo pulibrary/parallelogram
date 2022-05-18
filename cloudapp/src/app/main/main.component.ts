@@ -176,7 +176,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
           this.mms_id = bib.mms_id;
-          //this.alert.warn(this.mms_id)
+          //this.alert.warn(this.bibUtils.xmlEscape(this.bib.anies.toString()))
           this.extractParallelFields(this.bib.anies);
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch && this.settings.wckey != undefined) {            
@@ -428,10 +428,11 @@ export class MainComponent implements OnInit, OnDestroy {
 
       this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
       this.bibUtils.addFieldToBib(this.bib,parallel_field);  
+      //this.alert.info(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})
       if(this.settings.doSwap) {
         this.doParallelSwap(fkey,field.getSubfieldString(),parallel_field.getSubfieldString())
       }
- 
+      //this.alert.info(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})
       this.fieldTable = this.bibUtils.getDatafields(this.bib)
       this.recordChanged = true;
       this.preSearchFields.delete(fkey)
@@ -458,6 +459,7 @@ export class MainComponent implements OnInit, OnDestroy {
       this.changeSpinner("clear")
       this.recordChanged = false;
       this.alert.success(this.translate.instant('Translate.RecordSaved')+"!")
+      //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})
     }) 
   }
 

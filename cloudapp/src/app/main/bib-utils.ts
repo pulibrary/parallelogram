@@ -234,7 +234,7 @@ export class BibUtils {
       });
     });
     
-    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
+    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);    
     return bib;
   }  
 
@@ -333,14 +333,17 @@ export class BibUtils {
         break;
       }
     }
+    //this.alert.info(this.xmlEscape(target_field.outerHTML)+"<br>"+this.xmlEscape(parallel_field.outerHTML),{autoClose: false})
+
     let t = parallel_field.innerHTML
     parallel_field.innerHTML = target_field.innerHTML
-    parallel_field.querySelector("subfield[code='6']").innerHTML = "880-" + linkage;
+    parallel_field.querySelector("subfield[code='6']").innerHTML = tag + "-" + linkage;
     //parallel_field.setAttribute("tag",tag);
 
     target_field.innerHTML = t
-    target_field.querySelector("subfield[code='6']").innerHTML = tag + "-" + linkage;
+    target_field.querySelector("subfield[code='6']").innerHTML = "880-" + linkage;
     //target_field.setAttribute("tag","880");
+    //this.alert.info(this.xmlEscape(target_field.outerHTML)+"<br>"+this.xmlEscape(parallel_field.outerHTML),{autoClose: false})
 
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
     //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false});
