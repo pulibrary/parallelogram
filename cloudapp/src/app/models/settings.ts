@@ -14,4 +14,5 @@ export class Settings {
     preferredInstitutionList: Array<string> = ["DLC"]
     interfaceLang: string = ""
     adminWC: boolean = false;
+    adminLock: boolean = false;
 }

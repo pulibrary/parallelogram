@@ -16,7 +16,20 @@
   .full-width {
     width: 100%;
   }
+
+  .notice {
+    font-size: 110%;
+    font-weight: bold;
+    font-style: italic;
+  }
   
+  .hiddenField {
+    visibility: hidden;
+    display: block;
+    height: 0;
+    width: 0;
+  }
+
   .delete-icon {
     transform: scale(0.5);
     vertical-align: middle;
