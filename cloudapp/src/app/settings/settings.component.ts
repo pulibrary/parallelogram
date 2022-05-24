@@ -31,6 +31,7 @@ export class SettingsComponent implements OnInit {
   languages = [
     {code: 'en', name: 'English'},
     {code: 'zh-CN', name: '中文简体'},
+    {code: 'jp', name: '日本語'}
   ]
 
   constructor(
