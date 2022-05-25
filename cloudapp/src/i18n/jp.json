@@ -28,13 +28,13 @@
 		"AddTag": "タグを追加する",
 		"PreferInstitutions": "以下機関のWorldCat 目録を優先する。",
 		"AddPreferredInstitution": "機関コードを追加する",
-		"Swap880Option": "並行欄を追加した後、元の欄と８８０欄を交換する（もし必要であれば）",
+		"Swap880Option": "並行欄を追加した後、元の欄と880欄を交換する (もし必要であれば)",
 		"Roman880": "ローマ字文章は欄",
 		"NonRoman880": "非ローマ字文書は欄",
-		"PinyinOnly": "中国語：漢字を拼音( Pinyin)に変換するのみで、WorldCatにおいて検索しないこと。",
-		"WadeGilesSearch": "中国語：ウエード式表記文書に等しい拼音( Pinyin)文書を検索する。",
-		"WCAPIAdminSet": "WorldCat API キーを全ての利用者のために設定する（管理者のみ）",
-        "WCAPIAdminLock": "WorldCat API 表示を利用者から隠す（管理者のみ）"
+		"PinyinOnly": "中国語：漢字を拼音(Pinyin)に変換するのみで、WorldCatにおいて検索しないこと。",
+		"WadeGilesSearch": "中国語：ウエード式表記文書に等しい拼音(Pinyin)文書を検索する。",
+		"WCAPIAdminSet": "WorldCat API キーを全ての利用者のために設定する (管理者のみ)",
+        "WCAPIAdminLock": "WorldCat API 表示を利用者から隠す (管理者のみ)"
 
     }
 }
