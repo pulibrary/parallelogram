@@ -39,7 +39,7 @@ Parallel pairs are displayed next to each other and are highlighted in the same 
 
 After adding all of the desired parallel fields, click the "Save Record" button above the record to save your changes.  To close the app, you can click the X in the upper right of the window or "Back to App List" in the upper left.  Note that you may need to refresh your browser window or the MDE to see your changes reflected in Alma.
 
-***Be sure to save the record before you close the app!  It will not warn you if you close the app with unsaved work!***
+***BE SURE TO SAVE THE RECORD BEFORE YOU CLOSE THE APP!  IT WILL NOT WARN YOU IF YOU CLOSE IT WITH UNSAVED WORK!***
 
 ### Field Options
 
