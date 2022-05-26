@@ -8,12 +8,17 @@ The above approach allows the tool to be used for a variety of different languag
 
 Because the app is dependent on WorldCat and LOC data, it may not always find the information it needs.  There is a chance that it will not be able to generate parallel text in every case, and the text it does generate is not guaranteed to be accurate.  The tool compensates for this by presenting multiple options for parallel text where there is ambiguity, and also allowing you to correct its suggestions.  Such corrections will be saved in the tool's internal database and can be recalled the next time that text appears in a record.  Thus, over time, the tool should produce more consistent and accurate results. 
 
-### Launching the App
+### Configuration
 
 First of all, please note that depending on your Alma configuration, your administrator may need to enable Cloud Apps for your and allow access to the Paraallelogram app.  As you follow the steps below, if you do not see the Cloud Apps menu or an option for Parallelogram in that menu, contact your administrator and request that they enable Alma Cloud Apps, as described in the following documentation from Ex Libris:
 
 https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/050Administration/050Configuring_General_Alma_Functions/Configuring_Cloud_Apps
 
+The app uses the WorldCat Search API, which requires an API Key.  This can be entered in the app settings the first time the app is run.  A catalog administrator can also set the key for all users.  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC at the following website:
+
+https://www.oclc.org/developer/api/oclc-apis/worldcat-search-api.en.html
+
+## Launching the App
 
 Before opening the app, you must first navigate to the bibliographic record you are interested in enhancing.  The record can either be open in the MDE or in read-only mode (what you see if you click the title of the record in a results list).  Alternatively, if you launch the app with a list of search results open, it will select the first record in the list.  To launch the app, open the Cloud Apps Center using this icon in the upper right of the Alma window. 
 
@@ -43,7 +48,7 @@ After adding all of the desired parallel fields, click the "Save Record" button 
 
 ### Field Options
 
-Once a field has imported parallel data, the button to the left turns from a plus into an ellipsis.  Clicking it will open the menu below:
+Once a field has parallel data, the button to the left turns from a plus into an ellipsis.  Clicking it will open the menu below:
 
 |<img src="docs/images/screenshot5.png" width=100></img>|
 |-|
@@ -52,7 +57,7 @@ These menu options do the following:
 
 * **edit**: Edit the field (see the section "Editing Subfields" below).
 * **swap**: Swap the contents of the parallel fields (except for subfield 6).  This button has the same effect whether you select it for the original field or the 880.
-* **unlink**: Removes the link between the two fields without deleting them.  Subfield 6 will be removed from the original field, while in the 880, the occurrence number subfield 6 will be changed to "00".  This button has the same effect whether you select it for the original field or the 880.
+* **unlink**: Removes the link between the two fields without deleting them.  Subfield 6 will be removed from the original field, while in the 880, the occurrence number in subfield 6 will be changed to "00".  This button has the same effect whether you select it for the original field or the 880.
 * **delete**:  Deletes the field.  If deleting an 880 field, subfield 6 is also deleted from the original field.  If deleting a non-880 field, the contents of the corresponding 880 are first copied over to the original field, replacing the original field's contents.  Then, subfield 6 of the original field is deleted as well as the entire 880 field.  In other words, when deleting a field, you are actually deleting the contents of the field.  In the end, it is always the 880 field that is removed.
 
 ### Editing Subfields
@@ -62,7 +67,7 @@ If you select the "edit" option for a given field, the field will expand so that
 |<img src="docs/images/screenshot6.png" width=700></img>|
 |-|
 
-There is one line for each subfield (However, subfields $6 and $0 are not displayed and are not editable).  There are two buttons to the left of each subfield.  The "language" icon displays a list of candidates for that subfield.  In the example above, the app found multiple CJK transliterations of "Tokyo", so both of these are displayed in the menu.  (Additionally, this menu will always include the original text from the parallel field.)  Selecting one of these candidates will populate the text box with that selection. 
+There is one line for each subfield (However, subfields $6 and $0 are not displayed and are not editable).  There are two buttons to the left of each subfield.  The "language" icon displays a list of candidates for that subfield.  In the example above, the app found two CJK transliterations of "Tokyo", so both of these are displayed in the menu.  (Additionally, this menu will always include the original text from the parallel field.)  Selecting one of these candidates will populate the text box with that selection. 
 
 Sometimes, the candidate list will include invalid options.  This may be due to ambiguity or errors in the WorldCat or authority records that are found.  In such a case, the "thumbs down" button will remove the selected text from the candidate list as well as the app's internal database.  (It is still possible that the text could re-appear if a future search encounters the same data.  However, in many cases the thumbs down button is effective in keeping candidate lists from becoming too cluttered).
 
@@ -77,16 +82,17 @@ The screenshot below shows the app settings.  This screen can be accessed by cli
 
 The settings are:
 
-* **Language**: This sets language of the app interface itself (as opposed to the language of the records being edited).
-* **WorldCat API Key**: Needed in order to search for WorldCat records.  This field will be populated automatically if a Catalog Administrator has entered the key in their instance of the app.
+* **Interface Language**: This sets language of the app interface itself (as opposed to the language of the records being edited).
+* **WorldCat API Key**: Needed in order to search for WorldCat records.  The Catalog Administrator may choose to populate this field for all users and prevent it from being viewed or edited.  However, if the administrator has not given an API key, individual users may enter one.
 * **Perform pre-search...**:  If checked, then the app will automatically search for parallel data for the specified fields.  If parallel data is found, the field is displayed in bold type.  Although this takes some extra time when the app is initially opened, it saves the trouble of having to click on a field to see if parallel data was found.  Fields can be removed from the pre-search list by clicking the X next to the tag name.  Additional fields can be added by typing the tag name to the right of the list.  (An 'x' may be used as a wildcard in tag names.)  The more tags in the list, the longer the pre-searching stage will take.  Also, if a tag is not in the pre-search list, it will not be displayed in bold even if that field has parallel data.  The app will not search for this data until you click the plus sign to the left of the field.
 * **Give preference to WorldCat records...**: If checked, then the app will give greater weight to parallel text from records originating from specific institutions.  "DLC" (Library of Congress) is included by default, but you can enter any code that may be found in field 040.  This allows you to improve the quality of the parallel text by indicating that certain institutions can be trusted to produce good records.
 * **After adding a parallel field, swap original field and 880...**: If checked, this option allows you to set a policy for what kind of text is placed in the 880 field (either roman or non-roman text).  When a parallel field is added, the original and 880 fields are swapped (if needed) to conform to this policy.
-* There are also two options specific to Chinese:
+* There are two options specific to Chinese:
     - If you are only interested in converting Chinese characters to pinyin (and not vice versa), you can check the **"Don't search WorldCat..."** option.  This will bypass WorldCat searching and generate parallel fields using the app's built-in dictionary.  This is faster and more accurate than using WorldCat.  If this option is checked, the app can be run without a WorldCat API key.
     - If you are processing records that contain Wade-Giles romanization, you can check the **"Search for Pinyin equivalents..."** option, which will convert Wade-Giles text to pinyin and search for both versions of the text.  This makes the app run slightly slower but increases the chances of finding relevant data in WorldCat.
-* If the user has the "Catalog Administrator" role, an additional option will appear: **"Set WorldCat API Key for all users"**.  If checked, then when the settings are saved, the WorldCat API key will automatically be saved to all other users' settings.  This provides an easy way to distribute the WCAPI key.
-
+* If the user has the "Catalog Administrator" role, two additional options will appear: 
+    - **"Set WorldCat API Key for all users"**.  If checked, then when the settings are saved, the WorldCat API key will automatically be saved to all other users' settings.  This provides an easy way to distribute the WCAPI key.
+    - **"Hide WorldCat API Key from other users"**.  If checked, then other users will not be able to see or edit the API Key provided by the administrator.  (The app will still work for regular users, but the API Key will be a hidden setting).  However, if the admin has not provided a key, then other users will still be able to enter their own.
 After configuring the app's options, click the "Save" button in the upper right.  This will save the settings as well as check the validity of the WorldCat API key.  Click the "Home" button to return to the app's main screen.
 
 ### Acknowledgments
