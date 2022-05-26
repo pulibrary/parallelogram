@@ -37,7 +37,9 @@ Depending on the app settings, you will need to wait for the app to perform some
 
 Parallel pairs are displayed next to each other and are highlighted in the same color.  In this case, the app settings indicate that non-roman text should always be put in field 880, so the Japanese text originally in field 245 has been moved to the corresponding 880 field.  However, since field 260 originally contained romanized text, the app simply adds a subfield 6 with a linkage value and generates an 880 with the Japanese text.  (See "App Settings" below for more information about this setting).
 
-After adding all of the desired parallel fields, click the "Save Record" button above the record to save your changes.  To close the app, you can click the X in the upper right of the window or "Back to App List" in the upper left.  *Be sure to save the record before you close the app!  It will not warn you if you close the app with unsaved work!* Note that you may need to refresh your browser window or the MDE to see your changes reflected in Alma.
+After adding all of the desired parallel fields, click the "Save Record" button above the record to save your changes.  To close the app, you can click the X in the upper right of the window or "Back to App List" in the upper left.  Note that you may need to refresh your browser window or the MDE to see your changes reflected in Alma.
+
+***Be sure to save the record before you close the app!  It will not warn you if you close the app with unsaved work!***
 
 ### Field Options
 
