@@ -10,7 +10,7 @@ Because the app is dependent on WorldCat and LOC data, it may not always find th
 
 ### Launching the App
 
-First of all, please note that depending on your Alma configuration, your administrator may need to enable Cloud Apps for your and allow access to the Paraallelogram app.  As you follow the steps below, if you do not see the Cloud Apps menu or an option for Parallelogram in that menu, contact your administrator, and request that they enable Alma Cloud Apps, as described in the following documentation from Ex Libris:
+First of all, please note that depending on your Alma configuration, your administrator may need to enable Cloud Apps for your and allow access to the Paraallelogram app.  As you follow the steps below, if you do not see the Cloud Apps menu or an option for Parallelogram in that menu, contact your administrator and request that they enable Alma Cloud Apps, as described in the following documentation from Ex Libris:
 
 https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/050Administration/050Configuring_General_Alma_Functions/Configuring_Cloud_Apps
 
@@ -37,7 +37,7 @@ Depending on the app settings, you will need to wait for the app to perform some
 
 Parallel pairs are displayed next to each other and are highlighted in the same color.  In this case, the app settings indicate that non-roman text should always be put in field 880, so the Japanese text originally in field 245 has been moved to the corresponding 880 field.  However, since field 260 originally contained romanized text, the app simply adds a subfield 6 with a linkage value and generates an 880 with the Japanese text.  (See "App Settings" below for more information about this setting).
 
-After adding all of the desired parallel fields, click the "Save Record" button above the record to save your changes.  To close the app, you can click the X in the upper right of the window or "Back to App List" in the upper left.  Note that you may need to refresh your browser window or the MDE to see your changes reflected in Alma.
+After adding all of the desired parallel fields, click the "Save Record" button above the record to save your changes.  To close the app, you can click the X in the upper right of the window or "Back to App List" in the upper left.  *Be sure to save the record before you close the app!  It will not warn you if you close the app with unsaved work!* Note that you may need to refresh your browser window or the MDE to see your changes reflected in Alma.
 
 ### Field Options
 
@@ -86,3 +86,8 @@ The settings are:
 * If the user has the "Catalog Administrator" role, an additional option will appear: **"Set WorldCat API Key for all users"**.  If checked, then when the settings are saved, the WorldCat API key will automatically be saved to all other users' settings.  This provides an easy way to distribute the WCAPI key.
 
 After configuring the app's options, click the "Save" button in the upper right.  This will save the settings as well as check the validity of the WorldCat API key.  Click the "Home" button to return to the app's main screen.
+
+### Acknowledgments
+
+Many thanks to my colleagues who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Hyoungbae Lee, and Chiharu Watsky.
+
