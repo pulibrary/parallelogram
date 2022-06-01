@@ -35,6 +35,7 @@
         "PinyinOnly": "中文: 不搜索WorldCat, 只把汉字音译到汉语拼音",
         "WadeGilesSearch": "中文: 把汉语拼音译威翟式拼音, 搜索两样",
         "WCAPIAdminSet": "管理员: 把WorldCat应用程式介面号码分给所有用户人",
-        "WCAPIAdminLock": "管理员: 隐藏WorldCat应用程式介面号码, 其他用户人看不见啊"
+        "WCAPIAdminLock": "管理员: 隐藏WorldCat应用程式介面号码, 其他用户人看不见啊",
+        "GotoRecordWarning": "请打开记录, 才打开APP"
     }
 }

@@ -59,7 +59,7 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
-    this.settingsService.remove().subscribe()
+    //this.settingsService.remove().subscribe()
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       this.admin = this.isAdmin(); 

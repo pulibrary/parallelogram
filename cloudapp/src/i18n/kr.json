@@ -18,7 +18,7 @@
 		"Unlink": "연결 해제",
 		"Delete": "삭제",
 		"ConfirmClose": "저장하지 않은 변경 내용은 사라집니다. 이 페이지를 넘기시겠습니까?",
-		"UnsavedWorkWarning": "",
+		"UnsavedWorkWarning": "수정한 사항이 저장되지 않았습니다. 창을 닫기 전에 반드시 저장하시기 바랍니다!",
 		"WCAPIKey": "월드캣 API 키",
 		"AdminSetWCAPI": "월드캣 API 키가 관리자에 의해 설정되어 있습니다",
 		"NoWCAPI": "월드캣 API 키가 입력되어 있지 않습니다",
@@ -36,6 +36,7 @@
 		"PinyinOnly": "중국어: 월드캣 검색 없이 한자의 병음변환만 수행",
 		"WadeGilesSearch": "중국어: 웨이드자일스 로마자에 대응하는 병음으로 검색",
 		"WCAPIAdminSet": "모든 사용자에 대해 월드캣 API 키를 설정 (관리자 전용)",
-		"WCAPIAdminLock": "다른 사용자로부터 월드캣 API 키를 숨김 (관리자 전용)"
+		"WCAPIAdminLock": "다른 사용자로부터 월드캣 API 키를 숨김 (관리자 전용)",
+		"GotoRecordWarning": "앱을 실행하기 전에 레코드를 찾아 열어주시기 바랍니다"
     }
 }

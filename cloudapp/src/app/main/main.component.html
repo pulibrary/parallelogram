@@ -8,7 +8,7 @@
     <div class="spinnerText">{{statusString}}</div>
   </div>
   <div class="warning" *ngIf="recordChanged">{{'Translate.UnsavedWorkWarning' | translate}}</div>
-  <mat-card>    
+  <mat-card *ngIf="bib; else mms_id_search">    
     <div>
       <button mat-flat-button color="secondary" (click)="saveRecord()" [disabled]="!recordChanged">
         <mat-icon>save</mat-icon> {{'Translate.SaveRecord' | translate}}
@@ -112,4 +112,9 @@
       </div>
     </mat-card-content>
   </mat-card>
+  <ng-template #mms_id_search>
+    <div id="noRecord" class="warning" hidden="true">
+      {{'Translate.GotoRecordWarning' | translate}}
+    </div>
+  </ng-template>
 </section>

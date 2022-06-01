@@ -147,9 +147,10 @@ export class MainComponent implements OnInit, OnDestroy {
     } else if(state == "saving") {
       this.saving = true
       this.loading = false
+      this.statusString = ""
     } else if (state == "clear") {
       this.saving = false
-      this.loading = false
+      this.loading = false 
     }
   }
 
@@ -158,7 +159,6 @@ export class MainComponent implements OnInit, OnDestroy {
       this.doSearch = (this.route.snapshot.queryParamMap.get('doSearch') == "true")
     }
     this.wadegiles.ready.then((wg_ready) =>  {
-
     this.pinyin.ready.then((py_ready) => {
     this.authToken_ready.then((aut) => {
     this.authToken = aut
@@ -265,6 +265,7 @@ export class MainComponent implements OnInit, OnDestroy {
   });
   });
   });
+  setTimeout(() => {document.getElementById("noRecord").removeAttribute("hidden")},3000)
   }
 
   getOCLCrecords(oq: OclcQuery) {

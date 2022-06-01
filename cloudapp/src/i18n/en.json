@@ -35,7 +35,8 @@
         "PinyinOnly": "Chinese: Don't search WorldCat, only convert characters to Pinyin",
         "WadeGilesSearch": "Chinese: Search for Pinyin equivalents of Wade-Giles text",
         "WCAPIAdminSet": "Set WorldCat API Key for all users (Admin only)",
-        "WCAPIAdminLock": "Hide WorldCat API Key from other users (Admin only)"
+        "WCAPIAdminLock": "Hide WorldCat API Key from other users (Admin only)",
+        "GotoRecordWarning": "Please navigate to a bibliographic record before running the app"
 
     }
 }
