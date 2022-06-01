@@ -7,6 +7,7 @@
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     <div class="spinnerText">{{statusString}}</div>
   </div>
+  <div class="warning" *ngIf="recordChanged">{{'Translate.UnsavedWorkWarning' | translate}}</div>
   <mat-card>    
     <div>
       <button mat-flat-button color="secondary" (click)="saveRecord()" [disabled]="!recordChanged">

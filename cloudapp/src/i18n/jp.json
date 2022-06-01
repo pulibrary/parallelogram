@@ -17,6 +17,7 @@
 		"Unlink": "接続を解除する",
 		"Delete": "削除する",
 		"ConfirmClose": "保存されていない変更されたデータは失われます。このページを閉じていいですか。",
+		"UnsavedWorkWarning": "",
 		"WCAPIKey": "WorldCat API キー",
 		"AdminSetWCAPI": "WorldCat API キーは管理者により設定される。",
 		"NoWCAPI": "WorldCat API キーは入力されていません。",

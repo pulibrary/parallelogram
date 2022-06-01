@@ -17,6 +17,7 @@
         "Unlink": "取消链接",
         "Delete": "删除",
         "ConfirmClose": "未保存的更改将丢失. 请确定你要离开这页.",
+        "UnsavedWorkWarning": "别忘记保存记录，才关掉窗口!",
         "WCAPIKey": "WorldCat应用程式介面号码",
         "AdminSetWCAPI": "管理员已经输入了WorldCat应用程式介面号码",
         "NoWCAPI": "没有WorldCat应用程式介面号码",
