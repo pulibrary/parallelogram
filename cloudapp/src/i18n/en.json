@@ -17,6 +17,7 @@
         "Unlink": "unlink",
         "Delete": "delete",
         "ConfirmClose": "Unsaved changes will be lost.  Are you sure you want to leave this page?",
+        "UnsavedWorkWarning": "There are unsaved changes.  Be sure to save the record before closing the window!",
         "WCAPIKey": "WorldCat API Key",
         "AdminSetWCAPI": "WorldCat API Key has been set by the Administrator",
         "NoWCAPI": "No WorldCat API Key has been entered",
