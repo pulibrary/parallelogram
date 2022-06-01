@@ -59,9 +59,14 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
+    this.settingsService.remove().subscribe()
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       this.admin = this.isAdmin(); 
+      if(!settings.interfaceLang) {
+        this.setLang("en")
+        this.form.get("interfaceLang").setValue("en")
+      }
       this.form.get("doSwap").valueChanges.subscribe(v => {
         if(v) {
           this.form.get("swapType").enable()
@@ -79,20 +84,21 @@ export class SettingsComponent implements OnInit {
       this.configService.get().subscribe(fg => {          
         let adminKey: string = fg.wckey
         let adminLock: boolean = fg.adminLock
-        if(adminKey != undefined && (settings.wckey == undefined || settings.wckey == "")) {
+        //this.alert.warn("*"+adminKey+"*")
+        if((adminKey != undefined && adminKey != "") && (settings.wckey == undefined && settings.wckey != "")) {
           this.form.get('wckey').setValue(adminKey)
           settings.wckey = adminKey
           this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
           this.form.markAsDirty();        
         }
-        this.hideWCKey = adminLock
+        this.hideWCKey = (adminLock && adminKey != undefined && adminKey != "")
         this.admin.subscribe(v => {
           this.hideWCKey = !v         
         })           
       },
       (err) => this.alert.error(err),
        () => {         
-          if(settings.wckey == undefined && !settings.pinyinonly) {
+          if((settings.wckey == undefined || settings.wckey == "") && !settings.pinyinonly) {
             this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
           }
         });
@@ -174,9 +180,16 @@ export class SettingsComponent implements OnInit {
     this.saving = true;
     let wcKey = this.form.get("wckey").value;   
     let adminLock = this.form.get("adminLock").value 
-    if(this.form.get("pinyinonly").value) {
+    if(this.form.get("pinyinonly").value && (wcKey == undefined || wcKey == "")) {
       this.settingsService.set(this.form.value).subscribe(
         response => {
+          if(this.form.get("adminWC").value) {
+            let configForm: FormGroup = new FormGroup({
+              wckey: new FormControl(wcKey),
+              adminLock: new FormControl(adminLock)
+            })            
+            this.configService.set(configForm.value).subscribe()
+          }
           this.alert.success(this.translate.instant("Translate.SettingsSaved"));
           this.form.markAsPristine();
         },
@@ -192,14 +205,13 @@ export class SettingsComponent implements OnInit {
           wckey: new FormControl(wcKey),
           adminLock: new FormControl(adminLock)
         })
-        
-        this.configService.set(configForm.value)
+        this.configService.set(configForm.value).subscribe()
       }
       this.settingsService.set(this.form.value).subscribe(
         response => {
-          this.alert.success(this.translate.instant("Translate.WCAPIValid") + " " + 
+          this.alert.success(this.translate.instant("Translate.WCAPIValid") + ". " + 
             this.translate.instant("Translate.SettingsSaved"));
-          this.form.markAsPristine();
+          this.form.markAsPristine();          
         },
         err => this.alert.error(err.message),
         ()  => this.saving = false
