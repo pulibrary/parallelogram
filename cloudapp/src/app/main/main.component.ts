@@ -100,6 +100,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }	
 
   ngOnInit() {
+    this.changeSpinner('saving')
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
       this.doPresearch = this.settings.doPresearch;        
