@@ -80,13 +80,16 @@ export class SettingsComponent implements OnInit {
           this.form.get("adminLock").disable()
         }
       })  
-      this.configService.get().subscribe(fg => {          
+      this.configService.get().subscribe(fg => {         
         let adminKey: string = fg.wckey
         let adminLock: boolean = fg.adminLock
-        if((adminKey != undefined && adminKey != "") && (settings.wckey == undefined && settings.wckey != "")) {
+        if((adminKey != undefined && adminKey != "")) {
+          if(settings.wckey == undefined || settings.wckey == "") {
+            this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
+          }
           this.form.get('wckey').setValue(adminKey)
           settings.wckey = adminKey
-          this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
+          
           this.form.markAsDirty();        
         }
         this.hideWCKey = (adminLock && adminKey != undefined && adminKey != "")

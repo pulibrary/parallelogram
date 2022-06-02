@@ -444,6 +444,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   saveRecord() {
+    this.statusString= ""
     this.changeSpinner("saving")
     this.extractParallelFields(this.bib.anies)
     this.addParallelDictToStorage()
@@ -1128,6 +1129,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
     return outputString;
   }
   update(value: any) {
+    this.statusString = ""
     this.changeSpinner("saving")
     let requestBody = this.tryParseJson(value);
     if (!requestBody) {
@@ -1138,6 +1140,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
   }
 
   refreshPage = () => {
+    this.statusString = ""
     this.changeSpinner("saving")
     this.eventsService.refreshPage().subscribe({
       next: () => this.alert.success('Success!'),
