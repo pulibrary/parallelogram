@@ -59,7 +59,6 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
-    //this.settingsService.remove().subscribe()
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       this.admin = this.isAdmin(); 
@@ -84,7 +83,6 @@ export class SettingsComponent implements OnInit {
       this.configService.get().subscribe(fg => {          
         let adminKey: string = fg.wckey
         let adminLock: boolean = fg.adminLock
-        //this.alert.warn("*"+adminKey+"*")
         if((adminKey != undefined && adminKey != "") && (settings.wckey == undefined && settings.wckey != "")) {
           this.form.get('wckey').setValue(adminKey)
           settings.wckey = adminKey

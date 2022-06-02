@@ -92,7 +92,6 @@ export class MainComponent implements OnInit, OnDestroy {
     private pinyin:PinyinService,
     private router: Router) { }
 
-  //@HostListener('blur',['$event'])
   canDeactivate(): Observable<boolean> | boolean {
     if(this.recordChanged) {
       return confirm(this.translate.instant('Translate.ConfirmClose'));
@@ -167,7 +166,6 @@ export class MainComponent implements OnInit, OnDestroy {
     this.linkedDataCache = new Array<string>()
 
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
-    //this.alert.warn(JSON.stringify(this.pageEntities))
     if ((pageInfo.entities || []).length >= 1) {
       const entity = pageInfo.entities[0];
       this.bibUtils.getBib(entity.id).subscribe(bib=> {
@@ -176,7 +174,6 @@ export class MainComponent implements OnInit, OnDestroy {
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
           this.mms_id = bib.mms_id;
-          //this.alert.warn(this.bibUtils.xmlEscape(this.bib.anies.toString()))
           this.extractParallelFields(this.bib.anies);
           this.fieldTable = this.bibUtils.getDatafields(bib);
           if(this.doSearch && this.settings.wckey != undefined) {            
@@ -272,7 +269,6 @@ export class MainComponent implements OnInit, OnDestroy {
     let wcKey = this.settings.wckey;
     let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
       oq.getQueryString() + Settings.wcOtherParams;
-    //this.alert.info(wcURL,{autoClose: false})
     this.http.get(wcURL, {
           headers: new HttpHeaders({
             'X-Proxy-Host': 'worldcat.org',
@@ -392,7 +388,6 @@ export class MainComponent implements OnInit, OnDestroy {
           options = cached_options.get(sf.id)
         } else {
           options = await this.lookupInDictionary(sf.data);  
-          //this.alert.warn(options.join("<br>"))
         }        
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
@@ -429,11 +424,9 @@ export class MainComponent implements OnInit, OnDestroy {
 
       this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
       this.bibUtils.addFieldToBib(this.bib,parallel_field);  
-      //this.alert.info(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})
       if(this.settings.doSwap) {
         this.doParallelSwap(fkey,field.getSubfieldString(),parallel_field.getSubfieldString())
       }
-      //this.alert.info(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})
       this.fieldTable = this.bibUtils.getDatafields(this.bib)
       this.recordChanged = true;
       this.preSearchFields.delete(fkey)
@@ -455,12 +448,10 @@ export class MainComponent implements OnInit, OnDestroy {
     this.changeSpinner("saving")
     this.extractParallelFields(this.bib.anies)
     this.addParallelDictToStorage()
-    //this.extractParallelFields(this.bib.anies)
     this.bibUtils.updateBib(this.bib).subscribe(() => {
       this.changeSpinner("clear")
       this.recordChanged = false;
       this.alert.success(this.translate.instant('Translate.RecordSaved')+"!")
-      //this.alert.success(this.bibUtils.xmlEscape(this.bib.anies.toString()),{autoClose: false})
     }) 
   }
 
@@ -650,7 +641,6 @@ export class MainComponent implements OnInit, OnDestroy {
         }
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
           if(res != undefined) {    
-            //this.alert.warn(JSON.stringify(res))   
             options_d = res.parallels.map(a => a.text)      
           }
         });
@@ -711,9 +701,7 @@ export class MainComponent implements OnInit, OnDestroy {
         options_final = options_temp;
       }
     }
-    //this.alert.warn(startpunct + "*" + endpunct + "*" + sfdata)
     for(let i = 0; i < options_final.length; i++) {    
-      //this.alert.error(options_final[i])  
       m = sfdata.match(this.etal_re);
       if(m) {
         options_final[i] = options_final[i].replace(this.etal_re,m[0]);
@@ -749,7 +737,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
   addToStorage(pairs: Array<DictEntry>): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
-    //this.alert.info(pairs.map(a=>a.stringify()).join("<br><br>"),{autoClose: false})
     let pairs2 = new Array<DictEntry>();
     for(let i = 0; i < pairs.length; i++) {
       pairs2.push(pairs[i])
@@ -762,7 +749,6 @@ export class MainComponent implements OnInit, OnDestroy {
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {  
-          //this.statusString = "GET " + getCount++
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
           let newPair: DictEntry = pairs.find(a => {return a.key == prevPair.key})
           let i = pairs2.findIndex(a => {return a.key == prevPair.key})
@@ -775,10 +761,8 @@ export class MainComponent implements OnInit, OnDestroy {
         } 
       },
       complete: () => {  
-        //this.alert.info(pairs2.map(a => a.stringify()).join("<br><br>"),{autoClose: false})  
         let storeOperations = from(pairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
-          //next: (res) => {this.statusString = "SET " + setCount++},
           complete: () => resolve(true)
         })
       }
@@ -1021,7 +1005,6 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
     if(textA == textB) {
       return;
     }    
-    //this.alert.warn(textA+"<br>"+textB+"<br>"+score)
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
     if(found == -1) {
