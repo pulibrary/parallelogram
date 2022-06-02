@@ -100,7 +100,6 @@ export class MainComponent implements OnInit, OnDestroy {
   }	
 
   ngOnInit() {
-    this.changeSpinner('saving')
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
       this.doPresearch = this.settings.doPresearch;        
@@ -147,14 +146,13 @@ export class MainComponent implements OnInit, OnDestroy {
     } else if(state == "saving") {
       this.saving = true
       this.loading = false
-      this.statusString = ""
     } else if (state == "clear") {
       this.saving = false
       this.loading = false 
     }
   }
 
-  onPageLoad = (pageInfo: PageInfo) => {
+  onPageLoad = (pageInfo: PageInfo) => {    
     if(this.route.snapshot.queryParamMap.has('doSearch') && this.doSearch) {
       this.doSearch = (this.route.snapshot.queryParamMap.get('doSearch') == "true")
     }
@@ -263,7 +261,7 @@ export class MainComponent implements OnInit, OnDestroy {
   });
   });
   });
-  setTimeout(() => {document.getElementById("noRecord").removeAttribute("hidden")},3000)
+  setTimeout(() => {document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")},3000)
   }
 
   getOCLCrecords(oq: OclcQuery) {

@@ -5,7 +5,6 @@
   </div>
   <div class="loading-shade" *ngIf="saving">
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    <div class="spinnerText">{{statusString}}</div>
   </div>
   <div class="warning" *ngIf="recordChanged">{{'Translate.UnsavedWorkWarning' | translate}}</div>
   <mat-card *ngIf="bib; else mms_id_search">    
