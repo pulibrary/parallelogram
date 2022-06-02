@@ -94,7 +94,9 @@ export class SettingsComponent implements OnInit {
         }
         this.hideWCKey = (adminLock && adminKey != undefined && adminKey != "")
         this.admin.subscribe(v => {
-          this.hideWCKey = !v         
+          if(v) {
+            this.hideWCKey = false         
+          }
         })           
       },
       (err) => this.alert.error(err),
