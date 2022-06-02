@@ -17,7 +17,7 @@
 		"Unlink": "接続を解除する",
 		"Delete": "削除する",
 		"ConfirmClose": "保存されていない変更されたデータは失われます。このページを閉じていいですか。",
-		"UnsavedWorkWarning": "",
+		"UnsavedWorkWarning": "保存されていない変更されたデータがあります。ページを閉じる前に必ず保存してください!",
 		"WCAPIKey": "WorldCat API キー",
 		"AdminSetWCAPI": "WorldCat API キーは管理者により設定される。",
 		"NoWCAPI": "WorldCat API キーは入力されていません。",
@@ -35,7 +35,8 @@
 		"PinyinOnly": "中国語：漢字を拼音(Pinyin)に変換するのみで、WorldCatにおいて検索しないこと。",
 		"WadeGilesSearch": "中国語：ウエード式表記文書に等しい拼音(Pinyin)文書を検索する。",
 		"WCAPIAdminSet": "WorldCat API キーを全ての利用者のために設定する (管理者のみ)",
-        "WCAPIAdminLock": "WorldCat API 表示を利用者から隠す (管理者のみ)"
+        "WCAPIAdminLock": "WorldCat API 表示を利用者から隠す (管理者のみ)",
+		"GotoRecordWarning": "アプリケーションを実行する前に、書誌目録に移動してください"
 
     }
 }
