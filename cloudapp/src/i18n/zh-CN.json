@@ -17,7 +17,7 @@
         "Unlink": "取消链接",
         "Delete": "删除",
         "ConfirmClose": " 未保存的更改将丢失. 请确定你要离开这页.",
-        "UnsavedWorkWarning": "【记录】已有改动，请在关掉之前保存!",
+        "UnsavedWorkWarning": "记录已有改动，请在关掉之前保存!",
         "WCAPIKey": "WorldCat应用编程接口密钥",
         "AdminSetWCAPI": "管理员已设立WorldCat应用编程接口密钥",
         "NoWCAPI": "没有WorldCat应用编程接口密钥",
