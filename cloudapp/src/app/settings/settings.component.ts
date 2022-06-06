@@ -23,7 +23,7 @@ export class SettingsComponent implements OnInit {
   running = false;
   wcKeyValid = false;
   admin: Observable<boolean>;
-  hideWCKey = false
+  hideWCKey = true
 
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
