@@ -18,11 +18,11 @@ If you are using the app for anything other than converting Chinese characters t
 
 https://www.oclc.org/developer/api/oclc-apis/worldcat-search-api.en.html
 
-## Chinese Pinyin Mode
+### Chinese Pinyin Mode
 
 As noted above, the app has a special mode for converting Chinese characters to romanization (pinyin).  If this mode is enabled, then the app will us its internal dictionary to do the conversion, rather than searching WorldCat.  Thus, the app can be run without a WorldCat API Key, and overall it will run more quickly and produce more accurate results.  To enable this mode, go to the app settings, check **"Chinese: Don't Search WorldCat, only convert characters to pinyin"**.  Then, save the settings and click the "Home" button.  Note that you will need to uncheck this setting if you want to use the app for other languages or to convert Chinese romanization to characters.
 
-## Launching the App
+### Launching the App
 
 Before opening the app, you must first navigate to the bibliographic record you are interested in enhancing.  (Note: the app currently only works with Institution Zone records.)  The record can either be open in the MDE or in read-only mode (what you see if you click the title of the record in a results list).  Alternatively, if you launch the app with a list of search results open, it will select the first record in the list.  To launch the app, open the Cloud Apps Center using this icon in the upper right of the Alma window. 
 
