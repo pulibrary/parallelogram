@@ -449,7 +449,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.extractParallelFields(this.bib.anies)
     this.addParallelDictToStorage()
     this.bibUtils.updateBib(this.bib).subscribe(
-      (res) => this.alert.warn(JSON.stringify(res)),
+      (res) => this.alert.warn("Succeess: " + JSON.stringify(res)),
       (err) => this.alert.error("Error Saving Record: " + JSON.stringify(err)),
       () => {
       this.changeSpinner("clear")
