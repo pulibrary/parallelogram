@@ -4,9 +4,9 @@
 
 The "Parallelogram" Cloud App for Alma is used to automatically generate parallel fields in bibliographic records.  It can convert non-roman text to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record.
 
-The above approach allows the tool to be used for a variety of different languages without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  Though language-independent, it also has some features specific to Chinese, and can be used as a "pinyin converter", similar to the other tools that Princeton University Library has created for [MarcEdit](https://library.princeton.edu/eastasian/addpinyin-plugin-marcedit) and [OCLC Connexion Client](https://library.princeton.edu/eastasian/oclcpinyin).
+The above approach allows the tool to be used for a variety of different languages and scripts without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  Though language-independent, it also has some features specific to Chinese, and can be used as a "pinyin converter", similar to the other tools that Princeton University Library has created for [MarcEdit](https://library.princeton.edu/eastasian/addpinyin-plugin-marcedit) and [OCLC Connexion Client](https://library.princeton.edu/eastasian/oclcpinyin).
 
-Because the app is dependent on WorldCat and LOC data, it may not always find the information it needs.  There is a chance that it will not be able to generate parallel text in every case, and the text it does generate is not guaranteed to be accurate.  The tool compensates for this by presenting multiple options for parallel text where there is ambiguity, and also allowing you to correct its suggestions.  Such corrections will be saved in the tool's internal database and can be recalled the next time that text appears in a record.  Thus, over time, the tool should produce more consistent and accurate results. 
+Because the app is dependent on WorldCat and LOC data, it may not always find the information it needs.  There is a chance that it will not be able to generate parallel text in every case, and the text it does generate is not guaranteed to be accurate.  The tool compensates for this by presenting multiple options for parallel text where there is ambiguity, and also allowing you to correct its suggestions.  Such corrections are saved in the tool's internal database and can be recalled the next time that text appears in a record.  Thus, over time, the tool should produce more consistent and accurate results. 
 
 ### Configuration
 
@@ -14,9 +14,13 @@ First of all, please note that depending on your Alma configuration, your admini
 
 https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/050Administration/050Configuring_General_Alma_Functions/Configuring_Cloud_Apps
 
-If you are using the app for anything other than converting Chinese characters to pinyin, then you will need a WorldCat API Key.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users.  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC at the following website:
+If you are using the app for anything other than converting Chinese characters to pinyin, then you will need a WorldCat Search API Key.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users.  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC at the following website:
 
 https://www.oclc.org/developer/api/oclc-apis/worldcat-search-api.en.html
+
+## Chinese Pinyin Mode
+
+As noted above, the app has a special mode for converting Chinese characters to romanization (pinyin).  If this mode is enabled, then the app will us its internal dictionary to do the conversion, rather than searching WorldCat.  Thus, the app can be run without a WorldCat API Key, and overall it will run more quickly and produce more accurate results.  To enable this mode, go to the app settings, check **"Chinese: Don't Search WorldCat, only convert characters to pinyin"**.  Then, save the settings and click the "Home" button.  Note that you will need to uncheck this setting if you want to use the app for other languages or to convert Chinese romanization to characters.
 
 ## Launching the App
 
