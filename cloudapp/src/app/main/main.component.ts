@@ -448,11 +448,14 @@ export class MainComponent implements OnInit, OnDestroy {
     this.changeSpinner("saving")
     this.extractParallelFields(this.bib.anies)
     this.addParallelDictToStorage()
-    this.bibUtils.updateBib(this.bib).subscribe(() => {
+    this.bibUtils.updateBib(this.bib).subscribe(
+      (res) => this.alert.warn(JSON.stringify(res)),
+      (err) => this.alert.error("Error Saving Record: " + JSON.stringify(err)),
+      () => {
       this.changeSpinner("clear")
       this.recordChanged = false;
       this.alert.success(this.translate.instant('Translate.RecordSaved')+"!")
-    }) 
+    })
   }
 
   swapField(fkey: string) {
