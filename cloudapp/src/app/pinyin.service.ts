@@ -80,7 +80,6 @@ export class PinyinService {
           if (sjk.substring(sjk.length - 1) == " ") {
             continue;
           }
-          //sjk = sjk.replace("'", "''");
           pyj = this.lookupEntry(sjk);
           if(pyj != sjk) {
             if (j == 0)  { //capitalize first character of subfield                                      

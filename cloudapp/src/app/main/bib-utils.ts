@@ -26,7 +26,6 @@ export class BibUtils {
     this.alert = alert;
   }
 
-  /** Retrieve a single BIB record */
   getBib (mmsId: string) {
     return this._restService.call<Bib>(`/bibs/${mmsId}`);
   }   
@@ -85,8 +84,6 @@ export class BibUtils {
     let fieldTable = new Map<string,MarcDataField>();
     let parallelTable = new Map<string,string>();
     let unmatched = new Map<string, MarcDataField>();
-    //this.alert.clear()
-    //this.alert.info(this.xmlEscape(bib.anies.toString()),{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tagCount = new Map<string,number>();
 
@@ -125,7 +122,6 @@ export class BibUtils {
       }
       if(parallelTable.has(seq)) {
         id = parallelTable.get(seq);
-        //this.alert.success(true_tag + "|" + seq + "|" + id,{autoClose: false})
       } else {
         if(!tagCount.has(true_tag)) {
           tagCount.set(true_tag,0);
@@ -134,7 +130,6 @@ export class BibUtils {
         if(seq != "" && seq != "00") {
           parallelTable.set(seq,id)
         }
-        //this.alert.warn(true_tag + "|" + seq + "|" + tagCount.get(true_tag),{autoClose: false})
         tagCount.set(true_tag,tagCount.get(true_tag) + 1); 
       }
       if(seq != "" && seq != "00") {
@@ -148,10 +143,8 @@ export class BibUtils {
         id += "P"
       }      
       fieldTable.set(id,mdf);      
-      //this.alert.info(id+":" + JSON.stringify(mdf),{autoClose: false})
     }
     unmatched.forEach((v,id) => {
-      //this.alert.warn(id,{autoClose: false})
       let mdf = fieldTable.get(id);
       mdf.deleteSubfield("61")
       mdf.hasParallel = false
@@ -160,7 +153,6 @@ export class BibUtils {
     return fieldTable;
   }
 
-  /** Update a BIB record with the specified MARCXML */
   updateBib( bib: Bib ) {
     return this._restService.call<Bib>( {
       url: `/bibs/${bib.mms_id}`,
@@ -173,7 +165,6 @@ export class BibUtils {
   }    
 
   replaceFieldInBib(bib: Bib, field_id: string, field: MarcDataField) {
-    //this.alert.warn(field_id + "|" + JSON.stringify(field),{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
     let tag_seq = field_id.substring(4,5);
@@ -214,19 +205,16 @@ export class BibUtils {
     });
 
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);   
-    //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false}) 
     return bib;
   }
 
   addFieldToBib(bib: Bib, field: MarcDataField) {
-    //this.alert.success(JSON.stringify(field),{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     const datafield = dom("datafield", { 
       parent: doc.documentElement, 
       attributes: [ ["tag", field.tag], ["ind1", field.ind1], ["ind2", field.ind2] ]
     });
     field.subfields.forEach(sf => {
-      //this.alert.info(JSON.stringify(datafield.outerHTML) +"|"+ sf.code + "|" + sf.data,{autoClose: false})
       dom("subfield", { 
         parent: datafield, 
         text: this.xmlEscape(sf.data), 
@@ -261,9 +249,6 @@ export class BibUtils {
       }
     }
     
-    //this.alert.info("remove " + this.xmlEscape(parallel_field.querySelector("subfield[code='6']").outerHTML),{autoClose: false})
-    //this.alert.info("remove " + this.xmlEscape(main_field.outerHTML),{autoClose: false})
-    
     main_field.querySelector("subfield[code='6']").remove();
     let plink = parallel_field.querySelector("subfield[code='6'").innerHTML
     parallel_field.querySelector("subfield[code='6'").innerHTML = plink.replace(/^(...)-../,"$1-00");
@@ -276,14 +261,10 @@ export class BibUtils {
       this.swapParallelFields(bib,field_id)
     }
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
-    //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false})
     let tag = field_id.substring(0,3);
     let tag_seq = field_id.substring(4,5);
-    //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false})
-    this.alert.info
     
     let main_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
-    //this.alert.info(this.xmlEscape(main_field.innerHTML),{autoClose: false})
     let linkage = main_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
     
     let parallel_field: Element;
@@ -301,9 +282,6 @@ export class BibUtils {
       }
     }
     
-    //this.alert.info("remove " + this.xmlEscape(parallel_field.querySelector("subfield[code='6']").outerHTML),{autoClose: false})
-    //this.alert.info("remove " + this.xmlEscape(main_field.outerHTML),{autoClose: false})
-    
     main_field.querySelector("subfield[code='6']").remove();
     parallel_field.remove();
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
@@ -311,7 +289,6 @@ export class BibUtils {
   }
 
   swapParallelFields(bib: Bib, field_id: string) {
-    //this.alert.warn(field_id,{autoClose: false})
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
     let tag_seq = field_id.substring(4,5);
@@ -333,20 +310,15 @@ export class BibUtils {
         break;
       }
     }
-    //this.alert.info(this.xmlEscape(target_field.outerHTML)+"<br>"+this.xmlEscape(parallel_field.outerHTML),{autoClose: false})
-
+ 
     let t = parallel_field.innerHTML
     parallel_field.innerHTML = target_field.innerHTML
     parallel_field.querySelector("subfield[code='6']").innerHTML = tag + "-" + linkage;
-    //parallel_field.setAttribute("tag",tag);
 
     target_field.innerHTML = t
     target_field.querySelector("subfield[code='6']").innerHTML = "880-" + linkage;
-    //target_field.setAttribute("tag","880");
-    //this.alert.info(this.xmlEscape(target_field.outerHTML)+"<br>"+this.xmlEscape(parallel_field.outerHTML),{autoClose: false})
 
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
-    //this.alert.info(this.xmlEscape(bib.anies),{autoClose: false});
     return bib;
   }
 
@@ -359,7 +331,6 @@ export class BibUtils {
   } 
 }
 
-/** Adds Element to dom and returns it */
 const dom = (name: string, options: {parent?: Element, insertBefore?: Node, text?: 
   string, className?: string, id?: string, attributes?: string[][]} = {}
   ): Element => {

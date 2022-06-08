@@ -603,21 +603,10 @@ export class MainComponent implements OnInit, OnDestroy {
     if(m) {
       startpunct = m[0];
     }
-    /* I MAY WANT TO RE-ADD THIS SUFFIX CODE.  It was just messing up some things with the authority entries
-    let suffix = "";
-    m = sfdata.match(/\s*\([^\)]+\)[\s\p{P}]*$/u);
-    if(m) {
-      suffix = m[0];
-      sfdata = sfdata.substring(0,sfdata.length - suffix.length);
-    }
-    */
 
     let options_final = new Array<string>();
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
-    /* THIS TOO
-    if(suffix != "") {
-      sfsections.push(suffix);
-    }*/
+  
     for(let g = 0; g < sfsections.length; g++) {
       let options_d = new Array<string>();
       let text_normal_d = this.cjkNormalize(sfsections[g]);
