@@ -36,7 +36,8 @@
 		"WadeGilesSearch": "中国語：ウエード式表記文書に等しい拼音(Pinyin)文書を検索する。",
 		"WCAPIAdminSet": "WorldCat API キーを全ての利用者のために設定する (管理者のみ)",
         "WCAPIAdminLock": "WorldCat API 表示を利用者から隠す (管理者のみ)",
-		"GotoRecordWarning": "アプリケーションを実行する前に、書誌目録に移動してください"
+		"GotoRecordWarning": "アプリケーションを実行する前に、書誌目録に移動してください",
+		"OneRecordWarning": "注: アップデートは, 1回にひとつのレコードしかできません. 別のレコードをアップデートする場合は, アルマのレコードに行き, アプリを再起動させてください."
 
     }
 }

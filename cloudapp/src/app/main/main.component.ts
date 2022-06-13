@@ -170,6 +170,9 @@ export class MainComponent implements OnInit, OnDestroy {
       this.bibUtils.getBib(entity.id).subscribe(bib=> {
         this.bib = null;
         if(bib.record_format=='marc21') {
+          if(pageInfo.entities.length > 1) {
+            this.alert.warn(this.translate.instant("Translate.OneRecordWarning"))
+          }
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
           this.mms_id = bib.mms_id;
