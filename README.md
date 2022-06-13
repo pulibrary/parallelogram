@@ -102,5 +102,5 @@ After configuring the app's options, click the "Save" button in the upper right.
 
 ### Acknowledgments
 
-Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, and Chiharu Watsky.
+Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, and Chiharu Watsky.  And to my wife, Jessica Ventimiglia, who designed the logo.
 
