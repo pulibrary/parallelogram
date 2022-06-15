@@ -100,6 +100,10 @@ The settings are:
    
 After configuring the app's options, click the "Save" button in the upper right.  This will save the settings as well as check the validity of the WorldCat API key.  Click the "Home" button to return to the app's main screen.
 
+### Reporting Bugs and Making Suggestions
+
+If you encounter any problems with this tool or would like to request new features, please go to the "Issues" tab at the top of this github page, and click the "New Issue" button.  Also, if you would like to translate the app interface into a new language, please let me know by creating a new issue. There are about 40 short phrases used in the various buttons and alerts in the app, which I can provide in a spreadsheet.   I welcome such contributions and thank any contributers in advance!
+
 ### Acknowledgments
 
 Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, and Chiharu Watsky.  And to my wife, Jessica Ventimiglia, who designed the logo.
