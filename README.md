@@ -2,7 +2,7 @@
 
 ### Introduction
 
-The "Parallelogram" Cloud App for Alma is used to automatically generate parallel fields in bibliographic records.  It can add a non-roman text field to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record (provided it can find such text).
+The "Parallelogram" Cloud App for Alma is used to generate parallel fields in bibliographic records.  It can add a non-roman text field to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record (provided it can find such text).
 
 The above approach allows the tool to be used for a variety of different languages and scripts without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  Though language-independent, it also has some features specific to Chinese, and can be used as a "pinyin converter", similar to the other tools that Princeton University Library has created for [MarcEdit](https://library.princeton.edu/eastasian/addpinyin-plugin-marcedit) and [OCLC Connexion Client](https://library.princeton.edu/eastasian/oclcpinyin).
 
