@@ -172,7 +172,7 @@ export class SettingsComponent implements OnInit {
     return this.eventsService.getInitData().pipe(
       switchMap( initData => this.restService.call(`/users/${initData.user.primaryId}`)),
       map( user => {
-        if (!user.user_role.some(role=>role.role_type.value=='205')) { //Catalog Administrator
+        if (!user.user_role.some(role=>{return (role.role_type.value=='205' && role.status.value=='ACTIVE')})) { //Catalog Administrator
           return false;
         }
         return true;
