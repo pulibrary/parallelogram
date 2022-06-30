@@ -75,13 +75,7 @@ export class SettingsComponent implements OnInit {
           this.form.get("swapType").disable()
         }
       }) 
-      this.form.get("adminWC").valueChanges.subscribe(v => {
-        if(v) {
-          this.form.get("adminLock").enable()
-        } else {
-          this.form.get("adminLock").disable()
-        }
-      })  
+  
       this.configService.get().subscribe(fg => {         
         let adminKey: string = fg.wckey
         let adminLock: boolean = fg.adminLock
@@ -93,6 +87,13 @@ export class SettingsComponent implements OnInit {
           settings.wckey = adminKey
           
           this.form.markAsDirty();        
+        }
+        if(adminLock) {
+          this.form.get('adminLock').setValue(true)
+          settings.adminLock = true
+        } else {
+          this.form.get('adminLock').setValue(false)
+          settings.adminLock = false
         }
         this.hideWCKey = (adminLock && adminKey != undefined && adminKey != "")
         this.admin.subscribe(v => {
