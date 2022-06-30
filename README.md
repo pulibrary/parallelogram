@@ -2,7 +2,7 @@
 
 ### Introduction
 
-The "Parallelogram" Cloud App for Alma is used to automatically generate parallel fields in bibliographic records.  It can convert non-roman text to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record.
+The "Parallelogram" Cloud App for Alma is used to generate parallel fields in bibliographic records.  It can add a non-roman text field to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record (provided it can find such text).
 
 The above approach allows the tool to be used for a variety of different languages and scripts without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  Though language-independent, it also has some features specific to Chinese, and can be used as a "pinyin converter", similar to the other tools that Princeton University Library has created for [MarcEdit](https://library.princeton.edu/eastasian/addpinyin-plugin-marcedit) and [OCLC Connexion Client](https://library.princeton.edu/eastasian/oclcpinyin).
 
@@ -14,7 +14,7 @@ First of all, please note that depending on your Alma configuration, your admini
 
 https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/050Administration/050Configuring_General_Alma_Functions/Configuring_Cloud_Apps
 
-If you are using the app for anything other than converting Chinese characters to pinyin, then you will need a WorldCat Search API Key.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users.  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC at the following website:
+If you are using the app for anything other than converting Chinese characters to pinyin, then you will need a WorldCat Search API Key.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users.  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC (it is free for qualifying WorldCat members).  Further details can be found at the following website:
 
 https://www.oclc.org/developer/api/oclc-apis/worldcat-search-api.en.html
 
@@ -34,7 +34,7 @@ Before opening the app, you must first navigate to the bibliographic record you 
 |<img src="docs/images/screenshot2.png" width=300></img>|
 |-|
 
-Click the "Parallelogram' entry.  This will launch the app. (You may first need to select it under the "Available Apps" tab and click the "Activate" button before it appears under "Activated Apps".) When the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
+If you do not see "Parallelogram" under "Activated Apps", then go to the "Available Apps" tab and look for it.  Select the app, then click "Activate".  It should then appear under "Activated Apps". (You may need to scroll down to see it if other apps are also displayed.)  Clicking "Parallelogram" there should launch the app.  When the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
 
 |<img src="docs/images/screenshot3.png" width=700></img>|
 |-|
@@ -100,7 +100,11 @@ The settings are:
    
 After configuring the app's options, click the "Save" button in the upper right.  This will save the settings as well as check the validity of the WorldCat API key.  Click the "Home" button to return to the app's main screen.
 
+### Reporting Bugs and Making Suggestions
+
+If you encounter any problems with this tool or would like to request new features, please go to the "Issues" tab at the top of this github page, and click the "New Issue" button.  Also, if you would like to translate the app interface into a new language, please let me know by creating a new issue. There are about 40 short phrases used in the various buttons and alerts in the app, which I can provide in a spreadsheet.   I welcome such contributions and thank any contributers in advance!
+
 ### Acknowledgments
 
-Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, and Chiharu Watsky.  And to my wife, Jessica Ventimiglia, who designed the logo.
+Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Joshua Seufert, and Chiharu Watsky.  And to my wife, Jessica Ventimiglia, who designed the logo.
 
