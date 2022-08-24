@@ -1,4 +1,4 @@
-import { Observable, Subscription } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
@@ -20,6 +20,7 @@ import { PinyinService } from '../pinyin.service';
 import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import {AppService} from '../app.service'
+import { take, finalize, timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-main',
@@ -55,6 +56,7 @@ export class MainComponent implements OnInit, OnDestroy {
   showDetails = ""
   authToken = ""
   authToken_ready: Promise<string>
+  warnedTimeout = false
 
   deletions: Array<{key: string,value: string}>;
   
@@ -253,7 +255,10 @@ export class MainComponent implements OnInit, OnDestroy {
                 this.changeSpinner("loading")
                this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: 0%";
               }     
-              oclcQueries.map(oq => this.getOCLCrecords(oq))      
+              this.warnedTimeout = false
+              interval(500).pipe(take(oclcQueries.length)).subscribe(oq => {
+                this.getOCLCrecords(oclcQueries[oq])
+              })     
             }
          } 
         }
@@ -267,7 +272,7 @@ export class MainComponent implements OnInit, OnDestroy {
   setTimeout(() => {document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")},3000)
   }
 
-  getOCLCrecords(oq: OclcQuery) {
+  async getOCLCrecords(oq: OclcQuery) {
     let wcKey = this.settings.wckey;
     let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
       oq.getQueryString() + Settings.wcOtherParams;
@@ -279,12 +284,7 @@ export class MainComponent implements OnInit, OnDestroy {
             'Content-type': 'application/xml'
           }),
           responseType: 'text'
-        }).subscribe(
-      (res) => {
-        this.extractParallelFields(res, true);        
-      },
-      (err) => {this.alert.error(err.message)},
-      () => {
+      }).pipe(timeout(15000),finalize(() => {
         this.completedSearches++;
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
@@ -326,6 +326,18 @@ export class MainComponent implements OnInit, OnDestroy {
           })
         }
       }
+          
+    )).subscribe(
+      (res) => {
+        this.extractParallelFields(res, true);        
+      },
+      (err) => {
+        if(!this.warnedTimeout) {
+          this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+            " WorldCat Search API: " + this.translate.instant('Translate.ResultsMayNotBeOptimal'),{autoClose: false})
+          this.warnedTimeout = true
+        }
+      },
     )
   }
 
@@ -809,7 +821,8 @@ export class MainComponent implements OnInit, OnDestroy {
           let entries = this.extractLOCvariants(res)
           await this.addToStorage(entries)
       }).catch((err) => {
-        this.alert.error(err.error,{autoClose: false})
+        this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+        " LOC Linked Data Service: " + this.translate.instant('Translate.ResultsMayNotBeOptimal'),{autoClose: false})
       })   
     } 
   }
