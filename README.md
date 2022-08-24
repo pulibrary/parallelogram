@@ -24,7 +24,7 @@ As noted above, the app has a special mode for converting Chinese characters to 
 
 ### Launching the App
 
-Before opening the app, you must first navigate to the bibliographic record you are interested in enhancing.  (Note: the app currently only works with Institution Zone records.)  The record can either be open in the MDE or in read-only mode (what you see if you click the title of the record in a results list).  Alternatively, if you launch the app with a list of search results open, it will select the first record in the list.  To launch the app, open the Cloud Apps Center using this icon in the upper right of the Alma window. 
+Before opening the app, you must first navigate to the bibliographic record you are interested in editing.  (Note: the app currently only works with Institution Zone records, i.e. those in your local catalog.)  The record can either be open in the MDE or in read-only mode (what you see if you click the title of the record in a results list).  Alternatively, if you launch the app with a list of search results open, it will select the first record in the list.  To launch the app, open the Cloud Apps Center using this icon in the upper right of the Alma window. 
 
 |<img src="docs/images/screenshot1.png" width=75></img>|
 |-|
@@ -34,7 +34,7 @@ Before opening the app, you must first navigate to the bibliographic record you 
 |<img src="docs/images/screenshot2.png" width=300></img>|
 |-|
 
-If you do not see "Parallelogram" under "Activated Apps", then go to the "Available Apps" tab and look for it.  Select the app, then click "Activate".  It should then appear under "Activated Apps". (You may need to scroll down to see it if other apps are also displayed.)  Clicking "Parallelogram" there should launch the app.  When the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
+If you do not see "Parallelogram" under "Activated Apps", then go to the "Available Apps" tab and look for it.  (You may need to scroll down to the bottom of the list to see it.)  Select the app, then click "Activate".  It should then appear under "Activated Apps".   Clicking "Parallelogram" there should launch the app.  When the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
 
 |<img src="docs/images/screenshot3.png" width=700></img>|
 |-|
