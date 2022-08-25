@@ -334,7 +334,9 @@ export class MainComponent implements OnInit, OnDestroy {
       (err) => {
         if(!this.warnedTimeout) {
           this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-            " WorldCat Search API: " + this.translate.instant('Translate.ResultsMayNotBeOptimal'),{autoClose: false})
+            " " + this.translate.instant('Translate.WorldCatSearchAPI') + " " + 
+            this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+            this.translate.instant('Translate.ResultsMayNotBeOptimal'))
           this.warnedTimeout = true
         }
       },
@@ -822,7 +824,9 @@ export class MainComponent implements OnInit, OnDestroy {
           await this.addToStorage(entries)
       }).catch((err) => {
         this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-        " LOC Linked Data Service: " + this.translate.instant('Translate.ResultsMayNotBeOptimal'),{autoClose: false})
+        " " + this.translate.instant('Translate.LOCLinkedDataService') + " " +  
+        this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+        this.translate.instant('Translate.ResultsMayNotBeOptimal'))
       })   
     } 
   }

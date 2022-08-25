@@ -39,6 +39,9 @@
         "GotoRecordWarning": "Please navigate to a bibliographic record before running the app",
         "OneRecordWarning": "Note: only one record can be updated at a time.  To update a different record, please navigate to that record in Alma and run the app again.",
         "TroubleConnectingTo": "Trouble connecting to the",
-        "ResultsMayNotBeOptimal": "Results may not be optimal."
+        "ResultsMayNotBeOptimal": "Results may not be optimal.",
+        "WorldCatSearchAPI": "WorldCat Search API",
+        "LOCLinkedDataService": "LOC Linked Data Service",
+        "TroubleConnectingToAfter": ""
     }
 }

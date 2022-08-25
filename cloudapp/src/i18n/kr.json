@@ -38,6 +38,11 @@
 		"WCAPIAdminSet": "모든 사용자에 대해 월드캣 API 키를 설정 (관리자 전용)",
 		"WCAPIAdminLock": "다른 사용자로부터 월드캣 API 키를 숨김 (관리자 전용)",
 		"GotoRecordWarning": "앱을 실행하기 전에 레코드를 찾아 열어주시기 바랍니다",
-		"OneRecordWarning": "주의: 레코드는 한번에 한 건만 업데이트 가능합니다. 다른 레코드를 업데이트 하시려면 알마 상에서 해당 레코드를 찾아 연 후 앱을 재실행하시기 바랍니다."
+		"OneRecordWarning": "주의: 레코드는 한번에 한 건만 업데이트 가능합니다. 다른 레코드를 업데이트 하시려면 알마 상에서 해당 레코드를 찾아 연 후 앱을 재실행하시기 바랍니다.",
+		"TroubleConnectingTo": "",
+        "ResultsMayNotBeOptimal": "최적 결과가 아닐 수도 있습니다",
+        "WorldCatSearchAPI": "월드캣 검색 API",
+        "LOCLinkedDataService": "LOC 링크드 데이터 서비스",
+        "TroubleConnectingToAfter": "연결에 문제 발생"
     }
 }

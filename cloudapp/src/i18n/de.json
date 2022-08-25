@@ -37,6 +37,11 @@
         "WCAPIAdminSet": "WorldCat API Schlüssel für alle Benutzer festlegen (nur Administrator)",
         "WCAPIAdminLock": "WorldCat API Schlüssel vor Benutzer verbergen (nur Administrator)",
         "GotoRecordWarning": "Bitte wählen Sie ein biblographische Aufnahmen vor dem Starten des Programms",
-        "OneRecordWarning": "Bitte beachten: Es kann nur jeweils ein Datensatz aktualisiert werden. Wählen Sie zum Aktualisieren eines anderen Datensatzes diesen in Alma und starten Sie das Programm erneut."
+        "OneRecordWarning": "Bitte beachten: Es kann nur jeweils ein Datensatz aktualisiert werden. Wählen Sie zum Aktualisieren eines anderen Datensatzes diesen in Alma und starten Sie das Programm erneut.",
+        "TroubleConnectingTo": " Verbindungsproblem mit",
+        "ResultsMayNotBeOptimal": "Ergebnisse sind u. U. nicht optimal.",
+        "WorldCatSearchAPI": " WorldCat Suche API",
+        "LOCLinkedDataService": "LOC Linked Data Service",
+        "TroubleConnectingToAfter": ""
     }
 }

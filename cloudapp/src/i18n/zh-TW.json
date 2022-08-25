@@ -37,6 +37,11 @@
         "WCAPIAdminSet": "為所有使用者設立WorldCat應用編程接口密鑰 (只有管理員做)",
         "WCAPIAdminLock": "隱藏所有使用者 WorldCat應用編程接口密鑰 (只有管理員做)",
         "GotoRecordWarning": "請先找好需編目的記錄, 再打開APP",
-        "OneRecordWarning": "注意: (此程序) 一次只能修改一個記錄. 如需修改另一個不同的記錄, 請在 Alma 中操作記錄並再次啟動app[程序]."
+        "OneRecordWarning": "注意: (此程序) 一次只能修改一個記錄. 如需修改另一個不同的記錄, 請在 Alma 中操作記錄並再次啟動app[程序].",
+        "TroubleConnectingTo": "無法連接到",
+        "ResultsMayNotBeOptimal": "結果可能不是最佳的.",
+        "WorldCatSearchAPI": "WorldCat搜索API",
+        "LOCLinkedDataService": "國會圖書館關聯數據服務",
+        "TroubleConnectingToAfter": ""
     }
 }
