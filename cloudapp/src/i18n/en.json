@@ -23,8 +23,7 @@
         "NoWCAPI": "No WorldCat API Key has been entered",
         "InvalidTagFormat": "Invalid tag format",
         "SettingsSaved": "Settings successfully saved",
-        "WCAPIValid": "WorldCat API Key is valid",
-        "WCAPIInvalid": "WorldCat API Key is not valid",
+        "WCAPIValid": "WorldCat API Key is valid",        
         "PerformPresearch": "Perform pre-search on the following fields:",
         "AddTag": "Add Tag (e.g. 245, 7xx)",
         "PreferInstitutions": "Give preference to WorldCat records from the following institutions:",
@@ -42,6 +41,13 @@
         "ResultsMayNotBeOptimal": "Results may not be optimal.",
         "WorldCatSearchAPI": "WorldCat Search API",
         "LOCLinkedDataService": "LOC Linked Data Service",
-        "TroubleConnectingToAfter": ""
+        "TroubleConnectingToAfter": "",
+        "APIKeyType": "WorldCat API Key Type",
+        "Search": "Search",
+        "Metadata": "Metadata",
+        "ClientSecret": "Client Secret",
+        "KeyTypeReminder": "Please make sure you have selected the correct API key type",    
+        "WCAPIInvalid": "WorldCat API Key or Client Secret is not valid",
+        "OAuthError": "Trouble authenticating with WorldCat.  Please try again later"
     }
 }

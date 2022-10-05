@@ -22,10 +22,23 @@
         </mat-select>
       </mat-form-field>
     </section>
+    <section class="settings-section" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
+      <mat-label>{{'Translate.APIKeyType' | translate}}: </mat-label>
+      <mat-radio-group formControlName="wcKeyType">
+        <mat-radio-button value="search">{{'Translate.Search' | translate}}</mat-radio-button>
+        <mat-radio-button value="metadata">{{'Translate.Metadata' | translate}}</mat-radio-button>
+      </mat-radio-group>
+    </section>
     <section class="settings-section">
       <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
         <mat-label>{{'Translate.WCAPIKey' | translate}}: </mat-label> 
         <input matInput formControlName="wckey">
+      </mat-form-field>
+    </section>
+    <section class="settings-section">
+      <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
+        <mat-label>{{'Translate.ClientSecret' | translate}}: </mat-label> 
+        <input matInput formControlName="wcsecret">
       </mat-form-field>
     </section>
     <section class="settings-section">

@@ -8,6 +8,7 @@ import {
 } from '@exlibris/exl-cloudapp-angular-lib';
 import {WadegilesService} from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
+import {AuthUtils} from './auth-utils'
 import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
@@ -21,6 +22,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import {AppService} from '../app.service'
 import { take, finalize, timeout } from 'rxjs/operators';
+import { SettingsComponent } from '../settings/settings.component';
 
 @Component({
   selector: 'app-main',
@@ -42,6 +44,7 @@ export class MainComponent implements OnInit, OnDestroy {
   completedSearches = 0;
   totalSearches = 0;
   bibUtils: BibUtils;
+  authUtils: AuthUtils;
   settings: Settings;
   doPresearch: boolean;
   bib: Bib;
@@ -56,6 +59,7 @@ export class MainComponent implements OnInit, OnDestroy {
   showDetails = ""
   authToken = ""
   authToken_ready: Promise<string>
+  access_token = null
   warnedTimeout = false
 
   deletions: Array<{key: string,value: string}>;
@@ -160,9 +164,15 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.wadegiles.ready.then((wg_ready) =>  {
     this.pinyin.ready.then((py_ready) => {
-    this.authToken_ready.then((aut) => {
+    this.authToken_ready.then(async (aut) => {
     this.authToken = aut
+    
     this.bibUtils = new BibUtils(this.restService,this.alert);
+    this.authUtils = new AuthUtils(this.http)
+    if(this.settings.wcKeyType == "metadata") {
+      this.access_token = await this.authUtils.getOAuthToken(
+        this.authToken,this.settings.wckey,this.settings.wcsecret)
+    }
     this.fieldCache = new Map<string,Map<string,Array<string>>>()   
     this.linkedDataCache = new Array<string>()
 
@@ -229,11 +239,14 @@ export class MainComponent implements OnInit, OnDestroy {
 
             let names = this.bib.names.split("\\\|");
 
-            titles.forEach(title => {              
+            titles.forEach(title => {         
+              title = title.replace(new RegExp("\\p{P}+\$"),"")     
               names.forEach( name => {
+                name = name.replace(new RegExp("\\p{P}+\$"),"") 
                 if(name == "") {
                   return;
                 }
+                
                 let tnq = new OclcQuery("ti","exact",title);
                 tnq.addParams("au","=",name);
                 oclcQueries.push(tnq);
@@ -274,17 +287,31 @@ export class MainComponent implements OnInit, OnDestroy {
 
   async getOCLCrecords(oq: OclcQuery) {
     let wcKey = this.settings.wckey;
-    let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
-      oq.getQueryString() + Settings.wcOtherParams;
-    this.http.get(wcURL, {
-          headers: new HttpHeaders({
-            'X-Proxy-Host': 'worldcat.org',
-            'wskey': wcKey.toString(),
-            'Authorization': 'Bearer ' + this.authToken,
-            'Content-type': 'application/xml'
-          }),
-          responseType: 'text'
-      }).pipe(timeout(15000),finalize(() => {
+    let wcURL:string   
+    let wcHeaders: HttpHeaders
+    if(this.settings.wcKeyType == "metadata") { //metadata API
+      wcURL = Settings.wcMDBaseURL + "?" + Settings.wcMDQueryParamName + "=" +
+        oq.getQueryString("metadata")
+      wcHeaders = new HttpHeaders({
+        'X-Proxy-Host': Settings.wcMetadataHost,
+        'X-Proxy-Auth': 'Bearer ' + this.access_token,
+        'Authorization': 'Bearer ' + this.authToken,
+        'Content-type': 'application/xml'
+      })
+    } else { //search API
+      wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
+        oq.getQueryString("search") + Settings.wcOtherParams; 
+      wcHeaders = new HttpHeaders({
+          'X-Proxy-Host': Settings.wcSearchHost,
+          'wskey': wcKey.toString(),
+          'Authorization': 'Bearer ' + this.authToken,
+          'Content-type': 'application/xml'
+        })
+    }
+
+    this.alert.info(wcURL,{autoClose: false})
+    this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).pipe(
+      timeout(15000),finalize(() => {        
         this.completedSearches++;
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
@@ -329,6 +356,7 @@ export class MainComponent implements OnInit, OnDestroy {
           
     )).subscribe(
       (res) => {
+        this.alert.info(res,{autoClose: false})
         this.extractParallelFields(res, true);        
       },
       (err) => {
@@ -810,11 +838,11 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async getLinkedData(locURL: string) { 
-    if(locURL.match("id\.loc\.gov")) {
-      locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
+    if(locURL.includes(Settings.locHost)) {
+      locURL = locURL.replace("http://" + Settings.locHost + "/",Settings.awsBaseURL) + ".madsxml.xml"
       await this.http.get(locURL, {
         headers: new HttpHeaders({
-          'X-Proxy-Host': 'id.loc.gov',
+          'X-Proxy-Host': Settings.locHost,
           'Authorization': 'Bearer ' + this.authToken,
           'Content-type': 'application/xml'
         }),
