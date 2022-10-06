@@ -84,31 +84,18 @@ export class SettingsComponent implements OnInit {
         } else {
           this.form.get("swapType").disable()
         }
-      }) 
-
-      this.wcKeyType = this.form.get("wcKeyType").value
-      if(this.wcKeyType == "metadata") {
-        this.form.get("wcsecret").enable()
-      } else {
-        this.form.get("wcsecret").disable()
-      }
-      this.form.get("wcKeyType").valueChanges.subscribe(v => {
-        this.wcKeyType = this.form.get("wcKeyType").value
-        if(v == "metadata") {
-          this.form.get("wcsecret").enable()
-        } else {
-          this.form.get("wcsecret").disable()
-        }
-      })
+      })       
   
-      this.configService.get().subscribe(fg => {         
+      this.configService.get().subscribe(fg => {   
+        let adminKeyType: string = fg.wcKeyType      
         let adminKey: string = fg.wckey
         let adminSecret: string = fg.wcsecret
         let adminLock: boolean = fg.adminLock
-        if((adminKey != undefined && adminKey != "")) {
+        if((adminKeyType != undefined && adminKey != undefined && adminKey != "")) {
           if(settings.wckey == undefined || settings.wckey == "") {
             this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
-          }
+          }  
+          this.form.get('wcKeyType').setValue(adminKeyType)      
           this.form.get('wckey').setValue(adminKey)
           this.form.get('wcsecret').setValue(adminSecret)
           settings.wckey = adminKey
@@ -130,11 +117,26 @@ export class SettingsComponent implements OnInit {
         })           
       },
       (err) => this.alert.error(err),
-       () => {         
+      () => {         
           if((settings.wckey == undefined || settings.wckey == "") && !settings.pinyinonly) {
             this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
           }
-        });
+      });
+
+      this.wcKeyType = this.form.get("wcKeyType").value
+      if(this.wcKeyType == "metadata") {
+        this.form.get("wcsecret").enable()
+      } else {
+        this.form.get("wcsecret").disable()
+      }
+      this.form.get("wcKeyType").valueChanges.subscribe(v => {
+        this.wcKeyType = this.form.get("wcKeyType").value
+        if(v == "metadata") {
+          this.form.get("wcsecret").enable()
+        } else {
+          this.form.get("wcsecret").disable()
+        }
+      })
     });    
   }
 
@@ -211,6 +213,7 @@ export class SettingsComponent implements OnInit {
   async save() {
     this.alert.clear()
     this.saving = true;
+    let wcKeyType = this.form.get("wcKeyType").value
     let wcKey = this.form.get("wckey").value;   
     let wcSecret = this.form.get("wcsecret").value;
     let adminLock = this.form.get("adminLock").value 
@@ -219,6 +222,7 @@ export class SettingsComponent implements OnInit {
         response => {
           if(this.form.get("adminWC").value) {
             let configForm: FormGroup = new FormGroup({
+              wcKeyType: new FormControl(wcKeyType),
               wckey: new FormControl(wcKey),
               wcsecret: new FormControl(wcSecret),
               adminLock: new FormControl(adminLock)
@@ -237,10 +241,11 @@ export class SettingsComponent implements OnInit {
     if(this.wcKeyValid) { 
       if(this.form.get("adminWC").value) {
         let configForm: FormGroup = new FormGroup({
+          wcKeyType: new FormControl(wcKeyType),
           wckey: new FormControl(wcKey),
           wcsecret: new FormControl(wcSecret),
           adminLock: new FormControl(adminLock)
-        })
+        })        
         this.configService.set(configForm.value).subscribe()
       }
       this.settingsService.set(this.form.value).subscribe(
