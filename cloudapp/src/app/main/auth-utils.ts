@@ -6,7 +6,7 @@ export class AuthUtils {
 
     async getOAuthToken(authToken: String, wcKey: String, wcSecret: String): Promise<string> {
         let oauthURL = Settings.awsBaseURL + "token"
-        let client_codes = btoa(wcKey + ":" + wcSecret)
+        let client_codes = window.btoa(wcKey + ":" + wcSecret)
         let tokenParams = new HttpParams().set('grant_type','client_credentials')
             .set('scope','WorldCatMetadataAPI')
         let token = await this.http.post(oauthURL,'',

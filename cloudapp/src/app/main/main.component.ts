@@ -1,4 +1,4 @@
-import { interval, Observable, Subscription } from 'rxjs';
+import { forkJoin, interval, Observable, Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
@@ -299,7 +299,7 @@ export class MainComponent implements OnInit, OnDestroy {
         'X-Proxy-Host': Settings.wcMetadataHost,
         'X-Proxy-Auth': 'Bearer ' + this.access_token,
         'Authorization': 'Bearer ' + this.authToken,
-        'Content-type': 'application/xml'
+        'Accept': 'application/json'
       })
     } else { //search API
       wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
@@ -308,7 +308,7 @@ export class MainComponent implements OnInit, OnDestroy {
           'X-Proxy-Host': Settings.wcSearchHost,
           'wskey': wcKey.toString(),
           'Authorization': 'Bearer ' + this.authToken,
-          'Content-type': 'application/xml'
+          'Accept': 'application/xml'
         })
     }
 
@@ -359,8 +359,44 @@ export class MainComponent implements OnInit, OnDestroy {
           
     )).subscribe(
       (res) => {
-        this.alert.info(wcURL + "<br><br>" + res,{autoClose: false})
-        this.extractParallelFields(res, true);        
+        if(this.settings.wcKeyType == "search") {//search API
+          this.extractParallelFields(res, true);       
+        } else {//metadata API
+          let s = wcURL + "<br>"
+          let jsonBrief = JSON.parse(res)                    
+          if(jsonBrief["briefRecords"]) {
+            let recs = jsonBrief["briefRecords"]
+            let wcSingleHeaders = new HttpHeaders({
+              'X-Proxy-Host': Settings.wcMetadataHost,
+              'X-Proxy-Auth': 'Bearer ' + this.access_token,
+              'Authorization': 'Bearer ' + this.authToken,
+              'Accept': 'application/marcxml+xml'
+            })
+            let singleRecRequests:Observable<string>[] = []
+            for(let i = 0; i < recs.length; i++) {
+              let oclcNo:string = recs[i]["oclcNumber"]
+              let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
+              s += wcSingleURL + "<br>"
+              let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
+              singleRecRequests.push(req)
+            }
+            let results = ""
+            forkJoin(singleRecRequests).subscribe(
+              (resps) => {
+                results = "<records>\n" + resps.join() + "\n</records>"
+                this.extractParallelFields(results,true)
+              },
+              (err) => {
+                if(!this.warnedTimeout) {
+                this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+                  " " + this.translate.instant('Translate.WorldCatSearchAPI') + " " + 
+                  this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+                  this.translate.instant('Translate.ResultsMayNotBeOptimal'))
+                this.warnedTimeout = true
+              }
+            })
+          }
+        } 
       },
       (err) => {
         if(!this.warnedTimeout) {
@@ -943,7 +979,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let records = xmlDOM.getElementsByTagName("record");    
     for(let i = 0; i < records.length; i++) {
-      let reci = records[i];
+      let reci = records[i];      
       let isPreferredInst = false
       let datafields = reci.getElementsByTagName("datafield");
       let parallelFields = new Map<string,Array<Element>>();
@@ -969,10 +1005,16 @@ export class MainComponent implements OnInit, OnDestroy {
               parallelFields.set(linkage, new Array<Element>());
             }
             parallelFields.get(linkage).push(datafields[j]);
+            if(isOCLC) {
+              this.alert.warn(linkage + ":" + parallelFields.get(linkage).map(a=>a.innerHTML).join("|"))
+            }
           }
         }
       }
       let score = (isPreferredInst) ? this.preferredWCscore : 1
+      if(isOCLC) {
+        continue
+      }
       parallelFields.forEach((value, key) => {
         if(value.length != 2) {
           return;
