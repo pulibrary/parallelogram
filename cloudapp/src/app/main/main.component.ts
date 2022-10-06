@@ -23,6 +23,7 @@ import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import {AppService} from '../app.service'
 import { take, finalize, timeout } from 'rxjs/operators';
 import { SettingsComponent } from '../settings/settings.component';
+import regex from 'uuid/dist/regex';
 
 @Component({
   selector: 'app-main',
@@ -196,12 +197,14 @@ export class MainComponent implements OnInit, OnDestroy {
             this.bib.lccns = this.bibUtils.getBibField(bib,"010","a").trim();
             if(this.bib.lccns != "") {oclcQueries.push(new OclcQuery("dn", "exact",this.bib.lccns))}
             this.bib.isbns = this.bibUtils.getBibField(bib,"020","a").trim();
+            this.bib.isbns = this.bib.isbns.replace("-","").replace(RegExp("\\s*\\([^\\(]*\\)\\s*\\p{P}*","u"),"")
             if(this.bib.isbns != "") {
-              oclcQueries.push(new OclcQuery("bn","any",this.bib.isbns.replace("-","")))
+              oclcQueries.push(new OclcQuery("bn","any",this.bib.isbns))
             }
             this.bib.issns = this.bibUtils.getBibField(bib,"022","a").trim();
+            this.bib.issns = this.bib.issns.replace("-","").replace(RegExp("\\s*\\([^\\(]*\\)\\s*\\p{P}*","u"),"")
             if(this.bib.issns != "") {
-              oclcQueries.push(new OclcQuery("in","any",this.bib.issns.replace("-","")))
+              oclcQueries.push(new OclcQuery("in","any",this.bib.issns))
             }
             this.bib.oclcnos = this.bibUtils.extractOCLCnums(this.bibUtils.getBibField(bib,"035","a")).trim();
             if(this.bib.oclcnos != "") {oclcQueries.push(new OclcQuery("no","any",this.bib.oclcnos))}
@@ -309,7 +312,7 @@ export class MainComponent implements OnInit, OnDestroy {
         })
     }
 
-    this.alert.info(wcURL,{autoClose: false})
+   
     this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).pipe(
       timeout(15000),finalize(() => {        
         this.completedSearches++;
@@ -356,7 +359,7 @@ export class MainComponent implements OnInit, OnDestroy {
           
     )).subscribe(
       (res) => {
-        this.alert.info(res,{autoClose: false})
+        this.alert.info(wcURL + "<br><br>" + res,{autoClose: false})
         this.extractParallelFields(res, true);        
       },
       (err) => {
