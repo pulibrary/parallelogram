@@ -31,7 +31,7 @@ export class OclcQuery {
                 } else if(oqp.matcher == "=") {
                     oqp.index += "%3D"
                 } else if(oqp.matcher == "exact") {
-                    oqp.index += "w%3D"
+                    oqp.index += "%3D"
                 } 
                 let vals = oqp.value.split("|")
                 if(vals.length > 1) {

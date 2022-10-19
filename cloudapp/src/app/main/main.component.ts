@@ -240,7 +240,7 @@ export class MainComponent implements OnInit, OnDestroy {
             this.bib.names = this.bib.names.replace(new RegExp("^\\\|"),"")
               .replace(new RegExp("\\\|$"),"");
 
-            let names = this.bib.names.split("\\\|");
+            let names = this.bib.names.split("\|");
 
             titles.forEach(title => {         
               title = title.replace(new RegExp("\\p{P}+\$"),"")     
@@ -360,6 +360,7 @@ export class MainComponent implements OnInit, OnDestroy {
     )).subscribe(
       (res) => {
         if(this.settings.wcKeyType == "search") {//search API
+          this.alert.warn(res)
           this.extractParallelFields(res, true);       
         } else {//metadata API
           let s = wcURL + "<br>"
@@ -383,6 +384,7 @@ export class MainComponent implements OnInit, OnDestroy {
             let results = ""
             forkJoin(singleRecRequests).subscribe(
               (resps) => {
+                this.alert.warn("<records>\n" + resps.join() + "\n</records>")
                 results = "<records>\n" + resps.join() + "\n</records>"
                 this.extractParallelFields(results,true)
               },
@@ -1005,16 +1007,16 @@ export class MainComponent implements OnInit, OnDestroy {
               parallelFields.set(linkage, new Array<Element>());
             }
             parallelFields.get(linkage).push(datafields[j]);
-            if(isOCLC) {
-              this.alert.warn(linkage + ":" + parallelFields.get(linkage).map(a=>a.innerHTML).join("|"))
-            }
+            //if(isOCLC) {
+              //this.alert.warn(linkage + ":" + parallelFields.get(linkage).map(a=>a.innerHTML).join("|"))
+            //}
           }
         }
       }
       let score = (isPreferredInst) ? this.preferredWCscore : 1
-      if(isOCLC) {
-        continue
-      }
+      //if(isOCLC) {
+        //continue
+      //}
       parallelFields.forEach((value, key) => {
         if(value.length != 2) {
           return;
