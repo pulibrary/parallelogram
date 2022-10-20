@@ -240,7 +240,7 @@ export class MainComponent implements OnInit, OnDestroy {
             this.bib.names = this.bib.names.replace(new RegExp("^\\\|"),"")
               .replace(new RegExp("\\\|$"),"");
 
-            let names = this.bib.names.split("\|");
+            let names = this.bib.names.split("\|").filter((item,index) => this.bib.names.indexOf(item)== index);
 
             titles.forEach(title => {         
               title = title.replace(new RegExp("\\p{P}+\$"),"")     
@@ -312,6 +312,7 @@ export class MainComponent implements OnInit, OnDestroy {
         })
     }
 
+    let retrievedRecords = new Array()
    
     this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).pipe(
       timeout(15000),finalize(() => {        
@@ -360,7 +361,7 @@ export class MainComponent implements OnInit, OnDestroy {
     )).subscribe(
       (res) => {
         if(this.settings.wcKeyType == "search") {//search API
-          this.alert.warn(res)
+          this.alert.warn(oq.getQueryString() + "<br>" + res)
           this.extractParallelFields(res, true);       
         } else {//metadata API
           let s = wcURL + "<br>"
@@ -376,15 +377,19 @@ export class MainComponent implements OnInit, OnDestroy {
             let singleRecRequests:Observable<string>[] = []
             for(let i = 0; i < recs.length; i++) {
               let oclcNo:string = recs[i]["oclcNumber"]
-              let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
-              s += wcSingleURL + "<br>"
-              let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
-              singleRecRequests.push(req)
+              if(!retrievedRecords.includes(oclcNo)) {
+                retrievedRecords.push(oclcNo)
+
+                let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
+                s += wcSingleURL + "<br>"
+                let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
+                singleRecRequests.push(req)                
+              }
             }
             let results = ""
             forkJoin(singleRecRequests).subscribe(
               (resps) => {
-                this.alert.warn("<records>\n" + resps.join() + "\n</records>")
+                this.alert.warn(oq.getQueryString() + "<br><records>\n" + resps.join() + "\n</records>")
                 results = "<records>\n" + resps.join() + "\n</records>"
                 this.extractParallelFields(results,true)
               },
