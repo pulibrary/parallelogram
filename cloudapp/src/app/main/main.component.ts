@@ -243,9 +243,9 @@ export class MainComponent implements OnInit, OnDestroy {
             let names = this.bib.names.split("\|").filter((item,index) => this.bib.names.indexOf(item)== index);
 
             titles.forEach(title => {         
-              title = title.replace(new RegExp("\\p{P}+\$"),"")     
+              title = title.replace(new RegExp("[\\p{P}\\s]+$",'u'),"")        
               names.forEach( name => {
-                name = name.replace(new RegExp("\\p{P}+\$"),"") 
+                name = name.replace(new RegExp("[\\p{P}\\s]+$",'u'),"") 
                 if(name == "") {
                   return;
                 }
