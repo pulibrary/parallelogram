@@ -15,7 +15,8 @@ export class OclcQuery {
     public getQueryString(type = "search"): string
     {
         let resultString = "";  
-        this.paramsList.forEach(oqp => {
+        for(let i = 0; i < this.paramsList.length; i++) {
+            let oqp = this.paramsList[i]
             if (resultString != "") {
                 resultString += "+AND+";
             }
@@ -27,11 +28,11 @@ export class OclcQuery {
                 resultString += "srw." + oqp.index + "+" + oqp.matcher + "+%22" + encodeURI(oqp.value) + "%22";
             } else { //metadata API
                 if (oqp.matcher == "all" || oqp.matcher == "any") {
-                    oqp.index += "%3A"
+                    oqp.matcher = "%3A"
                 } else if(oqp.matcher == "=") {
-                    oqp.index += "%3D"
+                    oqp.matcher = "%3D"
                 } else if(oqp.matcher == "exact") {
-                    oqp.index += "%3D"
+                    oqp.matcher = "%3D"
                 } 
                 let vals = oqp.value.split("|")
                 if(vals.length > 1) {
@@ -41,13 +42,13 @@ export class OclcQuery {
                     if(i > 0) {
                         resultString += "+OR+"
                     }
-                    resultString += oqp.index + encodeURI(vals[i]) 
+                    resultString += oqp.index + oqp.matcher + encodeURI(vals[i]) 
                 }
                 if(vals.length > 1) {
                     resultString += "%29"
                 }
             }
-        });
+        }
         return resultString;
     }    
 }

@@ -389,7 +389,7 @@ export class MainComponent implements OnInit, OnDestroy {
             let results = ""
             forkJoin(singleRecRequests).subscribe(
               (resps) => {
-                this.alert.warn(oq.getQueryString() + "<br><records>\n" + resps.join() + "\n</records>")
+                this.alert.warn(oq.getQueryString("metadata") + "<br><records>\n" + resps.join() + "\n</records>")
                 results = "<records>\n" + resps.join() + "\n</records>"
                 this.extractParallelFields(results,true)
               },
