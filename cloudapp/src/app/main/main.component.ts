@@ -294,7 +294,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let wcHeaders: HttpHeaders
     if(this.settings.wcKeyType == "metadata") { //metadata API
       wcURL = Settings.wcMDBaseURL + "?" + Settings.wcMDQueryParamName + "=" +
-        oq.getQueryString("metadata")
+        oq.getQueryString("metadata") +"&limit=50"
       wcHeaders = new HttpHeaders({
         'X-Proxy-Host': Settings.wcMetadataHost,
         'X-Proxy-Auth': 'Bearer ' + this.access_token,
@@ -361,7 +361,26 @@ export class MainComponent implements OnInit, OnDestroy {
     )).subscribe(
       (res) => {
         if(this.settings.wcKeyType == "search") {//search API
-          this.alert.warn(oq.getQueryString() + "<br>" + res)
+          /*
+          let parser = new DOMParser();
+          let titles = ""          
+          let xmlDOM: XMLDocument = parser.parseFromString(res, 'application/xml');              
+          let recs = xmlDOM.getElementsByTagName("record")
+          for(let i = 0; i < recs.length; i++) {
+            let datafields = recs.item(i).getElementsByTagName("datafield")
+            for(let j = 0; j < datafields.length; j++) {
+              if(datafields.item(j).outerHTML.match(/tag=.245/)) {
+                let subfields = datafields.item(j).getElementsByTagName("subfield")
+                for(let k = 0; k < subfields.length; k++) {
+                  if(subfields.item(k).outerHTML.match(/code=.a/)) {
+                    titles += subfields.item(k).innerHTML + "<br>"
+                  }
+                }
+              }       
+            }             
+          }
+          this.alert.warn(oq.getQueryString() + "<br>" + titles)
+          */
           this.extractParallelFields(res, true);       
         } else {//metadata API
           let s = wcURL + "<br>"
@@ -379,7 +398,6 @@ export class MainComponent implements OnInit, OnDestroy {
               let oclcNo:string = recs[i]["oclcNumber"]
               if(!retrievedRecords.includes(oclcNo)) {
                 retrievedRecords.push(oclcNo)
-
                 let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
                 s += wcSingleURL + "<br>"
                 let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
@@ -389,7 +407,25 @@ export class MainComponent implements OnInit, OnDestroy {
             let results = ""
             forkJoin(singleRecRequests).subscribe(
               (resps) => {
-                this.alert.warn(oq.getQueryString("metadata") + "<br><records>\n" + resps.join() + "\n</records>")
+                /*
+                let parser = new DOMParser();
+                this.alert.warn(oq.getQueryString("metadata") + "<br>" + 
+                  resps.map(xml => {
+                    let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');              
+                    let datafields = xmlDOM.getElementsByTagName("record")[0].getElementsByTagName("datafield")
+                    for(let i = 0; i < datafields.length; i++) {
+                      if(datafields.item(i).outerHTML.match(/tag=.245/)) {
+                        let subfields = datafields.item(i).getElementsByTagName("subfield")
+                        for(let j = 0; j < subfields.length; j++) {
+                          if(subfields.item(j).outerHTML.match(/code=.a/)) {
+                            return subfields.item(j).innerHTML
+                          }
+                        }
+                      }   
+                    }                 
+                  }).join("<br>")
+                )
+                */
                 results = "<records>\n" + resps.join() + "\n</records>"
                 this.extractParallelFields(results,true)
               },
