@@ -30,6 +30,9 @@
       </mat-radio-group>
     </section>
     <section class="settings-section">
+      <span class="notice" [ngClass]="!hideWCKey ? 'hiddenField' : 'none'">{{'Translate.AdminSetWCAPI' | translate}}</span>
+    </section>
+    <section class="settings-section">
       <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
         <mat-label>{{'Translate.WCAPIKey' | translate}}: </mat-label> 
         <input matInput formControlName="wckey">
@@ -40,10 +43,7 @@
         <mat-label>{{'Translate.ClientSecret' | translate}}: </mat-label> 
         <input matInput formControlName="wcsecret">
       </mat-form-field>
-    </section>
-    <section class="settings-section">
-      <span class="notice" [ngClass]="!hideWCKey ? 'hiddenField' : 'none'">{{'Translate.AdminSetWCAPI' | translate}}</span>
-    </section>
+    </section>    
 
     <section class="settings-section">
       <mat-checkbox formControlName="doPresearch">{{'Translate.PerformPresearch' | translate}}</mat-checkbox>
