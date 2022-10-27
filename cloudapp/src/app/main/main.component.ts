@@ -62,6 +62,7 @@ export class MainComponent implements OnInit, OnDestroy {
   authToken_ready: Promise<string>
   access_token = null
   warnedTimeout = false
+  warnedAPI = false
 
   deletions: Array<{key: string,value: string}>;
   
@@ -107,22 +108,39 @@ export class MainComponent implements OnInit, OnDestroy {
   }	
 
   ngOnInit() {
+    
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
-      this.doPresearch = this.settings.doPresearch;        
-      if(this.settings.pinyinonly) {
-        this.doSearch = false;
-      } else if(this.settings.wckey == undefined || this.settings.wckey == "") {   
-        this.router.navigate(['settings'],{relativeTo: this.route})
-      } 
-      this.preSearchArray = this.settings.preSearchList
-      if(this.settings.interfaceLang == "") {
-        this.eventsService.getInitData().subscribe(data=> {
-          this.initData = data
-          this.settings.interfaceLang = this.initData.lang      
-        });
-      }  
-      this.translate.use(this.settings.interfaceLang)   
+      this.translate.use(this.settings.interfaceLang) 
+      this.configService.get().subscribe(cfg => {   
+        let adminKeyType: string = cfg.wcKeyType      
+        let adminKey: string = cfg.wckey
+        let adminSecret: string = cfg.wcsecret
+        if((adminKeyType != undefined && adminKey != undefined && adminKey != "")) {
+          this.settings.wcKeyType = adminKeyType    
+          this.settings.wckey = adminKey
+          this.settings.wcsecret = adminSecret      
+        }          
+      },
+      (err) => this.alert.error(err),
+      () => {              
+        if(!stgs.wcKeyType || stgs.wcKeyType != "metadata") {
+          this.alert.warn(this.translate.instant("Translate.SearchAPIWarning"))
+        }
+        this.doPresearch = this.settings.doPresearch;        
+        if(this.settings.pinyinonly) {
+          this.doSearch = false;
+        } else if(this.settings.wckey == undefined || this.settings.wckey == "") {   
+          this.router.navigate(['settings'],{relativeTo: this.route})
+        } 
+        this.preSearchArray = this.settings.preSearchList
+        if(this.settings.interfaceLang == "") {
+          this.eventsService.getInitData().subscribe(data=> {
+            this.initData = data
+            this.settings.interfaceLang = this.initData.lang      
+          });
+        }
+      });        
     });
      
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
@@ -166,14 +184,16 @@ export class MainComponent implements OnInit, OnDestroy {
     this.wadegiles.ready.then((wg_ready) =>  {
     this.pinyin.ready.then((py_ready) => {
     this.authToken_ready.then(async (aut) => {
-    this.authToken = aut
+    this.authToken = aut    
     
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.authUtils = new AuthUtils(this.http)
+
     if(this.settings.wcKeyType == "metadata") {
       this.access_token = await this.authUtils.getOAuthToken(
         this.authToken,this.settings.wckey,this.settings.wcsecret)
-    }
+    } 
+    
     this.fieldCache = new Map<string,Map<string,Array<string>>>()   
     this.linkedDataCache = new Array<string>()
 
