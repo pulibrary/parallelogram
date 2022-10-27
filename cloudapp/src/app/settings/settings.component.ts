@@ -121,24 +121,29 @@ export class SettingsComponent implements OnInit {
           if((settings.wckey == undefined || settings.wckey == "") && !settings.pinyinonly) {
             this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
           }
-      });
+          this.wcKeyType = this.form.get("wcKeyType").value
+          if(this.wcKeyType == "metadata") {
+            this.form.get("wcsecret").enable()
+          } else {
+            this.form.get("wcsecret").disable()        
+          }
 
-      this.wcKeyType = this.form.get("wcKeyType").value
-      if(this.wcKeyType == "metadata") {
-        this.form.get("wcsecret").enable()
-      } else {
-        this.form.get("wcsecret").disable()
-      }
-      this.form.get("wcKeyType").valueChanges.subscribe(v => {
-        this.wcKeyType = this.form.get("wcKeyType").value
-        if(v == "metadata") {
-          this.form.get("wcsecret").enable()
-        } else {
-          this.form.get("wcsecret").disable()
-        }
-      })
+          if(!this.wcKeyType || this.wcKeyType != "metadata") {
+            this.alert.warn(this.translate.instant("Translate.SearchAPIWarning"))
+          }
+
+          this.form.get("wcKeyType").valueChanges.subscribe(v => {
+          this.wcKeyType = this.form.get("wcKeyType").value
+          if(v == "metadata") {
+            this.form.get("wcsecret").enable()
+          } else {
+            this.form.get("wcsecret").disable()
+          }
+        })
+      });
     });    
   }
+  
 
   addPreSearchField(event: MatChipInputEvent) {
     let tag = (event.value || '').trim()
