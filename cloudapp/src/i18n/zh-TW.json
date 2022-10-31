@@ -24,7 +24,6 @@
         "InvalidTagFormat": "字段標識符格式無效",
         "SettingsSaved": "設置保存成功",
         "WCAPIValid": "WorldCat應用編程接口密鑰有效",
-        "WCAPIInvalid": "WorldCat應用編程接口密鑰無效",
         "PerformPresearch": "在以下字段做預搜索",
         "AddTag": "添加字段標識符 (例如 245, 7xx)",
         "PreferInstitutions": "對以下機構給出其WorldCat編目記錄的優先順序:",
@@ -42,6 +41,13 @@
         "ResultsMayNotBeOptimal": "結果可能不是最佳的.",
         "WorldCatSearchAPI": "WorldCat搜索API",
         "LOCLinkedDataService": "國會圖書館關聯數據服務",
-        "TroubleConnectingToAfter": ""
+        "TroubleConnectingToAfter": "",
+        "APIKeyType": "WorldCat API密鑰類型",
+        "Search": "搜索",
+        "Metadata": "元數據",
+        "ClientSecret": "用戶密文密碼",
+        "KeyTypeReminder": "請確定您已選擇了正確的 API 密鑰類型",    
+        "WCAPIInvalid": "WorldCat API 密鑰或用戶密文密碼無效",
+        "OAuthError": "使用 WorldCat 進行身份驗證時出現問題。請稍後再試"
     }
 }
