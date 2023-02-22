@@ -49,6 +49,6 @@
         "KeyTypeReminder": "Please make sure you have selected the correct API key type",    
         "WCAPIInvalid": "WorldCat API Key or Client Secret is not valid",
         "OAuthError": "Trouble authenticating with WorldCat.  Please try again later",
-        "SearchAPIWarning": "<strong>NOTE</strong>: The app is currently configured to use the WorldCat Search API.  Support for this API will be discontinued on <strong>February 1, 2023</strong>.  Please switch to the <strong>WorldCat Metadata API 2.0</strong> before then.  A new API key may be requested from OCLC at no charge.  This may need to be done by your catalog administrator.  For more details, please see the documentation at <a target=\"_blank\" href=\"https://github.com/pulibrary/parallelogram#configuration\">https://github.com/pulibrary/parallelogram#configuration</a> ."
+        "SearchAPIWarning": "<strong>NOTE</strong>: The app is currently configured to use the WorldCat Search API.  Support for this API will be discontinued on <strong>February 1, 2023</strong>.  Please switch to the <strong>WorldCat Metadata API</strong> before then.  A new API key may be requested from OCLC at no charge.  This may need to be done by your catalog administrator.  For more details, please see the documentation at <a target=\"_blank\" href=\"https://github.com/pulibrary/parallelogram#configuration\">https://github.com/pulibrary/parallelogram#configuration</a> ."
     }
 }
