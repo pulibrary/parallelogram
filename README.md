@@ -106,5 +106,5 @@ If you encounter any problems with this tool or would like to request new featur
 
 ### Acknowledgments
 
-Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Joshua Seufert, and Chiharu Watsky.  And to my wife, Jessica Ventimiglia, who designed the logo.
+Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Joshua Seufert, and Chiharu Watsky.  
 
