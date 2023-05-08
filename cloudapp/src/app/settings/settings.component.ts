@@ -80,7 +80,8 @@ export class SettingsComponent implements OnInit {
         let adminKey: string = fg.wckey
         let adminLock: boolean = fg.adminLock
         if((adminKey != undefined && adminKey != "")) {
-          if(settings.wckey == undefined || settings.wckey == "") {
+          if(settings.wckey == undefined || settings.wckey == "" || settings.wckey != adminKey) {
+            this.alert.clear()
             this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
           }
           this.form.get('wckey').setValue(adminKey)

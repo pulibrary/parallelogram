@@ -101,10 +101,15 @@ export class MainComponent implements OnInit, OnDestroy {
     return true;
   }	
 
-  ngOnInit() {
+  ngOnInit() {    
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
-      this.doPresearch = this.settings.doPresearch;        
+      this.configService.get().subscribe(fg => {  
+        if(fg.wckey != "" && fg.wckey != undefined && this.settings.wckey != fg.wckey) {
+          this.router.navigate(['settings'],{relativeTo: this.route})
+        }
+      })
+      this.doPresearch = this.settings.doPresearch;      
       if(this.settings.pinyinonly) {
         this.doSearch = false;
       } else if(this.settings.wckey == undefined || this.settings.wckey == "") {   
