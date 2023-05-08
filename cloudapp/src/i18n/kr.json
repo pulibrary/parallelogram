@@ -25,7 +25,6 @@
 		"InvalidTagFormat": "유효하지 않은 태그 형식",
 		"SettingsSaved": "설정이 저장되었습니다",
 		"WCAPIValid": "월드캣 API 키가 유효합니다",
-		"WCAPIInvalid": "월드캣 API 키가 유효하지 않습니다",
 		"PerformPresearch": "다음 필드의 사전검색을 수행",
 		"AddTag": "태그 추가 (예: 245, 7xx)",
 		"PreferInstitutions": "다음 기관의 월드캣 레코드에 대해 우선권 부여",
@@ -43,6 +42,14 @@
         "ResultsMayNotBeOptimal": "최적 결과가 아닐 수도 있습니다",
         "WorldCatSearchAPI": "월드캣 검색 API",
         "LOCLinkedDataService": "LOC 링크드 데이터 서비스",
-        "TroubleConnectingToAfter": "연결에 문제 발생"
+        "TroubleConnectingToAfter": "연결에 문제 발생",
+		"APIKeyType": "월드캣 API 키 유형",
+        "Search": "검색",
+        "Metadata": "메타데이타",
+        "ClientSecret": "클라이언트 보안비밀",
+        "KeyTypeReminder": "API 키 유형을 바르게 선택하였는지 확인하십시오",    
+        "WCAPIInvalid": " 월드캣 API 키 또는 클라이언트 보안비밀이 유효하지 않습니다",
+        "OAuthError": "월드캣과의 인증에 문제가 발생하였습니다. 나중에 다시 시도해 주세요",
+		"SearchAPIWarning": "<strong>주의사항</strong>: 이 앱은 현재 월드캣 검색 API를 사용하도록 설정되어 있습니다. 해당 API에 대한 지원은 <strong> 2023년 2월1일</strong>에 중단될 예정입니다. 그 이전에 <strong>월드캣 메타데이타 API</strong>로 전환하시기 바랍니다.  새로운 API 키는 OCLC에 무료로 신청할 수 있습니다. 이 신청은 사용자 직장의 목록 관리자에 의해 진행해야 할 수도 있습니다. 더 자세한 사항은 다음 문서를 참고하시기 바랍니다 <a target=\"_blank\" href=\"https://github.com/pulibrary/parallelogram#configuration\">https://github.com/pulibrary/parallelogram#configuration</a>"
     }
 }

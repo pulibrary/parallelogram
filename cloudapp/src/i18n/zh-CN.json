@@ -24,7 +24,6 @@
         "InvalidTagFormat": "字段标识符格式无效",
         "SettingsSaved": "设置保存成功",
         "WCAPIValid": "WorldCat应用编程接口密钥有效",
-        "WCAPIInvalid": "WorldCat应用编程接口密钥无效",
         "PerformPresearch": "在以下字段做预搜索",
         "AddTag": "添加字段标识符 (例如 245, 7xx)",
         "PreferInstitutions": "对以下机构给出其WorldCat编目记录的优先顺序:",
@@ -42,6 +41,13 @@
         "ResultsMayNotBeOptimal": "结果可能不是最佳的.",
         "WorldCatSearchAPI": "WorldCat搜索API",
         "LOCLinkedDataService": "国会图书馆关联数据服务",
-        "TroubleConnectingToAfter": ""
+        "TroubleConnectingToAfter": "",
+        "APIKeyType": "WorldCat API密钥类型",
+        "Search": "搜索",
+        "Metadata": "元数据",
+        "ClientSecret": "用户密文密码",
+        "KeyTypeReminder": "请确定您已选择了正确的 API 密钥类型",    
+        "WCAPIInvalid": "WorldCat API 密钥或用户密文密码无效",
+        "OAuthError": "使用 WorldCat 进行身份验证时出现问题。请稍后再试"
     }
 }

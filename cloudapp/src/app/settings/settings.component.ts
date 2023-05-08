@@ -3,7 +3,7 @@ import { map, switchMap } from 'rxjs/operators';
 import { Component, OnInit } from '@angular/core';
 import { AppService } from '../app.service';
 import { FormGroup, FormControl } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { AlertService, CloudAppSettingsService, FormGroupUtil, 
   CloudAppEventsService, CloudAppConfigService, CloudAppRestService } from '@exlibris/exl-cloudapp-angular-lib';
 import { Settings } from '../models/settings';
@@ -11,6 +11,8 @@ import {MatChipInputEvent} from '@angular/material/chips'
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
+import { textChangeRangeIsUnchanged } from 'typescript';
+import {AuthUtils} from '../main/auth-utils'
 
 @Component({
   selector: 'app-settings',
@@ -22,8 +24,10 @@ export class SettingsComponent implements OnInit {
   saving = false;
   running = false;
   wcKeyValid = false;
+  wcKeyType: String;
   admin: Observable<boolean>;
   hideWCKey = true
+  authUtils: AuthUtils
 
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
@@ -61,6 +65,7 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
+    this.authUtils = new AuthUtils(this.http)
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       this.admin = this.isAdmin(); 
@@ -68,23 +73,32 @@ export class SettingsComponent implements OnInit {
         this.setLang("en")
         this.form.get("interfaceLang").setValue("en")
       }
+      if(this.form.get("doSwap").value) {
+        this.form.get("swapType").enable()
+      } else {
+        this.form.get("swapType").disable()
+      }
       this.form.get("doSwap").valueChanges.subscribe(v => {
         if(v) {
           this.form.get("swapType").enable()
         } else {
           this.form.get("swapType").disable()
         }
-      }) 
+      })       
   
-      this.configService.get().subscribe(fg => {         
+      this.configService.get().subscribe(fg => {   
+        let adminKeyType: string = fg.wcKeyType      
         let adminKey: string = fg.wckey
+        let adminSecret: string = fg.wcsecret
         let adminLock: boolean = fg.adminLock
-        if((adminKey != undefined && adminKey != "")) {
+        if((adminKeyType != undefined && adminKey != undefined && adminKey != "")) {
           if(settings.wckey == undefined || settings.wckey == "" || settings.wckey != adminKey) {
             this.alert.clear()
             this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
-          }
+          }  
+          this.form.get('wcKeyType').setValue(adminKeyType)      
           this.form.get('wckey').setValue(adminKey)
+          this.form.get('wcsecret').setValue(adminSecret)
           settings.wckey = adminKey
           
           this.form.markAsDirty();        
@@ -104,13 +118,33 @@ export class SettingsComponent implements OnInit {
         })           
       },
       (err) => this.alert.error(err),
-       () => {         
+      () => {         
           if((settings.wckey == undefined || settings.wckey == "") && !settings.pinyinonly) {
             this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
           }
-        });
+          this.wcKeyType = this.form.get("wcKeyType").value
+          if(this.wcKeyType == "metadata") {
+            this.form.get("wcsecret").enable()
+          } else {
+            this.form.get("wcsecret").disable()        
+          }
+
+          if(!this.wcKeyType || this.wcKeyType != "metadata") {
+            this.alert.warn(this.translate.instant("Translate.SearchAPIWarning"))
+          }
+
+          this.form.get("wcKeyType").valueChanges.subscribe(v => {
+          this.wcKeyType = this.form.get("wcKeyType").value
+          if(v == "metadata") {
+            this.form.get("wcsecret").enable()
+          } else {
+            this.form.get("wcsecret").disable()
+          }
+        })
+      });
     });    
   }
+  
 
   addPreSearchField(event: MatChipInputEvent) {
     let tag = (event.value || '').trim()
@@ -185,14 +219,18 @@ export class SettingsComponent implements OnInit {
   async save() {
     this.alert.clear()
     this.saving = true;
+    let wcKeyType = this.form.get("wcKeyType").value
     let wcKey = this.form.get("wckey").value;   
+    let wcSecret = this.form.get("wcsecret").value;
     let adminLock = this.form.get("adminLock").value 
     if(this.form.get("pinyinonly").value && (wcKey == undefined || wcKey == "")) {
       this.settingsService.set(this.form.value).subscribe(
         response => {
           if(this.form.get("adminWC").value) {
             let configForm: FormGroup = new FormGroup({
+              wcKeyType: new FormControl(wcKeyType),
               wckey: new FormControl(wcKey),
+              wcsecret: new FormControl(wcSecret),
               adminLock: new FormControl(adminLock)
             })            
             this.configService.set(configForm.value).subscribe()
@@ -205,13 +243,15 @@ export class SettingsComponent implements OnInit {
       );
       return;
     }
-    await this.validateWCkey(wcKey);
+    await this.validateWCkey(wcKey,wcSecret);
     if(this.wcKeyValid) { 
       if(this.form.get("adminWC").value) {
         let configForm: FormGroup = new FormGroup({
+          wcKeyType: new FormControl(wcKeyType),
           wckey: new FormControl(wcKey),
+          wcsecret: new FormControl(wcSecret),
           adminLock: new FormControl(adminLock)
-        })
+        })        
         this.configService.set(configForm.value).subscribe()
       }
       this.settingsService.set(this.form.value).subscribe(
@@ -224,27 +264,53 @@ export class SettingsComponent implements OnInit {
         ()  => this.saving = false
       );
     } else {
-      this.alert.error(this.translate.instant("Translate.WCAPIInvalid"));
+      this.alert.error(this.translate.instant("Translate.WCAPIInvalid") + ". " + 
+        this.translate.instant("Translate.KeyTypeReminder") + ".");
       this.saving = false;
     }
-  }
+  }  
 
-  public async validateWCkey(wcKey: String) {
-    let wcURL = Settings.wcBaseURL;
+  public async validateWCkey(wcKey: String, wcSecret: String) {    
     let authToken = await this.eventsService.getAuthToken().toPromise();
-    await this.http.get(wcURL, {
-      headers: new HttpHeaders({
-        'X-Proxy-Host': 'worldcat.org',
-        'wskey': wcKey.toString(),
-        'Authorization': 'Bearer ' + authToken,
-        'Content-type': 'application/xml'
+    
+    if(this.wcKeyType == "metadata") { //metadata API
+      let access_token = await this.authUtils.getOAuthToken(authToken,wcKey,wcSecret)
+      if(access_token == null) {
+        this.wcKeyValid = false
+        return
+      }
+      let testSearch = new HttpParams().set('q','china')
+      await this.http.get(Settings.wcMDBaseURL,
+      {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/xml',
+          'X-Proxy-Host': Settings.wcMetadataHost,
+          'X-Proxy-Auth': 'Bearer ' + access_token,
+          'Authorization': 'Bearer ' + authToken
         }),
-      responseType: 'text'
-    }).toPromise().then(
-      res => {this.wcKeyValid = true}
-    ).catch(
-      err => {this.wcKeyValid = false}
-    )
+        params: testSearch,
+        responseType: 'text'
+      }).toPromise().then(
+        res => {this.wcKeyValid = true}
+      ).catch(
+        err => {this.wcKeyValid = false}
+      )                   
+    } else { //search API
+      await this.http.get(Settings.wcBaseURL,
+      {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/xml',
+          'X-Proxy-Host': Settings.wcSearchHost,
+          'wskey': wcKey.toString(),
+          'Authorization': 'Bearer ' + authToken
+        }),           
+        responseType: 'text'
+      }).toPromise().then(
+        res => {this.wcKeyValid = true}
+      ).catch(
+        err => {this.wcKeyValid = false}
+      )
+    }
     this.running = true;
   }
 }

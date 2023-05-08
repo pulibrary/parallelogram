@@ -24,7 +24,6 @@
         "InvalidTagFormat": "Ungültiges Markierungs-Format",
         "SettingsSaved": "Einstellungen erfolgreich gespeichert",
         "WCAPIValid": "WorldCat API Schlüssel ist gültig",
-        "WCAPIInvalid": "WorldCat API Schlüssel ist ungültig",
         "PerformPresearch": "Vorabsuche für die folgenden Felder:",
         "AddTag": "Markierung hinzufügen (z.B. 245, 7xx)",
         "PreferInstitutions": "WorldCat Datensätze der foldenden Institutionen bevorzugen:",
@@ -42,6 +41,13 @@
         "ResultsMayNotBeOptimal": "Ergebnisse sind u. U. nicht optimal.",
         "WorldCatSearchAPI": " WorldCat Suche API",
         "LOCLinkedDataService": "LOC Linked Data Service",
-        "TroubleConnectingToAfter": ""
+        "TroubleConnectingToAfter": "",
+        "APIKeyType": "Typ des WorldCat API Schlüssels",
+        "Search": "Suche",
+        "Metadata": "Metadaten",
+        "ClientSecret": "Client-Geheimnis",
+        "KeyTypeReminder": "Bitte überprüfen Sie den Typ Ihres API Schlüssels",    
+        "WCAPIInvalid": "Der WorldCat API Schlüssel oder das Client-Geheimnis sind ungültig",
+        "OAuthError": "Problem bei der Authentifizierung mit WorldCat.  Bitte versuchen Sie es später erneut"
     }
 }

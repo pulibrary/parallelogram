@@ -1,4 +1,4 @@
-import { interval, Observable, Subscription } from 'rxjs';
+import { forkJoin, interval, Observable, Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
@@ -8,6 +8,7 @@ import {
 } from '@exlibris/exl-cloudapp-angular-lib';
 import {WadegilesService} from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
+import {AuthUtils} from './auth-utils'
 import {DictEntry} from './dict-entry'
 import { from } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
@@ -21,6 +22,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import {AppService} from '../app.service'
 import { take, finalize, timeout } from 'rxjs/operators';
+import { SettingsComponent } from '../settings/settings.component';
+import regex from 'uuid/dist/regex';
 
 @Component({
   selector: 'app-main',
@@ -42,6 +45,7 @@ export class MainComponent implements OnInit, OnDestroy {
   completedSearches = 0;
   totalSearches = 0;
   bibUtils: BibUtils;
+  authUtils: AuthUtils;
   settings: Settings;
   doPresearch: boolean;
   bib: Bib;
@@ -56,7 +60,9 @@ export class MainComponent implements OnInit, OnDestroy {
   showDetails = ""
   authToken = ""
   authToken_ready: Promise<string>
+  access_token = null
   warnedTimeout = false
+  warnedAPI = false
 
   deletions: Array<{key: string,value: string}>;
   
@@ -104,25 +110,39 @@ export class MainComponent implements OnInit, OnDestroy {
   ngOnInit() {    
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
-      this.configService.get().subscribe(fg => {  
-        if(fg.wckey != "" && fg.wckey != undefined && this.settings.wckey != fg.wckey) {
+      this.translate.use(this.settings.interfaceLang) 
+      this.configService.get().subscribe(cfg => {   
+        let adminKeyType: string = cfg.wcKeyType      
+        let adminKey: string = cfg.wckey
+        let adminSecret: string = cfg.wcsecret
+        if(adminKey != "" && adminKey != undefined && this.settings.wckey != adminKey) {
           this.router.navigate(['settings'],{relativeTo: this.route})
         }
-      })
-      this.doPresearch = this.settings.doPresearch;      
-      if(this.settings.pinyinonly) {
-        this.doSearch = false;
-      } else if(this.settings.wckey == undefined || this.settings.wckey == "") {   
-        this.router.navigate(['settings'],{relativeTo: this.route})
-      } 
-      this.preSearchArray = this.settings.preSearchList
-      if(this.settings.interfaceLang == "") {
-        this.eventsService.getInitData().subscribe(data=> {
-          this.initData = data
-          this.settings.interfaceLang = this.initData.lang      
-        });
-      }  
-      this.translate.use(this.settings.interfaceLang)   
+        if((adminKeyType != undefined && adminKey != undefined && adminKey != "")) {
+          this.settings.wcKeyType = adminKeyType    
+          this.settings.wckey = adminKey
+          this.settings.wcsecret = adminSecret      
+        }          
+      },
+      (err) => this.alert.error(err),
+      () => {              
+        if(!stgs.wcKeyType || stgs.wcKeyType != "metadata") {
+          this.alert.warn(this.translate.instant("Translate.SearchAPIWarning"))
+        }
+        this.doPresearch = this.settings.doPresearch;      
+        if(this.settings.pinyinonly) {
+          this.doSearch = false;
+        } else if(this.settings.wckey == undefined || this.settings.wckey == "") {   
+          this.router.navigate(['settings'],{relativeTo: this.route})
+        } 
+        this.preSearchArray = this.settings.preSearchList
+        if(this.settings.interfaceLang == "") {
+          this.eventsService.getInitData().subscribe(data=> {
+            this.initData = data
+            this.settings.interfaceLang = this.initData.lang      
+          });
+        }
+      });        
     });
      
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
@@ -165,9 +185,17 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.wadegiles.ready.then((wg_ready) =>  {
     this.pinyin.ready.then((py_ready) => {
-    this.authToken_ready.then((aut) => {
-    this.authToken = aut
+    this.authToken_ready.then(async (aut) => {
+    this.authToken = aut    
+    
     this.bibUtils = new BibUtils(this.restService,this.alert);
+    this.authUtils = new AuthUtils(this.http)
+
+    if(this.settings.wcKeyType == "metadata") {
+      this.access_token = await this.authUtils.getOAuthToken(
+        this.authToken,this.settings.wckey,this.settings.wcsecret)
+    } 
+    
     this.fieldCache = new Map<string,Map<string,Array<string>>>()   
     this.linkedDataCache = new Array<string>()
 
@@ -191,12 +219,14 @@ export class MainComponent implements OnInit, OnDestroy {
             this.bib.lccns = this.bibUtils.getBibField(bib,"010","a").trim();
             if(this.bib.lccns != "") {oclcQueries.push(new OclcQuery("dn", "exact",this.bib.lccns))}
             this.bib.isbns = this.bibUtils.getBibField(bib,"020","a").trim();
+            this.bib.isbns = this.bib.isbns.replace("-","").replace(RegExp("\\s*\\([^\\(]*\\)\\s*\\p{P}*","u"),"")
             if(this.bib.isbns != "") {
-              oclcQueries.push(new OclcQuery("bn","any",this.bib.isbns.replace("-","")))
+              oclcQueries.push(new OclcQuery("bn","any",this.bib.isbns))
             }
             this.bib.issns = this.bibUtils.getBibField(bib,"022","a").trim();
+            this.bib.issns = this.bib.issns.replace("-","").replace(RegExp("\\s*\\([^\\(]*\\)\\s*\\p{P}*","u"),"")
             if(this.bib.issns != "") {
-              oclcQueries.push(new OclcQuery("in","any",this.bib.issns.replace("-","")))
+              oclcQueries.push(new OclcQuery("in","any",this.bib.issns))
             }
             this.bib.oclcnos = this.bibUtils.extractOCLCnums(this.bibUtils.getBibField(bib,"035","a")).trim();
             if(this.bib.oclcnos != "") {oclcQueries.push(new OclcQuery("no","any",this.bib.oclcnos))}
@@ -232,13 +262,16 @@ export class MainComponent implements OnInit, OnDestroy {
             this.bib.names = this.bib.names.replace(new RegExp("^\\\|"),"")
               .replace(new RegExp("\\\|$"),"");
 
-            let names = this.bib.names.split("\\\|");
+            let names = this.bib.names.split("\|").filter((item,index) => this.bib.names.indexOf(item)== index);
 
-            titles.forEach(title => {              
+            titles.forEach(title => {         
+              title = title.replace(new RegExp("[\\p{P}\\s]+$",'u'),"")        
               names.forEach( name => {
+                name = name.replace(new RegExp("[\\p{P}\\s]+$",'u'),"") 
                 if(name == "") {
                   return;
                 }
+                
                 let tnq = new OclcQuery("ti","exact",title);
                 tnq.addParams("au","=",name);
                 oclcQueries.push(tnq);
@@ -279,17 +312,32 @@ export class MainComponent implements OnInit, OnDestroy {
 
   async getOCLCrecords(oq: OclcQuery) {
     let wcKey = this.settings.wckey;
-    let wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
-      oq.getQueryString() + Settings.wcOtherParams;
-    this.http.get(wcURL, {
-          headers: new HttpHeaders({
-            'X-Proxy-Host': 'worldcat.org',
-            'wskey': wcKey.toString(),
-            'Authorization': 'Bearer ' + this.authToken,
-            'Content-type': 'application/xml'
-          }),
-          responseType: 'text'
-      }).pipe(timeout(15000),finalize(() => {
+    let wcURL:string   
+    let wcHeaders: HttpHeaders
+    if(this.settings.wcKeyType == "metadata") { //metadata API
+      wcURL = Settings.wcMDBaseURL + "?" + Settings.wcMDQueryParamName + "=" +
+        oq.getQueryString("metadata") +"&limit=50"
+      wcHeaders = new HttpHeaders({
+        'X-Proxy-Host': Settings.wcMetadataHost,
+        'X-Proxy-Auth': 'Bearer ' + this.access_token,
+        'Authorization': 'Bearer ' + this.authToken,
+        'Accept': 'application/json'
+      })
+    } else { //search API
+      wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
+        oq.getQueryString("search") + Settings.wcOtherParams; 
+      wcHeaders = new HttpHeaders({
+          'X-Proxy-Host': Settings.wcSearchHost,
+          'wskey': wcKey.toString(),
+          'Authorization': 'Bearer ' + this.authToken,
+          'Accept': 'application/xml'
+        })
+    }
+
+    let retrievedRecords = new Array()
+   
+    this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).pipe(
+      timeout(15000),finalize(() => {        
         this.completedSearches++;
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
@@ -334,7 +382,86 @@ export class MainComponent implements OnInit, OnDestroy {
           
     )).subscribe(
       (res) => {
-        this.extractParallelFields(res, true);        
+        if(this.settings.wcKeyType == "search") {//search API
+          /*
+          let parser = new DOMParser();
+          let titles = ""          
+          let xmlDOM: XMLDocument = parser.parseFromString(res, 'application/xml');              
+          let recs = xmlDOM.getElementsByTagName("record")
+          for(let i = 0; i < recs.length; i++) {
+            let datafields = recs.item(i).getElementsByTagName("datafield")
+            for(let j = 0; j < datafields.length; j++) {
+              if(datafields.item(j).outerHTML.match(/tag=.245/)) {
+                let subfields = datafields.item(j).getElementsByTagName("subfield")
+                for(let k = 0; k < subfields.length; k++) {
+                  if(subfields.item(k).outerHTML.match(/code=.a/)) {
+                    titles += subfields.item(k).innerHTML + "<br>"
+                  }
+                }
+              }       
+            }             
+          }
+          this.alert.warn(oq.getQueryString() + "<br>" + titles)
+          */
+          this.extractParallelFields(res, true);       
+        } else {//metadata API
+          let s = wcURL + "<br>"
+          let jsonBrief = JSON.parse(res)                    
+          if(jsonBrief["briefRecords"]) {
+            let recs = jsonBrief["briefRecords"]
+            let wcSingleHeaders = new HttpHeaders({
+              'X-Proxy-Host': Settings.wcMetadataHost,
+              'X-Proxy-Auth': 'Bearer ' + this.access_token,
+              'Authorization': 'Bearer ' + this.authToken,
+              'Accept': 'application/marcxml+xml'
+            })
+            let singleRecRequests:Observable<string>[] = []
+            for(let i = 0; i < recs.length; i++) {
+              let oclcNo:string = recs[i]["oclcNumber"]
+              if(!retrievedRecords.includes(oclcNo)) {
+                retrievedRecords.push(oclcNo)
+                let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
+                s += wcSingleURL + "<br>"
+                let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
+                singleRecRequests.push(req)                
+              }
+            }
+            let results = ""
+            forkJoin(singleRecRequests).subscribe(
+              (resps) => {
+                /*
+                let parser = new DOMParser();
+                this.alert.warn(oq.getQueryString("metadata") + "<br>" + 
+                  resps.map(xml => {
+                    let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');              
+                    let datafields = xmlDOM.getElementsByTagName("record")[0].getElementsByTagName("datafield")
+                    for(let i = 0; i < datafields.length; i++) {
+                      if(datafields.item(i).outerHTML.match(/tag=.245/)) {
+                        let subfields = datafields.item(i).getElementsByTagName("subfield")
+                        for(let j = 0; j < subfields.length; j++) {
+                          if(subfields.item(j).outerHTML.match(/code=.a/)) {
+                            return subfields.item(j).innerHTML
+                          }
+                        }
+                      }   
+                    }                 
+                  }).join("<br>")
+                )
+                */
+                results = "<records>\n" + resps.join() + "\n</records>"
+                this.extractParallelFields(results,true)
+              },
+              (err) => {
+                if(!this.warnedTimeout) {
+                this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+                  " " + this.translate.instant('Translate.WorldCatSearchAPI') + " " + 
+                  this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+                  this.translate.instant('Translate.ResultsMayNotBeOptimal'))
+                this.warnedTimeout = true
+              }
+            })
+          }
+        } 
       },
       (err) => {
         if(!this.warnedTimeout) {
@@ -815,11 +942,11 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async getLinkedData(locURL: string) { 
-    if(locURL.match("id\.loc\.gov")) {
-      locURL = locURL.replace("http://id.loc.gov/",Settings.awsBaseURL) + ".madsxml.xml"
+    if(locURL.includes(Settings.locHost)) {
+      locURL = locURL.replace("http://" + Settings.locHost + "/",Settings.awsBaseURL) + ".madsxml.xml"
       await this.http.get(locURL, {
         headers: new HttpHeaders({
-          'X-Proxy-Host': 'id.loc.gov',
+          'X-Proxy-Host': Settings.locHost,
           'Authorization': 'Bearer ' + this.authToken,
           'Content-type': 'application/xml'
         }),
@@ -917,7 +1044,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let records = xmlDOM.getElementsByTagName("record");    
     for(let i = 0; i < records.length; i++) {
-      let reci = records[i];
+      let reci = records[i];      
       let isPreferredInst = false
       let datafields = reci.getElementsByTagName("datafield");
       let parallelFields = new Map<string,Array<Element>>();
@@ -943,10 +1070,16 @@ export class MainComponent implements OnInit, OnDestroy {
               parallelFields.set(linkage, new Array<Element>());
             }
             parallelFields.get(linkage).push(datafields[j]);
+            //if(isOCLC) {
+              //this.alert.warn(linkage + ":" + parallelFields.get(linkage).map(a=>a.innerHTML).join("|"))
+            //}
           }
         }
       }
       let score = (isPreferredInst) ? this.preferredWCscore : 1
+      //if(isOCLC) {
+        //continue
+      //}
       parallelFields.forEach((value, key) => {
         if(value.length != 2) {
           return;
