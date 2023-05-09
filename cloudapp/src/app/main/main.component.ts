@@ -491,18 +491,19 @@ export class MainComponent implements OnInit, OnDestroy {
       this.statusString = ""
     }
     let field = this.fieldTable.get(fkey)
-    if(field.tag == "880") {
+    let placeholder_tag = field.tag
+    
+    if(placeholder_tag == "880") {
       let t = field.getSubfield("61")
       if(t == "") {
           t = "500"
       }
-      t = t.substring(0,3)
-      field.tag = t
+      placeholder_tag = t.substring(0,3)
       field.deleteSubfield("61")
     }
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
     let seqno = this.findUnusedLinkage();
-    let seq = field.tag + "-" + seqno;
+    let seq = placeholder_tag + "-" + seqno;
     let seq880 = "880-" + seqno;    
     parallel_field.addSubfield("61","6",seq);
     this.changeSpinner("saving")
@@ -578,6 +579,9 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.changeSpinner("clear")
     if(!presearch) {
+      if(field.tag == "880") {
+        field.tag = placeholder_tag
+      }
       field.addSubfield("61","6",seq880,true);
 
       this.bibUtils.replaceFieldInBib(this.bib,fkey,field);

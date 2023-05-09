@@ -118,6 +118,10 @@ export class BibUtils {
         seq = linkage.substring(4,6)
         if(true_tag == "880" && seq != "00") {
           true_tag = linkage.substring(0,3)
+          if(!tagCount.has("880")) {
+            tagCount.set("880",0)
+          }
+          tagCount.set("880",tagCount.get("880") + 1)
         }
       }
       if(parallelTable.has(seq)) {
