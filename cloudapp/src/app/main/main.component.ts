@@ -22,6 +22,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import {AppService} from '../app.service'
 import { take, finalize, timeout } from 'rxjs/operators';
+import {MatDialog} from '@angular/material/dialog';
+import { ConfirmationDialog } from './confirmation-dialog';
 import { SettingsComponent } from '../settings/settings.component';
 import regex from 'uuid/dist/regex';
 
@@ -98,11 +100,19 @@ export class MainComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private wadegiles: WadegilesService,
     private pinyin:PinyinService,
-    private router: Router) { }
+    private router: Router,
+    public dialog: MatDialog) { }
 
   canDeactivate(): Observable<boolean> | boolean {
     if(this.recordChanged) {
-      return confirm(this.translate.instant('Translate.ConfirmClose'));
+      const dialogRef = this.dialog.open(ConfirmationDialog, { autoFocus: false,
+           data: {
+            msg: this.translate.instant("Translate.ConfirmClose"),
+            yesString: this.translate.instant("Translate.Yes"),
+            noString: this.translate.instant("Translate.No")
+          } 
+        });
+      return dialogRef.afterClosed()
     }    
     return true;
   }	
@@ -1331,3 +1341,4 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
   }
 
 }
+

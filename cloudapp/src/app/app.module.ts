@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { MainComponent } from './main/main.component';
 import { SettingsComponent } from './settings/settings.component';
+import { ConfirmationDialog } from './main/confirmation-dialog';
 
 
 @NgModule({
@@ -16,6 +17,10 @@ import { SettingsComponent } from './settings/settings.component';
     AppComponent,
     MainComponent,
     SettingsComponent,
+    ConfirmationDialog,
+  ],
+  entryComponents: [
+    ConfirmationDialog,
   ],
   imports: [
     MaterialModule,

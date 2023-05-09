@@ -1,0 +1,8 @@
+
+<mat-dialog-content>
+  <p>{{data.msg}}</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-flat-button color="secondary" mat-dialog-close>{{data.noString}}</button>
+  <button mat-flat-button color="secondary" [mat-dialog-close]="true" cdkFocusInitial>{{data.yesString}}</button>
+</mat-dialog-actions>

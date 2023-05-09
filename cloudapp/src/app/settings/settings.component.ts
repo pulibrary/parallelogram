@@ -13,6 +13,8 @@ import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import { textChangeRangeIsUnchanged } from 'typescript';
 import {AuthUtils} from '../main/auth-utils'
+import {MatDialog} from '@angular/material/dialog';
+import { ConfirmationDialog } from '../main/confirmation-dialog';
 
 @Component({
   selector: 'app-settings',
@@ -50,11 +52,19 @@ export class SettingsComponent implements OnInit {
     private restService: CloudAppRestService,
     private alert: AlertService,
     private http: HttpClient,
+    public dialog: MatDialog
   ) { }
 
   canDeactivate(): Observable<boolean> | boolean {
     if(this.form.dirty) {
-      return confirm(this.translate.instant('Translate.ConfirmClose'));
+      const dialogRef = this.dialog.open(ConfirmationDialog, { autoFocus: false,
+        data: {
+         msg: this.translate.instant("Translate.ConfirmClose"),
+         yesString: this.translate.instant("Translate.Yes"),
+         noString: this.translate.instant("Translate.No")
+       } 
+     });
+      return dialogRef.afterClosed()
     }    
     return true;
   }	
@@ -99,9 +109,11 @@ export class SettingsComponent implements OnInit {
           this.form.get('wcKeyType').setValue(adminKeyType)      
           this.form.get('wckey').setValue(adminKey)
           this.form.get('wcsecret').setValue(adminSecret)
-          settings.wckey = adminKey
-          
-          this.form.markAsDirty();        
+
+          if(settings.wckey != adminKey) {
+            settings.wckey = adminKey
+            this.settingsService.set(this.form.value).subscribe()
+          }
         }
         if(adminLock) {
           this.form.get('adminLock').setValue(true)

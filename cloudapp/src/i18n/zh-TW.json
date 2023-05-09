@@ -48,6 +48,8 @@
         "ClientSecret": "用戶密文密碼",
         "KeyTypeReminder": "請確定您已選擇了正確的 API 密鑰類型",    
         "WCAPIInvalid": "WorldCat API 密鑰或用戶密文密碼無效",
-        "OAuthError": "使用 WorldCat 進行身份驗證時出現問題。請稍後再試"
+        "OAuthError": "使用 WorldCat 進行身份驗證時出現問題。請稍後再試",
+        "Yes": "是",
+        "No": "否"
     }
 }

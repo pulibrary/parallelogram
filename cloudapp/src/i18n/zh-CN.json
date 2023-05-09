@@ -47,7 +47,9 @@
         "Metadata": "元数据",
         "ClientSecret": "用户密文密码",
         "KeyTypeReminder": "请确定您已选择了正确的 API 密钥类型",    
-        "WCAPIInvalid": "WorldCat API 密钥或用户密文密码无效",
-        "OAuthError": "使用 WorldCat 进行身份验证时出现问题。请稍后再试"
+        "WCAPIInvalid": "WorlshidCat API 密钥或用户密文密码无效",
+        "OAuthError": "使用 WorldCat 进行身份验证时出现问题。请稍后再试",
+        "Yes": "是",
+        "No": "否"
     }
 }
