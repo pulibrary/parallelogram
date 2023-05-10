@@ -49,6 +49,7 @@
         "KeyTypeReminder": "请确定您已选择了正确的 API 密钥类型",    
         "WCAPIInvalid": "WorlshidCat API 密钥或用户密文密码无效",
         "OAuthError": "使用 WorldCat 进行身份验证时出现问题。请稍后再试",
+        "SearchAPIWarning":"<strong>注意</strong>: 本应用程序目前的使用配置为WorldCat搜索API。WorldCat搜索API将于<strong>2023年6月29日</strong>停止支持使用。请本应用程序的使用者在2023年6月29日之前转换到<strong>WorldCat元数据API</strong>。使用者可以向OCLC免费申请新的API密钥。这可能需要由使用者所在机构的负责目录管理的人员完成。更多详细信息, 请参阅<a target=\"_blank\" href=\"https://github.com/pulibrary/parallelogram#configuration\">https://github.com/pulibrary/parallelogram#configuration</a>",
         "Yes": "是",
         "No": "否"
     }

@@ -48,6 +48,9 @@
         "ClientSecret": "Client-Geheimnis",
         "KeyTypeReminder": "Bitte überprüfen Sie den Typ Ihres API Schlüssels",    
         "WCAPIInvalid": "Der WorldCat API Schlüssel oder das Client-Geheimnis sind ungültig",
-        "OAuthError": "Problem bei der Authentifizierung mit WorldCat.  Bitte versuchen Sie es später erneut"
+        "OAuthError": "Problem bei der Authentifizierung mit WorldCat.  Bitte versuchen Sie es später erneut",
+        "SearchAPIWarning":"<strong>Hinweis</strong>: Diese App verwendet gegenwärtig die WorldCat Search API. Der Support für diese API endet am <strong>29. Juni 2023</strong>. Bitte ändern Sie Ihre Konfiguration vor diesem Datum auf die <strong>WorldCat Metadata API</strong>.  Ein neuer API Schlüssel kann durch Ihren Katalog-Administrator kostenlos bei OCLC angefragt werden.  Weitere Einzelheiten finden Sie in der Dokumentation unter: <a target=\"_blank\" href=\"https://github.com/pulibrary/parallelogram#configuration\">https://github.com/pulibrary/parallelogram#configuration</a>",
+        "Yes": "Ja",
+        "No": "Nein"
     }
 }
