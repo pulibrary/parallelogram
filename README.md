@@ -14,9 +14,11 @@ First of all, please note that depending on your Alma configuration, your admini
 
 https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/050Administration/050Configuring_General_Alma_Functions/Configuring_Cloud_Apps
 
-If you are using the app for anything other than converting Chinese characters to pinyin, then you will need a WorldCat Search API Key.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users.  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC (it is free for qualifying WorldCat members).  Further details can be found at the following website:
+If you are using the app for anything other than converting Chinese characters to pinyin, then you will need a WorldCat Metadata API Key.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users.  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC (it is free for qualifying WorldCat members).  Further details can be found at the following website:
 
-https://www.oclc.org/developer/api/oclc-apis/worldcat-search-api.en.html
+https://www.oclc.org/developer/api/oclc-apis/worldcat-metadata-api.en.html
+
+(**Note**: Previous versions of the app also supported the WorldCat Search API.  However, support for this API will be discontinued on **June 29, 2023**.  If your instance of the app is still configured to use the Search API, a warning will appear when you open the app.  Any user of the Search API may request a key for the Metadata API at no charge.  Please have your catalog administrator do so as soon as possible using the link above.)
 
 ### Chinese Pinyin Mode
 
@@ -86,8 +88,8 @@ The screenshot below shows the app settings.  This screen can be accessed by cli
 
 The settings are:
 
-* **Interface Language**: This sets language of the app interface itself (as opposed to the language of the records being edited).
-* **WorldCat API Key**: Needed in order to search for WorldCat records.  The Catalog Administrator may choose to populate this field for all users and prevent it from being viewed or edited. (Such is the case in the above screenshot.)  However, if the administrator has not provided an API key, individual users may enter one.  The API Key is not needed if you are only using the app to convert Chinese characters to pinyin.
+* **Interface Language**: This sets language of the app interface itself (as opposed to the language of the records being edited).  
+* **WorldCat API Key**: Needed in order to search for WorldCat records.  The Catalog Administrator may choose to populate this field for all users and prevent it from being viewed or edited. (Such is the case in the above screenshot.)  However, if the administrator has not provided an API key, individual users may enter one.  The API Key is not needed if you are only using the app to convert Chinese characters to pinyin.  Currently, both the WorldCat Search API and Metadata API are supported, though support of the Search API will be discontinued on June 29, 2023.  (See the "Configuration" section above).  If the Metadata API is being used, you will need to enter both the API Key and the Client Secret.
 * **Perform pre-search...**:  If checked, then the app will automatically search for parallel data for the specified fields.  If parallel data is found, the field is displayed in bold type.  Although this takes some extra time when the app is initially opened, it saves the trouble of having to click on a field to see if parallel data was found.  Fields can be removed from the pre-search list by clicking the X next to the tag name.  Additional fields can be added by typing the tag name to the right of the list.  (An 'x' may be used as a wildcard in tag names.)  The more tags in the list, the longer the pre-searching stage will take.  Also, if a tag is not in the pre-search list, it will not be displayed in bold even if that field has parallel data.  The app will not search for this data until you click the plus sign to the left of the field.
 * **Give preference to WorldCat records...**: If checked, then the app will give greater weight to parallel text from records originating from specific institutions.  "DLC" (Library of Congress) is included by default, but you can enter any code that may be found in field 040.  This allows you to improve the quality of the parallel text by indicating that certain institutions can be trusted to produce good records.
 * **After adding a parallel field, swap original field and 880...**: If checked, this option allows you to set a policy for what kind of text is placed in the 880 field (either roman or non-roman text).  When a parallel field is added, the original and 880 fields are swapped (if needed) to conform to this policy.
@@ -95,7 +97,7 @@ The settings are:
     - If you are only interested in converting Chinese characters to pinyin (and not vice versa), you can check the **"Don't search WorldCat..."** option.  This will bypass WorldCat searching and generate parallel fields using the app's built-in dictionary.  This is faster and more accurate than using WorldCat.  If this option is checked, the app can be run without a WorldCat API key.
     - If you are processing records that contain Wade-Giles romanization, you can check the **"Search for Pinyin equivalents..."** option, which will convert Wade-Giles text to pinyin and search for both versions of the text.  This makes the app run slightly slower but increases the chances of finding relevant data in WorldCat.
 * If the user has the "Catalog Administrator" role, two additional options will appear: 
-    - **"Set WorldCat API Key for all users"**.  If checked, then when the settings are saved, the WorldCat API key will automatically be saved to all other users' settings.  This provides an easy way to distribute the WCAPI key.
+    - **"Set WorldCat API Key for all users"**.  If checked, then when the settings are saved, the WorldCat API key will automatically be saved to all other users' settings.  This provides an easy and secure way to distribute the WCAPI key.
     - **"Hide WorldCat API Key from other users"**.  If checked, then other users will not be able to see or edit the API Key provided by the administrator.  (The app will still work for regular users, but the API Key will be a hidden setting).  However, if the admin has not provided a key, then other users will still be able to enter their own.
    
 After configuring the app's options, click the "Save" button in the upper right.  This will save the settings as well as check the validity of the WorldCat API key.  Click the "Home" button to return to the app's main screen.
@@ -106,5 +108,5 @@ If you encounter any problems with this tool or would like to request new featur
 
 ### Acknowledgments
 
-Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Joshua Seufert, and Chiharu Watsky.  
+Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Joshua Seufert, Chiharu Watsky, and Mark Zelesky.  
 
