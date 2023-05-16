@@ -12,7 +12,6 @@ export class Settings {
     static readonly wcSearchHost: string = "worldcat.org"
     static readonly wcMetadataHost: string = "metadata.api.oclc.org"
 
-    wcKeyType: string = "search"
     wckey: string = "";
     wcsecret: string = "";
     pinyinonly: boolean = false;

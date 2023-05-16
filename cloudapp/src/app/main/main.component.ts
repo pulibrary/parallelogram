@@ -6,26 +6,24 @@ import {
   CloudAppStoreService,
   InitData,
 } from '@exlibris/exl-cloudapp-angular-lib';
-import {WadegilesService} from "../wadegiles.service"
+import { WadegilesService } from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
-import {AuthUtils} from './auth-utils'
-import {DictEntry} from './dict-entry'
+import { AuthUtils } from './auth-utils'
+import { DictEntry } from './dict-entry'
 import { from } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Settings } from '../models/settings';
-import {OclcQuery} from './oclc-query';
-import {MarcDataField} from './marc-datafield';
+import { OclcQuery } from './oclc-query';
+import { MarcDataField } from './marc-datafield';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PinyinService } from '../pinyin.service';
 import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
-import {AppService} from '../app.service'
+import { AppService } from '../app.service'
 import { take, finalize, timeout } from 'rxjs/operators';
-import {MatDialog} from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from './confirmation-dialog';
-import { SettingsComponent } from '../settings/settings.component';
-import regex from 'uuid/dist/regex';
 
 @Component({
   selector: 'app-main',
@@ -121,28 +119,25 @@ export class MainComponent implements OnInit, OnDestroy {
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
       this.translate.use(this.settings.interfaceLang) 
-      this.configService.get().subscribe(cfg => {   
-        let adminKeyType: string = cfg.wcKeyType      
+      this.configService.get().subscribe(cfg => {      
         let adminKey: string = cfg.wckey
         let adminSecret: string = cfg.wcsecret
-        if(adminKey != "" && adminKey != undefined && this.settings.wckey != adminKey) {
+        if(adminKey != "" && adminKey != undefined && this.settings.wckey != adminKey &&
+          adminSecret != "" && adminSecret != undefined && this.settings.wcsecret != adminSecret) {
           this.router.navigate(['settings'],{relativeTo: this.route})
         }
-        if((adminKeyType != undefined && adminKey != undefined && adminKey != "")) {
-          this.settings.wcKeyType = adminKeyType    
+        if((adminKey != undefined && adminKey != "")) {   
           this.settings.wckey = adminKey
           this.settings.wcsecret = adminSecret      
         }          
       },
       (err) => this.alert.error(err),
       () => {              
-        if(!stgs.wcKeyType || stgs.wcKeyType != "metadata") {
-          this.alert.warn(this.translate.instant("Translate.SearchAPIWarning"))
-        }
         this.doPresearch = this.settings.doPresearch;      
         if(this.settings.pinyinonly) {
           this.doSearch = false;
-        } else if(this.settings.wckey == undefined || this.settings.wckey == "") {   
+        } else if(this.settings.wckey == undefined || this.settings.wckey == "" ||
+          this.settings.wcsecret == undefined || this.settings.wcsecret == "") {   
           this.router.navigate(['settings'],{relativeTo: this.route})
         } 
         this.preSearchArray = this.settings.preSearchList
@@ -201,10 +196,8 @@ export class MainComponent implements OnInit, OnDestroy {
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.authUtils = new AuthUtils(this.http)
 
-    if(this.settings.wcKeyType == "metadata") {
-      this.access_token = await this.authUtils.getOAuthToken(
+    this.access_token = await this.authUtils.getOAuthToken(
         this.authToken,this.settings.wckey,this.settings.wcsecret)
-    } 
     
     this.fieldCache = new Map<string,Map<string,Array<string>>>()   
     this.linkedDataCache = new Array<string>()
@@ -223,7 +216,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.mms_id = bib.mms_id;
           this.extractParallelFields(this.bib.anies);
           this.fieldTable = this.bibUtils.getDatafields(bib);
-          if(this.doSearch && this.settings.wckey != undefined) {            
+          if(this.doSearch && this.settings.wckey != undefined && this.settings.wcsecret != undefined) {            
             this.changeSpinner("loading")
             let oclcQueries: Array<OclcQuery> = [];
             this.bib.lccns = this.bibUtils.getBibField(bib,"010","a").trim();
@@ -321,28 +314,16 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async getOCLCrecords(oq: OclcQuery) {
-    let wcKey = this.settings.wckey;
     let wcURL:string   
     let wcHeaders: HttpHeaders
-    if(this.settings.wcKeyType == "metadata") { //metadata API
-      wcURL = Settings.wcMDBaseURL + "?" + Settings.wcMDQueryParamName + "=" +
-        oq.getQueryString("metadata") +"&limit=50"
-      wcHeaders = new HttpHeaders({
-        'X-Proxy-Host': Settings.wcMetadataHost,
-        'X-Proxy-Auth': 'Bearer ' + this.access_token,
-        'Authorization': 'Bearer ' + this.authToken,
-        'Accept': 'application/json'
-      })
-    } else { //search API
-      wcURL = Settings.wcBaseURL + "?" + Settings.wcQueryParamName + "=" +
-        oq.getQueryString("search") + Settings.wcOtherParams; 
-      wcHeaders = new HttpHeaders({
-          'X-Proxy-Host': Settings.wcSearchHost,
-          'wskey': wcKey.toString(),
-          'Authorization': 'Bearer ' + this.authToken,
-          'Accept': 'application/xml'
-        })
-    }
+    wcURL = Settings.wcMDBaseURL + "?" + Settings.wcMDQueryParamName + "=" +
+      oq.getQueryString("metadata") +"&limit=50"
+    wcHeaders = new HttpHeaders({
+      'X-Proxy-Host': Settings.wcMetadataHost,
+      'X-Proxy-Auth': 'Bearer ' + this.access_token,
+      'Authorization': 'Bearer ' + this.authToken,
+      'Accept': 'application/json'
+    })
 
     let retrievedRecords = new Array()
    
@@ -392,91 +373,48 @@ export class MainComponent implements OnInit, OnDestroy {
           
     )).subscribe(
       (res) => {
-        if(this.settings.wcKeyType == "search") {//search API
-          /*
-          let parser = new DOMParser();
-          let titles = ""          
-          let xmlDOM: XMLDocument = parser.parseFromString(res, 'application/xml');              
-          let recs = xmlDOM.getElementsByTagName("record")
+        let s = wcURL + "<br>"
+        let jsonBrief = JSON.parse(res)                    
+        if(jsonBrief["briefRecords"]) {
+          let recs = jsonBrief["briefRecords"]
+          let wcSingleHeaders = new HttpHeaders({
+            'X-Proxy-Host': Settings.wcMetadataHost,
+            'X-Proxy-Auth': 'Bearer ' + this.access_token,
+            'Authorization': 'Bearer ' + this.authToken,
+            'Accept': 'application/marcxml+xml'
+          })
+          let singleRecRequests:Observable<string>[] = []
           for(let i = 0; i < recs.length; i++) {
-            let datafields = recs.item(i).getElementsByTagName("datafield")
-            for(let j = 0; j < datafields.length; j++) {
-              if(datafields.item(j).outerHTML.match(/tag=.245/)) {
-                let subfields = datafields.item(j).getElementsByTagName("subfield")
-                for(let k = 0; k < subfields.length; k++) {
-                  if(subfields.item(k).outerHTML.match(/code=.a/)) {
-                    titles += subfields.item(k).innerHTML + "<br>"
-                  }
-                }
-              }       
-            }             
-          }
-          this.alert.warn(oq.getQueryString() + "<br>" + titles)
-          */
-          this.extractParallelFields(res, true);       
-        } else {//metadata API
-          let s = wcURL + "<br>"
-          let jsonBrief = JSON.parse(res)                    
-          if(jsonBrief["briefRecords"]) {
-            let recs = jsonBrief["briefRecords"]
-            let wcSingleHeaders = new HttpHeaders({
-              'X-Proxy-Host': Settings.wcMetadataHost,
-              'X-Proxy-Auth': 'Bearer ' + this.access_token,
-              'Authorization': 'Bearer ' + this.authToken,
-              'Accept': 'application/marcxml+xml'
-            })
-            let singleRecRequests:Observable<string>[] = []
-            for(let i = 0; i < recs.length; i++) {
-              let oclcNo:string = recs[i]["oclcNumber"]
-              if(!retrievedRecords.includes(oclcNo)) {
-                retrievedRecords.push(oclcNo)
-                let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
-                s += wcSingleURL + "<br>"
-                let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
-                singleRecRequests.push(req)                
-              }
+            let oclcNo:string = recs[i]["oclcNumber"]
+            if(!retrievedRecords.includes(oclcNo)) {
+              retrievedRecords.push(oclcNo)
+              let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
+              s += wcSingleURL + "<br>"
+              let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
+              singleRecRequests.push(req)                
             }
-            let results = ""
-            forkJoin(singleRecRequests).subscribe(
-              (resps) => {
-                /*
-                let parser = new DOMParser();
-                this.alert.warn(oq.getQueryString("metadata") + "<br>" + 
-                  resps.map(xml => {
-                    let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');              
-                    let datafields = xmlDOM.getElementsByTagName("record")[0].getElementsByTagName("datafield")
-                    for(let i = 0; i < datafields.length; i++) {
-                      if(datafields.item(i).outerHTML.match(/tag=.245/)) {
-                        let subfields = datafields.item(i).getElementsByTagName("subfield")
-                        for(let j = 0; j < subfields.length; j++) {
-                          if(subfields.item(j).outerHTML.match(/code=.a/)) {
-                            return subfields.item(j).innerHTML
-                          }
-                        }
-                      }   
-                    }                 
-                  }).join("<br>")
-                )
-                */
-                results = "<records>\n" + resps.join() + "\n</records>"
-                this.extractParallelFields(results,true)
-              },
-              (err) => {
-                if(!this.warnedTimeout) {
-                this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-                  " " + this.translate.instant('Translate.WorldCatSearchAPI') + " " + 
-                  this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
-                  this.translate.instant('Translate.ResultsMayNotBeOptimal'))
-                this.warnedTimeout = true
-              }
-            })
           }
-        } 
-      },
+          let results = ""
+          forkJoin(singleRecRequests).subscribe(
+            (resps) => {
+              results = "<records>\n" + resps.join() + "\n</records>"
+              this.extractParallelFields(results,true)
+              },
+            (err) => {
+              if(!this.warnedTimeout) {
+              this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+                " " + this.translate.instant('Translate.WorldCatMetadataAPI') + " " + 
+                this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+                this.translate.instant('Translate.ResultsMayNotBeOptimal'))
+              this.warnedTimeout = true
+            }
+          })
+        }
+      }, 
       (err) => {
         if(!this.warnedTimeout) {
           this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-            " " + this.translate.instant('Translate.WorldCatSearchAPI') + " " + 
+            " " + this.translate.instant('Translate.WorldCatMetadataAPI') + " " + 
             this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
             this.translate.instant('Translate.ResultsMayNotBeOptimal'))
           this.warnedTimeout = true
