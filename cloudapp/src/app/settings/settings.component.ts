@@ -97,22 +97,24 @@ export class SettingsComponent implements OnInit {
       this.configService.get().subscribe(fg => {      
         let adminKey: string = fg.wckey
         let adminSecret: string = fg.wcsecret
-        let adminLock: boolean = fg.adminLock
-        if(adminKey != undefined && adminKey != "" && adminSecret != undefined && adminSecret != "") {
-          if(settings.wckey == undefined || settings.wckey == "" || settings.wckey != adminKey ||
-            settings.wcsecret == undefined || settings.wcsecret == "" || settings.wcsecret != adminSecret) {
+        let adminLock: boolean = fg.adminLock        
+        if(adminKey != undefined && adminKey != "") {
+          if((settings.wckey == undefined || settings.wckey == "" || settings.wckey != adminKey ||
+            settings.wcsecret == undefined || settings.wcsecret == "" || settings.wcsecret != adminSecret)
+            && (adminSecret != "" && adminSecret != undefined)) {
             this.alert.clear()
             this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
-          }      
+          }    
           this.form.get('wckey').setValue(adminKey)
           this.form.get('wcsecret').setValue(adminSecret)
-
           if(settings.wckey != adminKey) {
             settings.wckey = adminKey
+            settings.wcsecret = adminSecret
           }
           if(settings.wcsecret != adminSecret) {
             settings.wcsecret = adminSecret
           }
+          
           this.settingsService.set(this.form.value).subscribe()
         }
         if(adminLock) {
@@ -130,7 +132,7 @@ export class SettingsComponent implements OnInit {
         })           
       },
       (err) => this.alert.error(err),
-      () => {         
+      () => {
         if((settings.wckey == undefined || settings.wckey == "" || 
           settings.wcsecret == undefined || settings.wcsecret == "") && !settings.pinyinonly) {
           this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
