@@ -119,11 +119,11 @@ export class MainComponent implements OnInit, OnDestroy {
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
       this.translate.use(this.settings.interfaceLang) 
-      this.configService.get().subscribe(cfg => {      
+      this.configService.get().subscribe(cfg => {     
         let adminKey: string = cfg.wckey
         let adminSecret: string = cfg.wcsecret
-        if(adminKey != "" && adminKey != undefined && this.settings.wckey != adminKey &&
-          adminSecret != "" && adminSecret != undefined && this.settings.wcsecret != adminSecret) {
+        if((adminKey != "" && adminKey != undefined && this.settings.wckey != adminKey) ||
+          (adminSecret != "" && adminSecret != undefined && this.settings.wcsecret != adminSecret)) {
           this.router.navigate(['settings'],{relativeTo: this.route})
         }
         if((adminKey != undefined && adminKey != "")) {   
