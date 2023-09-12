@@ -397,7 +397,9 @@ export class MainComponent implements OnInit, OnDestroy {
           let results = ""
           forkJoin(singleRecRequests).subscribe(
             (resps) => {
-              results = "<records>\n" + resps.join() + "\n</records>"
+              results = "<records>\n" + resps.join('') + "\n</records>" 
+              results = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
+                + results.replace(/<\?xml[^>]*>/g,"")             
               this.extractParallelFields(results,true)
               },
             (err) => {
@@ -991,16 +993,16 @@ export class MainComponent implements OnInit, OnDestroy {
     return entries 
   }
 
-  extractParallelFields(xml: string, isOCLC = false): void {    
+  extractParallelFields(xml: string, isOCLC = false): void {     
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
-    let records = xmlDOM.getElementsByTagName("record");    
+    let records = xmlDOM.getElementsByTagName("record");  
     for(let i = 0; i < records.length; i++) {
-      let reci = records[i];      
+      let reci = records[i];         
       let isPreferredInst = false
       let datafields = reci.getElementsByTagName("datafield");
       let parallelFields = new Map<string,Array<Element>>();
-      for(let j = 0; j < datafields.length; j++) {
+      for(let j = 0; j < datafields.length; j++) {        
         let subfields = datafields[j].getElementsByTagName("subfield");        
         for(let k = 0; k < subfields.length; k++) {
           let code = subfields[k].getAttribute("code");
