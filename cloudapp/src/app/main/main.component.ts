@@ -24,6 +24,7 @@ import { AppService } from '../app.service'
 import { take, finalize, timeout } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from './confirmation-dialog';
+import { ɵangular_packages_platform_browser_platform_browser_i } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-main',
@@ -446,14 +447,8 @@ export class MainComponent implements OnInit, OnDestroy {
     let seq = placeholder_tag + "-" + seqno;
     let seq880 = "880-" + seqno;    
     parallel_field.addSubfield("61","6",seq);
-    this.changeSpinner("saving")
 
-    let pfkey = fkey;
-    if(pfkey.substring(pfkey.length-1) == "P") {
-      pfkey = pfkey.substring(0,pfkey.length - 1);
-    } else {
-      pfkey = pfkey + "P";
-    }
+    this.changeSpinner("saving")
 
     let options_map = new Map<string, Array<string>>()
     let cached_options = this.fieldCache.get(fkey)
@@ -485,9 +480,9 @@ export class MainComponent implements OnInit, OnDestroy {
         let options = new Array<string>()
         if(cached_options != undefined && cached_options.has(sf.id)) {
           options = cached_options.get(sf.id)
-        } else {
+        } else {          
           options = await this.lookupInDictionary(sf.data);  
-        }        
+        }                
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
         }   
@@ -525,15 +520,25 @@ export class MainComponent implements OnInit, OnDestroy {
       field.addSubfield("61","6",seq880,true);
 
       this.bibUtils.replaceFieldInBib(this.bib,fkey,field);
-      this.bibUtils.addFieldToBib(this.bib,parallel_field);  
+      this.bibUtils.addFieldToBib(this.bib,parallel_field); 
+      this.fieldTable = this.bibUtils.getDatafields(this.bib)
+      if(!fkey.includes(field.tag)) { //field was an 880 converted to a normal field
+        for(let i = 0; i < 999; i++) {
+          let testKey = field.tag + ":" + (i < 10 ? "0" : "") + i
+          if(this.fieldTable.has(testKey)) {
+            fkey = testKey
+          } else {
+            break
+          }
+        }
+      }
       if(this.settings.doSwap) {
         this.doParallelSwap(fkey,field.getSubfieldString(),parallel_field.getSubfieldString())
       }
-      this.fieldTable = this.bibUtils.getDatafields(this.bib)
       this.recordChanged = true;
       this.preSearchFields.delete(fkey)
     }
-    this.fieldCache.set(fkey,options_map)
+    this.fieldCache.set(fkey,options_map)    
   }
 
   doParallelSwap(fkey: string, fdata: string, pfdata: string) {

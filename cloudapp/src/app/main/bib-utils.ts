@@ -130,7 +130,11 @@ export class BibUtils {
         if(!tagCount.has(true_tag)) {
           tagCount.set(true_tag,0);
         }
-        id = true_tag + ":" + tagCount.get(true_tag);  
+        let idseq = tagCount.get(true_tag)+''
+        if(idseq.length == 1) {
+            idseq = '0' + idseq
+        }
+        id = true_tag + ":" + idseq;  
         if(seq != "" && seq != "00") {
           parallelTable.set(seq,id)
         }
@@ -143,7 +147,7 @@ export class BibUtils {
           unmatched.set(id,mdf)
         }
       }
-      if(mdf.tag == "880" && seq != "00") {
+      if(mdf.tag == "880" && seq != "00" && seq != "") {
         id += "P"
       }      
       fieldTable.set(id,mdf);      
@@ -171,8 +175,8 @@ export class BibUtils {
   replaceFieldInBib(bib: Bib, field_id: string, field: MarcDataField) {
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
-    let tag_seq = field_id.substring(4,5);
-    let parallel = (field_id.substring(5,6) == "P")
+    let tag_seq = field_id.substring(4,6);
+    let parallel = (field_id.substring(6,7) == "P")
     let target_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
 
     if(parallel) {
@@ -233,7 +237,7 @@ export class BibUtils {
   unlinkFields(bib: Bib, field_id: string) { 
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
-    let tag_seq = field_id.substring(4,5);
+    let tag_seq = field_id.substring(4,6);
     
     let main_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
     let linkage = main_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
@@ -261,12 +265,12 @@ export class BibUtils {
   }
 
   deleteField(bib: Bib, field_id: string) {
-    if(field_id.substring(5) != "P") {
+    if(field_id.substring(6,7) != "P") {
       this.swapParallelFields(bib,field_id)
     }
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
-    let tag_seq = field_id.substring(4,5);
+    let tag_seq = field_id.substring(4,6);
     
     let main_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
     let linkage = main_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
@@ -295,7 +299,7 @@ export class BibUtils {
   swapParallelFields(bib: Bib, field_id: string) {
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tag = field_id.substring(0,3);
-    let tag_seq = field_id.substring(4,5);
+    let tag_seq = field_id.substring(4,6);
 
     let target_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
     let parallel_field: Element;
