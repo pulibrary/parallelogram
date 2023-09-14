@@ -28,7 +28,7 @@
         </ng-template>
         <table #marcRecord class="marc">
            <tr [ngClass]="{'presearch': preSearchFields.has(field.key) == true}" *ngFor="let field of fieldTable | keyvalue" 
-              [ngStyle]="{'background-color': generateBGColor(field.value.getSubfield('61'))}">
+              [ngStyle]="field.value.hasParallel && {'background-color': generateBGColor(field.value.getSubfield('61'))}">
               <td *ngIf="field.value.hasParallel; else addBlock">
                 <div *ngIf="showDetails != field.key; else detailsButtonBlock">
                 <button mat-stroked-button color="secondary" [matMenuTriggerFor]="fieldOptions" [disabled]="showDetails != ''">

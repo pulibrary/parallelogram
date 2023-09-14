@@ -83,7 +83,7 @@ export class BibUtils {
   getDatafields( bib: Bib ): Map<string,MarcDataField> {
     let fieldTable = new Map<string,MarcDataField>();
     let parallelTable = new Map<string,string>();
-    let unmatched = new Map<string, MarcDataField>();
+    let unmatched = new Map<string, string>();
     const doc = new DOMParser().parseFromString(bib.anies, "application/xml");
     let tagCount = new Map<string,number>();
 
@@ -111,6 +111,11 @@ export class BibUtils {
           linkage = data;          
         }
       }
+      if(!tagCount.has(mdf.tag)) {
+        tagCount.set(mdf.tag,0)
+      }
+      tagCount.set(mdf.tag,tagCount.get(mdf.tag) + 1)
+
       let true_tag = mdf.tag
       let seq = ""
       let id = ""
@@ -118,45 +123,38 @@ export class BibUtils {
         seq = linkage.substring(4,6)
         if(true_tag == "880" && seq != "00") {
           true_tag = linkage.substring(0,3)
-          if(!tagCount.has("880")) {
-            tagCount.set("880",0)
-          }
-          tagCount.set("880",tagCount.get("880") + 1)
         }
       }
-      if(parallelTable.has(seq)) {
-        id = parallelTable.get(seq);
-      } else {
-        if(!tagCount.has(true_tag)) {
-          tagCount.set(true_tag,0);
+
+      let pair_id = true_tag+seq
+      if(parallelTable.has(pair_id)) {
+        id = parallelTable.get(pair_id);
+      } else {      
+        if(mdf.tag == "880") {
+          true_tag = "880"
         }
-        let idseq = tagCount.get(true_tag)+''
-        if(idseq.length == 1) {
-            idseq = '0' + idseq
-        }
-        id = true_tag + ":" + idseq;  
+        let count = tagCount.get(true_tag)-1 
+        id = true_tag + ":" + (count < 10 ? "0" : "") + count
         if(seq != "" && seq != "00") {
-          parallelTable.set(seq,id)
-        }
-        tagCount.set(true_tag,tagCount.get(true_tag) + 1); 
+          parallelTable.set(pair_id,id)
+        }        
       }
       if(seq != "" && seq != "00") {
         if(unmatched.has(id)) {
           unmatched.delete(id)
         } else {
-          unmatched.set(id,mdf)
+          unmatched.set(id,mdf.tag)
         }
       }
-      if(mdf.tag == "880" && seq != "00" && seq != "") {
+      if(mdf.tag == "880" && true_tag != "880" && seq != "00" && seq != "") {
         id += "P"
-      }      
+      }    
       fieldTable.set(id,mdf);      
     }
-    unmatched.forEach((v,id) => {
+    unmatched.forEach((tag,id) => { 
       let mdf = fieldTable.get(id);
-      mdf.deleteSubfield("61")
       mdf.hasParallel = false
-      this.replaceFieldInBib(bib,id,mdf)
+      fieldTable.set(id,mdf)           
     });   
     return fieldTable;
   }
@@ -178,7 +176,7 @@ export class BibUtils {
     let tag_seq = field_id.substring(4,6);
     let parallel = (field_id.substring(6,7) == "P")
     let target_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
-
+    
     if(parallel) {
       let linkage = target_field.querySelector("subfield[code='6']");
       if(linkage) {
