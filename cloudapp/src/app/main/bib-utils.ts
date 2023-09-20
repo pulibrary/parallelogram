@@ -151,7 +151,7 @@ export class BibUtils {
       }    
       fieldTable.set(id,mdf);      
     }
-    unmatched.forEach((tag,id) => { 
+    unmatched.forEach((tag,id) => {       
       let mdf = fieldTable.get(id);
       mdf.hasParallel = false
       fieldTable.set(id,mdf)           

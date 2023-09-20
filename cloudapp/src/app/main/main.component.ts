@@ -443,7 +443,9 @@ export class MainComponent implements OnInit, OnDestroy {
       }
       placeholder_tag = t.substring(0,3)      
     }
-    field.deleteSubfield("61")
+    if(!presearch) {
+      field.deleteSubfield("61")
+    }
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
     let seqno = this.findUnusedLinkage();
     let seq = placeholder_tag + "-" + seqno;
