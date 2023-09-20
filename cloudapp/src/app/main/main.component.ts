@@ -311,8 +311,11 @@ export class MainComponent implements OnInit, OnDestroy {
   });
   });
   });
-  setTimeout(() => {document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")},3000)
-  }
+  setTimeout(() => {
+    if(document.getElementById("noRecord")) {
+      return document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")}
+    }
+  ,3000)}
 
   async getOCLCrecords(oq: OclcQuery) {
     let wcURL:string   
@@ -391,13 +394,13 @@ export class MainComponent implements OnInit, OnDestroy {
               retrievedRecords.push(oclcNo)
               let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
               s += wcSingleURL + "<br>"
-              let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})
+              let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})              
               singleRecRequests.push(req)                
             }
-          }
-          let results = ""
+          }          
+          let results = ""          
           forkJoin(singleRecRequests).subscribe(
-            (resps) => {
+            (resps) => {                            
               results = "<records>\n" + resps.join('') + "\n</records>" 
               results = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
                 + results.replace(/<\?xml[^>]*>/g,"")             
@@ -410,8 +413,9 @@ export class MainComponent implements OnInit, OnDestroy {
                 this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
                 this.translate.instant('Translate.ResultsMayNotBeOptimal'))
               this.warnedTimeout = true
+              }
             }
-          })
+          )
         }
       }, 
       (err) => {
@@ -1003,7 +1007,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let records = xmlDOM.getElementsByTagName("record");  
     for(let i = 0; i < records.length; i++) {
-      let reci = records[i];         
+      let reci = records[i];               
       let isPreferredInst = false
       let datafields = reci.getElementsByTagName("datafield");
       let parallelFields = new Map<string,Array<Element>>();
