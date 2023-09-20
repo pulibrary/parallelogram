@@ -314,8 +314,9 @@ export class MainComponent implements OnInit, OnDestroy {
   setTimeout(() => {
     if(document.getElementById("noRecord")) {
       return document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")}
-    }
-  ,3000)}
+    },
+    3000)
+  }
 
   async getOCLCrecords(oq: OclcQuery) {
     let wcURL:string   
@@ -332,7 +333,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let retrievedRecords = new Array()
    
     this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).pipe(
-      timeout(15000),finalize(() => {        
+      timeout(15000),finalize(() => {           
         this.completedSearches++;
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
@@ -355,17 +356,17 @@ export class MainComponent implements OnInit, OnDestroy {
                   for(let j = 0; j < comp; j++) {
                     let pad = (f.length == 1 && j < 10) ? "0" : ""
                     let fj = f+pad+j               
-                    for(let k = 0; this.fieldTable.has(fj+":"+k); k++) {  
+                    for(let k = 0; this.fieldTable.has(fj+":"+(k < 10 ? "0" + k : k)); k++) {  
                       this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
                         this.translate.instant('Translate.Field') + " "  + fj                  
-                      await this.lookupField(fj+":"+k,true)
+                      await this.lookupField(fj+":"+(k < 10 ? "0" + k : k),true)
                     }
                   }
                 } else {              
-                  for(let k = 0; this.fieldTable.has(f+":"+k); k++) {
+                  for(let k = 0; this.fieldTable.has(f+":"+(k < 10 ? "0" + k : k)); k++) {
                     this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
                       this.translate.instant('Translate.Field') + " " + f
-                    await this.lookupField(f+":"+k,true)
+                    await this.lookupField(f+":"+(k < 10 ? "0" + k : k),true)
                   }
                 }                
               }              
@@ -373,11 +374,9 @@ export class MainComponent implements OnInit, OnDestroy {
             this.changeSpinner("clear")
           })
         }
-      }
-          
+      }          
     )).subscribe(
-      (res) => {
-        let s = wcURL + "<br>"
+      (res) => {               
         let jsonBrief = JSON.parse(res)                    
         if(jsonBrief["briefRecords"]) {
           let recs = jsonBrief["briefRecords"]
@@ -392,19 +391,18 @@ export class MainComponent implements OnInit, OnDestroy {
             let oclcNo:string = recs[i]["oclcNumber"]
             if(!retrievedRecords.includes(oclcNo)) {
               retrievedRecords.push(oclcNo)
-              let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo
-              s += wcSingleURL + "<br>"
+              let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo             
               let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})              
               singleRecRequests.push(req)                
             }
           }          
-          let results = ""          
+          let results = ""         
           forkJoin(singleRecRequests).subscribe(
-            (resps) => {                            
+            (resps) => {                                       
               results = "<records>\n" + resps.join('') + "\n</records>" 
               results = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
                 + results.replace(/<\?xml[^>]*>/g,"")             
-              this.extractParallelFields(results,true)
+              this.extractParallelFields(results,true)            
               },
             (err) => {
               if(!this.warnedTimeout) {
@@ -414,7 +412,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 this.translate.instant('Translate.ResultsMayNotBeOptimal'))
               this.warnedTimeout = true
               }
-            }
+            },
           )
         }
       }, 
@@ -542,7 +540,7 @@ export class MainComponent implements OnInit, OnDestroy {
       this.recordChanged = true;
       this.preSearchFields.delete(fkey)
     }
-    this.fieldCache.set(fkey,options_map)    
+    this.fieldCache.set(fkey,options_map)      
   }
 
   doParallelSwap(fkey: string, fdata: string, pfdata: string) {
@@ -1005,7 +1003,7 @@ export class MainComponent implements OnInit, OnDestroy {
   extractParallelFields(xml: string, isOCLC = false): void {     
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
-    let records = xmlDOM.getElementsByTagName("record");  
+    let records = xmlDOM.getElementsByTagName("record"); 
     for(let i = 0; i < records.length; i++) {
       let reci = records[i];               
       let isPreferredInst = false
