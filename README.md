@@ -108,3 +108,13 @@ If you encounter any problems with this tool or would like to request new featur
 
 Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Joshua Seufert, Chiharu Watsky, and Mark Zelesky.  
 
+### License
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a>
+
+Parallelogram by Princeton University Library is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+
+The program contains a dictionary of Chinese characters and phrases based on three sources:
+
+- The <a href="http://unicode.org/charts/unihan.html">Unihan database</a>, copyright 1991-2023, Unicode, Inc.  Last updated 2020-02-18.
+- <a href="http://www.mdbg.net/chindict/chindict.php?page=cedict">CC-CEDICT</a>, copyright 2023, MDBG.  Last updated 2021-04-21.
+- User feedback: To suggest additional characters or phrases for the dictionary, please use the <a target="_blank" href="https://library.princeton.edu/eastasian/oclcpinyin/pinyinform.php">suggestion form</a> for Princeton's other pinyin tools.
