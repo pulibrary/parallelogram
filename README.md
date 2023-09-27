@@ -116,5 +116,5 @@ Parallelogram by Princeton University Library is licensed under a <a rel="licens
 The program contains a dictionary of Chinese characters and phrases based on three sources:
 
 - The <a href="http://unicode.org/charts/unihan.html">Unihan database</a>, copyright 1991-2023, Unicode, Inc.  Last updated 2020-02-18.
-- <a href="http://www.mdbg.net/chindict/chindict.php?page=cedict">CC-CEDICT</a>, copyright 2023, MDBG.  Last updated 2021-04-21.
+- <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict">CC-CEDICT</a>, copyright 2023, MDBG.  Last updated 2021-04-21.
 - User feedback: To suggest additional characters or phrases for the dictionary, please use the <a target="_blank" href="https://library.princeton.edu/eastasian/oclcpinyin/pinyinform.php">suggestion form</a> for Princeton's other pinyin tools.
