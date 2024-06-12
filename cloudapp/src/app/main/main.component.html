@@ -16,7 +16,13 @@
       &nbsp;
       <button mat-flat-button color="secondary" routerLink="/settings">
         <mat-icon>settings</mat-icon> {{'Translate.Settings' | translate}}
-      </button>      
+      </button>
+        <mat-form-field>
+          <mat-label>ScriptShifter Language</mat-label>
+          <mat-select formControlName="ssLang" value="ssLanguages[0]">
+            <mat-option *ngFor="let lang of ssLanguages" (click)="setSSLanguage(lang)" [value]="lang">{{lang}}</mat-option>
+          </mat-select> 
+        </mat-form-field>
     </div>
     <div><br/></div>
     <mat-card-content>      

@@ -75,6 +75,8 @@ export class MainComponent implements OnInit, OnDestroy {
   preferredLOCscore = 5
   dictMax = 200
 
+  ssLanguages: Array<string>
+
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
   delimiterPattern = "(?:\\s|" + this.punctuationPattern + ")*(?:(?:\\$.)|[:;\\/=])+(?:\\s|" 
@@ -116,11 +118,14 @@ export class MainComponent implements OnInit, OnDestroy {
     return true;
   }	
 
-  ngOnInit() {    
+  ngOnInit() {   
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
+      if(this.settings.interfaceLang == undefined) {
+        this.settings.interfaceLang = "eng"
+      } 
       this.translate.use(this.settings.interfaceLang) 
-      this.configService.get().subscribe(cfg => {     
+      this.configService.get().subscribe(cfg => {  
         let adminKey: string = cfg.wckey
         let adminSecret: string = cfg.wcsecret
         if((adminKey != "" && adminKey != undefined && this.settings.wckey != adminKey) ||
@@ -172,6 +177,31 @@ export class MainComponent implements OnInit, OnDestroy {
     this.hasApiResult = result && Object.keys(result).length > 0;
   }
 
+  getSSLanguageList() {
+     this.http.get(Settings.ssLangURL, {
+      headers: new HttpHeaders({
+        'X-Proxy-Host': Settings.ssHost,
+        'Authorization': 'Bearer ' + this.authToken,
+        'Content-type': 'application/json'
+      }),
+      responseType: "json"
+    }).toPromise().then((res) => {
+      this.ssLanguages = new Array<string>()
+      this.ssLanguages.push("auto-select")
+      var langList: Array<string> = Object.keys(res)
+      for(var i = 0 ; i < langList.length; i++) {
+        this.ssLanguages.push(langList[i])
+      }
+    })
+  }
+
+  setSSLanguage(lang: string) {
+    if(lang == "auto-select") {
+      lang = "chinese"
+    }
+    this.settings.ssLang = lang
+  }
+
   changeSpinner(state: string) {
     if(state == "loading") {
       this.saving = false
@@ -193,6 +223,8 @@ export class MainComponent implements OnInit, OnDestroy {
     this.pinyin.ready.then((py_ready) => {
     this.authToken_ready.then(async (aut) => {
     this.authToken = aut    
+
+    this.getSSLanguageList()
     
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.authUtils = new AuthUtils(this.http)
@@ -202,6 +234,7 @@ export class MainComponent implements OnInit, OnDestroy {
     
     this.fieldCache = new Map<string,Map<string,Array<string>>>()   
     this.linkedDataCache = new Array<string>()
+
 
     this.pageEntities = (pageInfo.entities||[]).filter(e=>[EntityType.BIB_MMS, 'IEP', 'BIB'].includes(e.type));
     if ((pageInfo.entities || []).length >= 1) {
@@ -484,8 +517,14 @@ export class MainComponent implements OnInit, OnDestroy {
         let options = new Array<string>()
         if(cached_options != undefined && cached_options.has(sf.id)) {
           options = cached_options.get(sf.id)
-        } else {          
-          options = await this.lookupInDictionary(sf.data);  
+        } else {   
+          var sfdataparts = sf.data.split(new RegExp("(" + this.delimiterPattern + ")","u"));
+          for(let k = 0; k < sfdataparts.length; k++) {
+            if(sfdataparts[k] != "") {
+              await this.queryScriptShifter(sfdataparts[k]);               
+            } 
+          } 
+          options = await this.lookupInDictionary(sf.data);          
         }                
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
@@ -507,7 +546,7 @@ export class MainComponent implements OnInit, OnDestroy {
           if(opt_k.match(/\p{P}$/u)) {
             bookends_k += opt_k.charAt(opt_k.length-1)
           }
-       if(bookends == bookends_k) {
+          if(bookends == bookends_k) {
             best = k
             break
           }
@@ -736,7 +775,7 @@ export class MainComponent implements OnInit, OnDestroy {
           search_keys_d.push(text_normal_wgpy_d);
         }
       }
-      for(let h = 0; h < search_keys_d.length; h++) {
+      for(let h = 0; h < search_keys_d.length; h++) {        
         let hi = search_keys_d[h];      
         if(hi.length == 0) {
           continue;
@@ -744,8 +783,8 @@ export class MainComponent implements OnInit, OnDestroy {
         if(options_d.length > 0) {
           break;
         }
-        await this.storeService.get(hi).toPromise().then((res: DictEntry) => {
-          if(res != undefined) {    
+        await this.storeService.get(hi).toPromise().then((res: DictEntry) => {          
+          if(res != undefined) {  
             options_d = res.parallels.map(a => a.text)      
           }
         });
@@ -836,7 +875,7 @@ export class MainComponent implements OnInit, OnDestroy {
         storePairs[pairExists].mergeWith(entry)
       }
     }
-    let t = this.addToStorage(storePairs).finally(() => resolve(true))
+    this.addToStorage(storePairs).finally(() => resolve(true))
   })
   }
 
@@ -862,7 +901,7 @@ export class MainComponent implements OnInit, OnDestroy {
             pairs2[i] = prevPair
           } else {
             pairs2.splice(i,1)
-          }
+          }  
         } 
       },
       complete: () => {  
@@ -902,6 +941,38 @@ export class MainComponent implements OnInit, OnDestroy {
       'marc' : 'http://www.loc.gov/MARC21/slim'
     }
     return ns[prefix] || null;
+  }
+
+  async queryScriptShifter(searchTerm: string) {
+    let search_term_escaped = JSON.stringify(searchTerm).replace(/\"$/,"").replace(/^\"/,"")
+    let ssQueryJSON =  '{"text":"' + search_term_escaped + '", "lang":"' + this.settings.ssLang + '", ' +  
+      '"t_dir": "r2s", "options": {"marc_field":""}}'
+    //let ssQueryString = "text=" + encodeURIComponent(searchTerm) + "&lang=korean_nonames&t_dir=s2r&capitalize=no_change"
+    let ssURL = Settings.ssBaseURL
+    await this.http.post(ssURL, ssQueryJSON, {
+      headers: new HttpHeaders({
+        'X-Proxy-Host': Settings.ssHost,
+        'Authorization': 'Bearer ' + this.authToken,
+        'Content-type': 'application/json'
+      })
+    }).toPromise().then(async (res) => {
+      var resOBJ = JSON.parse(JSON.stringify(res))
+      var resultSTR = resOBJ.output;
+      if(searchTerm != resultSTR) {
+        var searchTerm_norm = this.cjkNormalize(searchTerm)
+        if(searchTerm_norm != "") {
+          var entries = this.addToParallelDict(searchTerm_norm,resultSTR,[searchTerm])
+          if(entries != undefined) {
+            await this.addToStorage(entries)
+          }
+        }
+      }
+    }).catch((err) => {
+      this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+      " " + "**SCRIPTSHIFTER**" + " " +  
+      this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+      this.translate.instant('Translate.ResultsMayNotBeOptimal'))
+    }) 
   }
 
   async getLinkedData(locURL: string) { 
