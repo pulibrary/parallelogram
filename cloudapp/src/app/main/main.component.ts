@@ -24,7 +24,7 @@ import { AppService } from '../app.service'
 import { take, finalize, timeout } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from './confirmation-dialog';
-import { ɵangular_packages_platform_browser_platform_browser_i } from '@angular/platform-browser';
+import { ScriptShifterService } from '../scriptshifter.service';
 
 @Component({
   selector: 'app-main',
@@ -101,6 +101,7 @@ export class MainComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private wadegiles: WadegilesService,
     private pinyin:PinyinService,
+    private scriptshifter: ScriptShifterService,
     private router: Router,
     public dialog: MatDialog) { }
 
@@ -177,23 +178,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.hasApiResult = result && Object.keys(result).length > 0;
   }
 
-  getSSLanguageList() {
-     this.http.get(Settings.ssLangURL, {
-      headers: new HttpHeaders({
-        'X-Proxy-Host': Settings.ssHost,
-        'Authorization': 'Bearer ' + this.authToken,
-        'Content-type': 'application/json'
-      }),
-      responseType: "json"
-    }).toPromise().then((res) => {
-      this.ssLanguages = new Array<string>()
-      this.ssLanguages.push("auto-select")
-      var langList: Array<string> = Object.keys(res)
-      for(var i = 0 ; i < langList.length; i++) {
-        this.ssLanguages.push(langList[i])
-      }
-    })
-  }
+ 
 
   setSSLanguage(lang: string) {
     if(lang == "auto-select") {
@@ -224,8 +209,10 @@ export class MainComponent implements OnInit, OnDestroy {
     this.authToken_ready.then(async (aut) => {
     this.authToken = aut    
 
-    this.getSSLanguageList()
-    
+    this.scriptshifter.loadLanguageList(this.authToken).then(() => {
+      this.ssLanguages = this.scriptshifter.getLanguageList()
+    })
+
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.authUtils = new AuthUtils(this.http)
 
@@ -521,7 +508,7 @@ export class MainComponent implements OnInit, OnDestroy {
           var sfdataparts = sf.data.split(new RegExp("(" + this.delimiterPattern + ")","u"));
           for(let k = 0; k < sfdataparts.length; k++) {
             if(sfdataparts[k] != "") {
-              await this.queryScriptShifter(sfdataparts[k]);               
+              await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, this.authToken)               
             } 
           } 
           options = await this.lookupInDictionary(sf.data);          
@@ -941,38 +928,6 @@ export class MainComponent implements OnInit, OnDestroy {
       'marc' : 'http://www.loc.gov/MARC21/slim'
     }
     return ns[prefix] || null;
-  }
-
-  async queryScriptShifter(searchTerm: string) {
-    let search_term_escaped = JSON.stringify(searchTerm).replace(/\"$/,"").replace(/^\"/,"")
-    let ssQueryJSON =  '{"text":"' + search_term_escaped + '", "lang":"' + this.settings.ssLang + '", ' +  
-      '"t_dir": "r2s", "options": {"marc_field":""}}'
-    //let ssQueryString = "text=" + encodeURIComponent(searchTerm) + "&lang=korean_nonames&t_dir=s2r&capitalize=no_change"
-    let ssURL = Settings.ssBaseURL
-    await this.http.post(ssURL, ssQueryJSON, {
-      headers: new HttpHeaders({
-        'X-Proxy-Host': Settings.ssHost,
-        'Authorization': 'Bearer ' + this.authToken,
-        'Content-type': 'application/json'
-      })
-    }).toPromise().then(async (res) => {
-      var resOBJ = JSON.parse(JSON.stringify(res))
-      var resultSTR = resOBJ.output;
-      if(searchTerm != resultSTR) {
-        var searchTerm_norm = this.cjkNormalize(searchTerm)
-        if(searchTerm_norm != "") {
-          var entries = this.addToParallelDict(searchTerm_norm,resultSTR,[searchTerm])
-          if(entries != undefined) {
-            await this.addToStorage(entries)
-          }
-        }
-      }
-    }).catch((err) => {
-      this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-      " " + "**SCRIPTSHIFTER**" + " " +  
-      this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
-      this.translate.instant('Translate.ResultsMayNotBeOptimal'))
-    }) 
   }
 
   async getLinkedData(locURL: string) { 
