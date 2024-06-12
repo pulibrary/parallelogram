@@ -22,6 +22,17 @@
         </mat-select>
       </mat-form-field>
     </section>
+    <section class="settings-section" style="width: 100px">
+      <mat-form-field appeearance="fill">
+        <mat-label>ScriptShifter Default Language</mat-label>
+        <mat-select formControlName="ssLang">
+          <mat-option *ngFor="let lang of ssLanguages" [value]="lang">{{lang}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </section>
+    <section>
+      <mat-checkbox formControlName="autoSelectSSLang">Auto-select language based on field 008</mat-checkbox>
+    </section>  
     <section class="settings-section">
       <span class="notice" [ngClass]="!hideWCKey ? 'hiddenField' : 'none'">{{'Translate.AdminSetWCAPI' | translate}}</span>
     </section>

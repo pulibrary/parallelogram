@@ -208,10 +208,11 @@ export class MainComponent implements OnInit, OnDestroy {
     this.pinyin.ready.then((py_ready) => {
     this.authToken_ready.then(async (aut) => {
     this.authToken = aut    
-
-    this.scriptshifter.loadLanguageList(this.authToken).then(() => {
-      this.ssLanguages = this.scriptshifter.getLanguageList()
-    })
+    if(this.ssLanguages == undefined) {
+      this.scriptshifter.loadLanguageList(this.authToken).then(() => {
+        this.ssLanguages = this.scriptshifter.getLanguageList()
+      })
+    }
 
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.authUtils = new AuthUtils(this.http)
@@ -508,7 +509,16 @@ export class MainComponent implements OnInit, OnDestroy {
           var sfdataparts = sf.data.split(new RegExp("(" + this.delimiterPattern + ")","u"));
           for(let k = 0; k < sfdataparts.length; k++) {
             if(sfdataparts[k] != "") {
-              await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, this.authToken)               
+              let ssResult = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, this.authToken)             
+              if(ssResult != sfdataparts[k]) {
+                let sfdata_norm = this.cjkNormalize(sfdataparts[k])
+                if(sfdata_norm != "") {
+                  let entries = this.addToParallelDict(sfdata_norm, ssResult, [sfdataparts[k]])
+                  if(entries != undefined) {
+                    await this.addToStorage(entries)
+                  }
+                }
+              }
             } 
           } 
           options = await this.lookupInDictionary(sf.data);          

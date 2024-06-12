@@ -27,7 +27,6 @@ export class ScriptShifterService {
          responseType: "json"
        }).toPromise().then((res) => {
          this.languageList = new Array<string>()
-         this.languageList.push("auto-select")
          var langList: Array<string> = Object.keys(res)
          for(var i = 0 ; i < langList.length; i++) {
            this.languageList.push(langList[i])

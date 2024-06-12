@@ -14,6 +14,7 @@ import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import { AuthUtils } from '../main/auth-utils'
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from '../main/confirmation-dialog';
+import { ScriptShifterService } from '../scriptshifter.service'
 
 @Component({
   selector: 'app-settings',
@@ -41,6 +42,8 @@ export class SettingsComponent implements OnInit {
     {code: 'kr', name: '한국어'}
   ]
 
+  ssLanguages: Array<string>
+
   constructor(
     private appService: AppService,
     private settingsService: CloudAppSettingsService,
@@ -50,6 +53,7 @@ export class SettingsComponent implements OnInit {
     private restService: CloudAppRestService,
     private alert: AlertService,
     private http: HttpClient,
+    private scriptshifter: ScriptShifterService,
     public dialog: MatDialog
   ) { }
 
@@ -74,6 +78,7 @@ export class SettingsComponent implements OnInit {
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.authUtils = new AuthUtils(this.http)
+    this.ssLanguages = this.scriptshifter.getLanguageList()
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       this.admin = this.isAdmin(); 
