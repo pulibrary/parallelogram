@@ -26,7 +26,7 @@
       <mat-form-field appeearance="fill">
         <mat-label>ScriptShifter Default Language</mat-label>
         <mat-select formControlName="ssLang">
-          <mat-option *ngFor="let lang of ssLanguages" [value]="lang">{{lang}}</mat-option>
+          <mat-option *ngFor="let lang of ssLanguages" [value]="lang.code">{{lang.name}}</mat-option>
         </mat-select>
       </mat-form-field>
     </section>

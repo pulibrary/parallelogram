@@ -42,7 +42,7 @@ export class SettingsComponent implements OnInit {
     {code: 'kr', name: '한국어'}
   ]
 
-  ssLanguages: Array<string>
+  ssLanguages: Array<{code: string, name: string}>
 
   constructor(
     private appService: AppService,
@@ -79,7 +79,7 @@ export class SettingsComponent implements OnInit {
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.authUtils = new AuthUtils(this.http)
     this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
-    this.ssLanguages.unshift("none")
+    this.ssLanguages.unshift({code: "none",name: "None"})
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       this.admin = this.isAdmin(); 

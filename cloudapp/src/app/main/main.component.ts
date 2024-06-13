@@ -75,7 +75,7 @@ export class MainComponent implements OnInit, OnDestroy {
   preferredLOCscore = 5
   dictMax = 200
 
-  ssLanguages: Array<string>
+  ssLanguages: Array<{code: string, name: string}>
   defaultSSScore = 1
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
@@ -191,7 +191,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.performPresearch().finally(() => {
         this.changeSpinner("clear")
     })
-    this.defaultSSScore++
+    this.defaultSSScore += 5
   }
 
   changeSpinner(state: string) {
@@ -218,8 +218,8 @@ export class MainComponent implements OnInit, OnDestroy {
     if(this.ssLanguages == undefined) {
       this.scriptshifter.loadLanguageList(this.authToken).then(() => {
         this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
-        this.ssLanguages.unshift("auto-select")
-        this.ssLanguages.unshift("none")
+        this.ssLanguages.unshift({code: "auto-select", name: "Auto-select"})
+        this.ssLanguages.unshift({code: "none",name: "None"})
       })
     }
 
