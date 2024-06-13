@@ -217,7 +217,9 @@ export class MainComponent implements OnInit, OnDestroy {
     this.authToken = aut    
     if(this.ssLanguages == undefined) {
       this.scriptshifter.loadLanguageList(this.authToken).then(() => {
-        this.ssLanguages = this.scriptshifter.getLanguageList()
+        this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
+        this.ssLanguages.unshift("auto-select")
+        this.ssLanguages.unshift("none")
       })
     }
 
@@ -519,7 +521,7 @@ export class MainComponent implements OnInit, OnDestroy {
         } else {   
           var sfdataparts = sf.data.split(new RegExp("(" + this.delimiterPattern + ")","u"));
           for(let k = 0; k < sfdataparts.length; k++) {
-            if(sfdataparts[k] != "") {
+            if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
               let ssResult = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, this.authToken)             
               if(ssResult != sfdataparts[k]) {
                 let sfdata_norm = this.cjkNormalize(sfdataparts[k])
