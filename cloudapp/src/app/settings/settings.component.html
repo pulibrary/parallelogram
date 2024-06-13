@@ -31,8 +31,11 @@
       </mat-form-field>
     </section>
     <section>
-      <mat-checkbox formControlName="autoSelectSSLang">Auto-select language based on field 008</mat-checkbox>
+      <mat-checkbox formControlName="autoSelectSSLang">Auto-select ScriptShifter language based on field 008</mat-checkbox>
     </section>  
+    <section class="settings-section">
+      <mat-checkbox formControlName="doWCSearch">Search WorldCat</mat-checkbox>
+    </section>
     <section class="settings-section">
       <span class="notice" [ngClass]="!hideWCKey ? 'hiddenField' : 'none'">{{'Translate.AdminSetWCAPI' | translate}}</span>
     </section>
@@ -96,12 +99,6 @@
         &nbsp;&nbsp;<mat-radio-button value="roman">{{'Translate.Roman880' | translate}}</mat-radio-button>&nbsp;&nbsp;
         &nbsp;&nbsp;<mat-radio-button value="nonroman">{{'Translate.NonRoman880' | translate}}</mat-radio-button>
       </mat-radio-group>
-    </section>
-    <section class="settings-section">
-      <mat-checkbox formControlName="pinyinonly">{{'Translate.PinyinOnly' | translate}}</mat-checkbox>    
-    </section>
-    <section class="settings-section">
-      <mat-checkbox formControlName="searchWG">{{'Translate.WadeGilesSearch' | translate}}</mat-checkbox> 
     </section>
     <div *ngIf="admin|async">
     <section class="settings-section">

@@ -16,10 +16,9 @@ export class Settings {
    
     wckey: string = "";
     wcsecret: string = "";
-    pinyinonly: boolean = false;
-    searchWG: boolean = false;
     doPresearch: boolean = false;
     doSwap: boolean = false;
+    doWCSearch: boolean = false;
     swapType: string = "nonroman"
     preSearchList: Array<string> = ["1xx","245","26x","7xx"]
     preferInstitutions: boolean = false;

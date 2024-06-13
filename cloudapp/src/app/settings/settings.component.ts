@@ -140,7 +140,7 @@ export class SettingsComponent implements OnInit {
       (err) => this.alert.error(err),
       () => {
         if((settings.wckey == undefined || settings.wckey == "" || 
-          settings.wcsecret == undefined || settings.wcsecret == "") && !settings.pinyinonly) {
+          settings.wcsecret == undefined || settings.wcsecret == "") && settings.doWCSearch) {
           this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
         }
       });
@@ -224,7 +224,7 @@ export class SettingsComponent implements OnInit {
     let wcKey = this.form.get("wckey").value;   
     let wcSecret = this.form.get("wcsecret").value;
     let adminLock = this.form.get("adminLock").value 
-    if(this.form.get("pinyinonly").value && 
+    if(this.form.get("doWCSearch").value == false ||
       (wcKey == undefined || wcKey == "" || wcSecret == undefined || wcSecret == "")) {
       this.settingsService.set(this.form.value).subscribe(
         response => {

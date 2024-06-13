@@ -6,7 +6,7 @@ import {
   CloudAppStoreService,
   InitData,
 } from '@exlibris/exl-cloudapp-angular-lib';
-import { WadegilesService } from "../wadegiles.service"
+//import { WadegilesService } from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
 import { AuthUtils } from './auth-utils'
 import { DictEntry } from './dict-entry'
@@ -17,7 +17,7 @@ import { Settings } from '../models/settings';
 import { OclcQuery } from './oclc-query';
 import { MarcDataField } from './marc-datafield';
 import { Router, ActivatedRoute } from '@angular/router';
-import { PinyinService } from '../pinyin.service';
+//import { PinyinService } from '../pinyin.service';
 import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import { AppService } from '../app.service'
@@ -100,8 +100,8 @@ export class MainComponent implements OnInit, OnDestroy {
     private storeService: CloudAppStoreService,
     private http: HttpClient,
     private route: ActivatedRoute,
-    private wadegiles: WadegilesService,
-    private pinyin:PinyinService,
+    //private wadegiles: WadegilesService,
+    //private pinyin:PinyinService,
     private scriptshifter: ScriptShifterService,
     private router: Router,
     public dialog: MatDialog) { }
@@ -142,7 +142,7 @@ export class MainComponent implements OnInit, OnDestroy {
       (err) => this.alert.error(err),
       () => {              
         this.doPresearch = this.settings.doPresearch;      
-        if(this.settings.pinyinonly) {
+        if(!this.settings.doWCSearch) {
           this.doSearch = false;
         } else if(this.settings.wckey == undefined || this.settings.wckey == "" ||
           this.settings.wcsecret == undefined || this.settings.wcsecret == "") {   
@@ -158,12 +158,13 @@ export class MainComponent implements OnInit, OnDestroy {
       });        
     });
      
-    this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     this.parallelDict = new Array<DictEntry>();    
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
     this.deletions = new Array<{key: string,value: string}>();
     this.preSearchFields = new Map<string,boolean>()   
     this.authToken_ready = this.eventsService.getAuthToken().toPromise()
+    this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
+
   }
 
   ngOnDestroy(): void {
@@ -187,10 +188,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.settings.ssLang = lang
     this.fieldCache.clear()
-    this.changeSpinner("saving")
-    this.performPresearch().finally(() => {
-        this.changeSpinner("clear")
-    })
+    this.performPresearch()
     this.defaultSSScore += 3
   }
 
@@ -211,8 +209,8 @@ export class MainComponent implements OnInit, OnDestroy {
     if(this.route.snapshot.queryParamMap.has('doSearch') && this.doSearch) {
       this.doSearch = (this.route.snapshot.queryParamMap.get('doSearch') == "true")
     }
-    this.wadegiles.ready.then((wg_ready) =>  {
-    this.pinyin.ready.then((py_ready) => {
+    //this.wadegiles.ready.then((wg_ready) =>  {
+    //this.pinyin.ready.then((py_ready) => {
     this.authToken_ready.then(async (aut) => {
     this.authToken = aut    
     if(this.ssLanguages == undefined) {
@@ -273,23 +271,23 @@ export class MainComponent implements OnInit, OnDestroy {
               }
             }
             let titles = [this.bib.title];
-            let title_wg = this.wadegiles.WGtoPY(this.bib.title);
-            if(this.settings.searchWG && title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
-                titles.push(title_wg);
-            }
+            //let title_wg = this.wadegiles.WGtoPY(this.bib.title);
+            //if(this.settings.searchWG && title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
+            //    titles.push(title_wg);
+            //}
                         
             if(t2) {
-              let t1wg = this.wadegiles.WGtoPY(t1);
-              let t2wg = this.wadegiles.WGtoPY(t2);
+              //let t1wg = this.wadegiles.WGtoPY(t1);
+              //let t2wg = this.wadegiles.WGtoPY(t2);
               titles.push(t1,t2);
-              if(this.settings.searchWG) {
-                if(t1.toLowerCase() != t1wg.toLowerCase()) {
-                  titles.push(t1wg);
-                }
-                if(t2.toLowerCase() != t2wg.toLowerCase()) {
-                  titles.push(t2wg);
-                }
-              }
+              //if(this.settings.searchWG) {
+              //  if(t1.toLowerCase() != t1wg.toLowerCase()) {
+              //    titles.push(t1wg);
+              //  }
+              //  if(t2.toLowerCase() != t2wg.toLowerCase()) {
+              //    titles.push(t2wg);
+              //  }
+              //}
             }            
             this.bib.names = this.bibUtils.getBibField(bib,"100","a".trim()) + "|" + 
               this.bibUtils.getBibField(bib,"700","a").trim();
@@ -309,14 +307,14 @@ export class MainComponent implements OnInit, OnDestroy {
                 let tnq = new OclcQuery("ti","exact",title);
                 tnq.addParams("au","=",name);
                 oclcQueries.push(tnq);
-                if(this.settings.searchWG) {
-                  let name_wg = this.wadegiles.WGtoPY(name);
-                  if(name_wg.toLowerCase() != name.toLowerCase()) {
-                    let tnq_wg = new OclcQuery("ti","exact",title);
-                    tnq_wg.addParams("au","=",name_wg);
-                    oclcQueries.push(tnq_wg);
-                  }
-                }                
+                //if(this.settings.searchWG) {
+                //  let name_wg = this.wadegiles.WGtoPY(name);
+                //  if(name_wg.toLowerCase() != name.toLowerCase()) {
+                //    let tnq_wg = new OclcQuery("ti","exact",title);
+                //    tnq_wg.addParams("au","=",name_wg);
+                //    oclcQueries.push(tnq_wg);
+                //  }
+                //}                
               });
               oclcQueries.push(new OclcQuery("ti","exact",title));
             });
@@ -330,17 +328,23 @@ export class MainComponent implements OnInit, OnDestroy {
               this.warnedTimeout = false
               interval(500).pipe(take(oclcQueries.length)).subscribe(oq => {
                 this.getOCLCrecords(oclcQueries[oq])
-              })     
+              },
+              (err) => {},
+              async () => {
+                this.performPresearch()
+              })   
             }
-         } 
+         } else {
+           this.performPresearch()
+         }
         }
       })
     } else {
       this.apiResult = {};
     }
   });
-  });
-  });
+  //});
+  //});
   setTimeout(() => {
     if(document.getElementById("noRecord")) {
       return document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")}
@@ -349,7 +353,8 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   async performPresearch() {
-    if(this.settings.doPresearch) {    
+    if(this.settings.doPresearch) {  
+      this.changeSpinner("saving")  
       for(let i = 0; i < this.preSearchArray.length; i++) {       
         let f = this.preSearchArray[i]     
         f = f.replace(/[Xx]*$/,"")
@@ -379,6 +384,7 @@ export class MainComponent implements OnInit, OnDestroy {
         }                
       }              
     }
+    this.changeSpinner("clear")
   }
 
   async getOCLCrecords(oq: OclcQuery) {
@@ -403,14 +409,15 @@ export class MainComponent implements OnInit, OnDestroy {
         if(this.completedSearches == this.totalSearches) {
           this.changeSpinner("saving")
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
-          this.addParallelDictToStorage().finally(async () => { 
-            await this.performPresearch()
-            this.changeSpinner("clear")
+          this.addParallelDictToStorage().finally(async () => {     
+            if(!this.doPresearch) {   
+              this.changeSpinner("clear")
+            } 
           })
         }
       }          
     )).subscribe(
-      (res) => {               
+      (res) => {
         let jsonBrief = JSON.parse(res)                    
         if(jsonBrief["briefRecords"]) {
           let recs = jsonBrief["briefRecords"]
@@ -492,17 +499,17 @@ export class MainComponent implements OnInit, OnDestroy {
     let cached_options = this.fieldCache.get(fkey)
 
 
-    if(this.settings.pinyinonly) {
-      for(let j = 0; j < field.subfields.length; j++) {
-        let sf = field.subfields[j];
-        let pylookup = this.pinyin.lookup(sf.data,field.tag,field.ind1,sf.code)
-        if(presearch && pylookup != sf.data) {
-          this.preSearchFields.set(fkey,true)
-          break
-        }
-        parallel_field.addSubfield(sf.id,sf.code,pylookup)
-      }
-    } else {
+    //if(!this.settings.doWCSearch) {
+    //  for(let j = 0; j < field.subfields.length; j++) {
+    //    let sf = field.subfields[j];
+    //    //let pylookup = this.pinyin.lookup(sf.data,field.tag,field.ind1,sf.code)
+    //    if(presearch) {
+    //      this.preSearchFields.set(fkey,true)
+    //      break
+    //    }
+    //    //parallel_field.addSubfield(sf.id,sf.code,pylookup)
+    //  }
+    //} else {
       let linkedDataURL = field.subfields.find(a => a.code == "0")
       if(linkedDataURL != undefined && !this.linkedDataCache.includes(linkedDataURL.data)) {
         await this.getLinkedData(linkedDataURL.data)
@@ -564,7 +571,7 @@ export class MainComponent implements OnInit, OnDestroy {
         parallel_field.addSubfield(sf.id,sf.code,options[best]) 
         options_map.set(sf.id,options)   
       }
-    }
+    //}
     this.changeSpinner("clear")
     if(!presearch) {
       if(field.tag == "880") {
@@ -682,10 +689,10 @@ export class MainComponent implements OnInit, OnDestroy {
       let ki = this.deletions[i].key     
       let k_normal = this.cjkNormalize(ki)
       let keys = [ki,k_normal]
-      if(this.settings.searchWG) {
-        let k_wg = this.cjkNormalize(this.wadegiles.WGtoPY(ki))
-        keys.push(k_wg)
-      }
+      //if(this.settings.searchWG) {
+      //  let k_wg = this.cjkNormalize(this.wadegiles.WGtoPY(ki))
+      //  keys.push(k_wg)
+      //}
       let v = this.deletions[i].value
       if((i > 0 && prevkey != ki) || i == this.deletions.length - 1) {
         if(i == this.deletions.length - 1) {
@@ -779,12 +786,12 @@ export class MainComponent implements OnInit, OnDestroy {
       if(text_normal_d != sfsections[g]) {
         search_keys_d.push(text_normal_d)
       }
-      if(this.settings.searchWG) {
-        let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
-        if(text_normal_wgpy_d != text_normal_d) {
-          search_keys_d.push(text_normal_wgpy_d);
-        }
-      }
+      //if(this.settings.searchWG) {
+      //  let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
+      //  if(text_normal_wgpy_d != text_normal_d) {
+      //    search_keys_d.push(text_normal_wgpy_d);
+      //  }
+      //}
       for(let h = 0; h < search_keys_d.length; h++) {        
         let hi = search_keys_d[h];      
         if(hi.length == 0) {
@@ -807,10 +814,10 @@ export class MainComponent implements OnInit, OnDestroy {
           let options = new Array<string>();
           let text_normal = this.cjkNormalize(search_text);
           let search_keys = [search_text,text_normal];
-          if(this.settings.searchWG) {
-            let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
-            search_keys.push(text_normal_wgpy);
-          }
+          //if(this.settings.searchWG) {
+          //  let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
+          //  search_keys.push(text_normal_wgpy);
+          //}
           for(let i = 0; i < search_keys.length; i++) {
             let ki = search_keys[i].trim();
             if(ki.length == 0) {
@@ -826,8 +833,8 @@ export class MainComponent implements OnInit, OnDestroy {
             });
           }    
          options = options.filter(a => !a.trim().match(/^<>/))
-          if(options.length == 0) {
-            options = [search_text];
+        if(options.length == 0) {
+            options = [search_text]
           }
           options_d = options_d.filter(a => !a.trim().match(/^<>/))
           if(options_d.length == 0) {
@@ -1117,13 +1124,13 @@ export class MainComponent implements OnInit, OnDestroy {
           if(text_rom != text_nonrom) {
             let text_rom_stripped = text_rom.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"");
             text_rom_stripped = text_rom_stripped.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"");
-            let text_rom_wgpy = this.wadegiles.WGtoPY(text_rom);
+            //let text_rom_wgpy = this.wadegiles.WGtoPY(text_rom);
 
             text_nonrom = text_nonrom.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"");
             text_nonrom = text_nonrom.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"");
 
             let text_rom_normal = this.cjkNormalize(text_rom);
-            let text_rom_wgpy_normal = this.cjkNormalize(text_rom_wgpy);
+            //let text_rom_wgpy_normal = this.cjkNormalize(text_rom_wgpy);
             let text_nonrom_normal = this.cjkNormalize(text_nonrom);
 
             let text_rom_parts: string[] = text_rom_stripped.split(new RegExp("(" + this.delimiterPattern + ")","u"));
@@ -1131,29 +1138,29 @@ export class MainComponent implements OnInit, OnDestroy {
 
             if(text_rom_parts.length != text_nonrom_parts.length) {
               if(text_rom != text_nonrom) { 
-                if(this.settings.searchWG) {
-                  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal], score);   
-                } else {
+                //if(this.settings.searchWG) {
+                //  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal], score);   
+                //} else {
                   this.addToParallelDict(text_rom_normal,text_nonrom, [], score); 
-                }
+                //}
                 this.addToParallelDict(text_nonrom_normal,text_rom_stripped, [], score);   
               }
             } else {            
               for(let m = 0; m < text_rom_parts.length; m++) {
                 let rpm = text_rom_parts[m];
-                let rpm_wgpy = this.wadegiles.WGtoPY(rpm);
+                //let rpm_wgpy = this.wadegiles.WGtoPY(rpm);
                 let cpm = text_nonrom_parts[m];
                 let rpm_normal = this.cjkNormalize(rpm);
-                let rpm_wgpy_normal = this.cjkNormalize(rpm_wgpy);
+                //let rpm_wgpy_normal = this.cjkNormalize(rpm_wgpy);
                 let cpm_normal = this.cjkNormalize(cpm); 
 
                 if(!rpm.match(new RegExp("^" + this.delimiterPattern + "$","u")) && 
                     rpm_normal != cpm_normal) { 
-                      if(this.settings.searchWG) {
-                        this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal], score);
-                      } else {
+                      //if(this.settings.searchWG) {
+                      //  this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal], score);
+                      //} else {
                         this.addToParallelDict(rpm_normal,cpm, [], score);
-                      }
+                      //}
                       this.addToParallelDict(cpm_normal,rpm, [], score);
                 }                
               }
@@ -1218,7 +1225,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
       for(let i = 0; i < subfields.length; i++) {
         let sf = subfields[i]  
         let opts = new Array();
-        if(!this.settings.pinyinonly) {
+        //if(this.settings.doWCSearch) {
           let cached_options = this.fieldCache.get(pfkey)
           if(cached_options != undefined && cached_options.has(sf.id)) {
             opts = cached_options.get(sf.id)
@@ -1250,19 +1257,19 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
               }            
             });
           }
-        } else {
-          let pylookup = this.pinyin.lookup(sf.data,parallel_field.tag,parallel_field.ind1,sf.code);
-          if(pylookup != sf.data && !opts.includes(pylookup)) {
-            opts.push(pylookup);
-          }
-          if(!opts.includes(sf.data)) {
-            opts.push(sf.data);
-          }
-          sfo.set(sf.id,opts);
-          this.subfield_options.set(fkey, sfo);  
-          this.changeSpinner("clear")     
-          this.showDetails = fkey
-        }  
+        //} else {
+          //let pylookup = this.pinyin.lookup(sf.data,parallel_field.tag,parallel_field.ind1,sf.code);
+          //if(pylookup != sf.data && !opts.includes(pylookup)) {
+          //  opts.push(pylookup);
+          //}
+        //  if(!opts.includes(sf.data)) {
+        //    opts.push(sf.data);
+        //  }
+        //  sfo.set(sf.id,opts);
+        //  this.subfield_options.set(fkey, sfo);  
+        //  this.changeSpinner("clear")     
+        //  this.showDetails = fkey
+        //}  
       }         
   }
 
