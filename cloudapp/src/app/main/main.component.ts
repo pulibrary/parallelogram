@@ -76,6 +76,7 @@ export class MainComponent implements OnInit, OnDestroy {
   dictMax = 200
 
   ssLanguages: Array<string>
+  defaultSSScore = 1
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
   punctuation_re = new RegExp(this.punctuationPattern,"u");
@@ -185,6 +186,12 @@ export class MainComponent implements OnInit, OnDestroy {
       lang = "chinese"
     }
     this.settings.ssLang = lang
+    this.fieldCache.clear()
+    this.changeSpinner("saving")
+    this.performPresearch().finally(() => {
+        this.changeSpinner("clear")
+    })
+    this.defaultSSScore++
   }
 
   changeSpinner(state: string) {
@@ -339,6 +346,39 @@ export class MainComponent implements OnInit, OnDestroy {
     3000)
   }
 
+  async performPresearch() {
+    if(this.settings.doPresearch) {    
+      for(let i = 0; i < this.preSearchArray.length; i++) {       
+        let f = this.preSearchArray[i]     
+        f = f.replace(/[Xx]*$/,"")
+        let comp = 0
+        if(f.length == 2) {
+          comp = 10
+        }
+        if(f.length == 1) {
+          comp = 100
+        }             
+        if(comp > 0) {
+          for(let j = 0; j < comp; j++) {
+            let pad = (f.length == 1 && j < 10) ? "0" : ""
+            let fj = f+pad+j               
+            for(let k = 0; this.fieldTable.has(fj+":"+(k < 10 ? "0" + k : k)); k++) {  
+              this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
+                this.translate.instant('Translate.Field') + " "  + fj                  
+              await this.lookupField(fj+":"+(k < 10 ? "0" + k : k),true)
+            }
+          }
+        } else {              
+          for(let k = 0; this.fieldTable.has(f+":"+(k < 10 ? "0" + k : k)); k++) {
+            this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
+              this.translate.instant('Translate.Field') + " " + f
+            await this.lookupField(f+":"+(k < 10 ? "0" + k : k),true)
+          }
+        }                
+      }              
+    }
+  }
+
   async getOCLCrecords(oq: OclcQuery) {
     let wcURL:string   
     let wcHeaders: HttpHeaders
@@ -362,36 +402,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.changeSpinner("saving")
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
           this.addParallelDictToStorage().finally(async () => { 
-            if(this.settings.doPresearch) {    
-              for(let i = 0; i < this.preSearchArray.length; i++) {       
-                let f = this.preSearchArray[i]     
-                f = f.replace(/[Xx]*$/,"")
-                let comp = 0
-                if(f.length == 2) {
-                  comp = 10
-                }
-                if(f.length == 1) {
-                  comp = 100
-                }                
-                if(comp > 0) {
-                  for(let j = 0; j < comp; j++) {
-                    let pad = (f.length == 1 && j < 10) ? "0" : ""
-                    let fj = f+pad+j               
-                    for(let k = 0; this.fieldTable.has(fj+":"+(k < 10 ? "0" + k : k)); k++) {  
-                      this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
-                        this.translate.instant('Translate.Field') + " "  + fj                  
-                      await this.lookupField(fj+":"+(k < 10 ? "0" + k : k),true)
-                    }
-                  }
-                } else {              
-                  for(let k = 0; this.fieldTable.has(f+":"+(k < 10 ? "0" + k : k)); k++) {
-                    this.statusString = this.translate.instant('Translate.Presearching') + ": " + 
-                      this.translate.instant('Translate.Field') + " " + f
-                    await this.lookupField(f+":"+(k < 10 ? "0" + k : k),true)
-                  }
-                }                
-              }              
-            }
+            await this.performPresearch()
             this.changeSpinner("clear")
           })
         }
@@ -513,7 +524,7 @@ export class MainComponent implements OnInit, OnDestroy {
               if(ssResult != sfdataparts[k]) {
                 let sfdata_norm = this.cjkNormalize(sfdataparts[k])
                 if(sfdata_norm != "") {
-                  let entries = this.addToParallelDict(sfdata_norm, ssResult, [sfdataparts[k]])
+                  let entries = this.addToParallelDict(sfdata_norm, ssResult, [sfdataparts[k]], this.defaultSSScore)
                   if(entries != undefined) {
                     await this.addToStorage(entries)
                   }
