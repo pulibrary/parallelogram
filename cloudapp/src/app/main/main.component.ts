@@ -191,7 +191,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.performPresearch().finally(() => {
         this.changeSpinner("clear")
     })
-    this.defaultSSScore += 5
+    this.defaultSSScore++
   }
 
   changeSpinner(state: string) {
