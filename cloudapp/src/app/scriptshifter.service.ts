@@ -10,7 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
 })
 export class ScriptShifterService {
 
-    languageList: Array<{code: string, name: string}>
+    languageList: Array<{code: string, marcCode: string, name: string}>
 
     constructor(private http: HttpClient,
                 private alert: AlertService,
@@ -30,7 +30,14 @@ export class ScriptShifterService {
          this.languageList = new Array()
          var langList: Array<string> = Object.keys(res)
          for(var i = 0 ; i < langList.length; i++) {
-          this.languageList.push({code: langList[i], name: res[langList[i]].name})
+          var marcCode = ""
+          switch(langList[i]) {
+            case 'chinese':
+              marcCode = 'chi'
+            case 'hindi':
+              marcCode = 'hin'
+          }
+          this.languageList.push({code: langList[i], marcCode: marcCode, name: res[langList[i]].name})
          }
        }).catch((err) => {
         this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
