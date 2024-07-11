@@ -184,7 +184,12 @@ export class MainComponent implements OnInit, OnDestroy {
 
   setSSLanguage(lang: string) {
     if(lang == "auto-select") {
-      lang = "chinese"
+      var autoLang = this.scriptshifter.lookupMarcCode(this.languageCode)
+      if(autoLang == "") {
+        lang = this.settings.ssLang
+      } else {
+        lang = autoLang
+      }
     }
     this.settings.ssLang = lang
     this.fieldCache.clear()
@@ -242,6 +247,9 @@ export class MainComponent implements OnInit, OnDestroy {
           }
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
+          if(this.settings.autoSelectSSLang) {
+            this.setSSLanguage("auto-select")
+          }
           this.mms_id = bib.mms_id;
           this.extractParallelFields(this.bib.anies);
           this.fieldTable = this.bibUtils.getDatafields(bib);
@@ -529,19 +537,28 @@ export class MainComponent implements OnInit, OnDestroy {
           var sfdataparts = sf.data.split(new RegExp("(" + this.delimiterPattern + ")","u"));
           for(let k = 0; k < sfdataparts.length; k++) {
             if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
-              let ssResult = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, this.authToken)             
-              if(ssResult != sfdataparts[k]) {
+              let ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.authToken)             
+              let ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.authToken)       
+              if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
                 let sfdata_norm = this.cjkNormalize(sfdataparts[k])
                 if(sfdata_norm != "") {
-                  let entries = this.addToParallelDict(sfdata_norm, ssResult, [sfdataparts[k]], this.defaultSSScore)
-                  if(entries != undefined) {
+                  let entries = new Array<DictEntry>()
+                  if(ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != sfdata_norm && ssResult_nonrom != "") {
+                    let entries_nonrom = this.addToParallelDict(sfdata_norm, ssResult_nonrom, [sfdataparts[k]], this.defaultSSScore)
+                    entries = entries.concat(entries_nonrom)
+                  }
+                  if(ssResult_roman != sfdataparts[k] && ssResult_roman != ssResult_nonrom && ssResult_roman != sfdata_norm&& ssResult_roman != "") {
+                    let entries_roman = this.addToParallelDict(sfdata_norm, ssResult_roman, [sfdataparts[k]], this.defaultSSScore)
+                    entries = entries.concat(entries_roman)
+                  }
+                  if(entries != undefined && entries.length > 0) {
                     await this.addToStorage(entries)
                   }
                 }
               }
             } 
           } 
-          options = await this.lookupInDictionary(sf.data);          
+          options = await this.lookupInDictionary(sf.data);         
         }                
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
@@ -777,6 +794,13 @@ export class MainComponent implements OnInit, OnDestroy {
     }
 
     let options_final = new Array<string>();
+    let options_full = new Array<string>();
+    await this.storeService.get(this.cjkNormalize(sfdata)).toPromise().then((res: DictEntry) => {          
+      if(res != undefined) {  
+        options_full = res.parallels.map(a => a.text)      
+      }
+    });
+    //this.alert.warn(sfdata+"|"+JSON.stringify(options_final))
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
   
     for(let g = 0; g < sfsections.length; g++) {
@@ -862,6 +886,7 @@ export class MainComponent implements OnInit, OnDestroy {
         options_final = options_temp;
       }
     }
+    options_final.unshift(...options_full)
     for(let i = 0; i < options_final.length; i++) {    
       m = sfdata.match(this.etal_re);
       if(m) {
@@ -1090,8 +1115,8 @@ export class MainComponent implements OnInit, OnDestroy {
             }
             parallelFields.get(linkage).push(datafields[j]);
             //if(isOCLC) {
-              //this.alert.warn(linkage + ":" + parallelFields.get(linkage).map(a=>a.innerHTML).join("|"))
-            //}
+            //this.alert.warn(linkage + ":" + parallelFields.get(linkage).map(a=>a.innerHTML).join("|"))
+           //}
           }
         }
       }
@@ -1136,16 +1161,15 @@ export class MainComponent implements OnInit, OnDestroy {
             let text_rom_parts: string[] = text_rom_stripped.split(new RegExp("(" + this.delimiterPattern + ")","u"));
             let text_nonrom_parts: string[] = text_nonrom.split(new RegExp("(" + this.delimiterPattern + ")","u"));
 
-            if(text_rom_parts.length != text_nonrom_parts.length) {
-              if(text_rom != text_nonrom) { 
-                //if(this.settings.searchWG) {
-                //  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal], score);   
-                //} else {
-                  this.addToParallelDict(text_rom_normal,text_nonrom, [], score); 
-                //}
-                this.addToParallelDict(text_nonrom_normal,text_rom_stripped, [], score);   
-              }
-            } else {            
+            if(text_rom != text_nonrom) { 
+               //if(this.settings.searchWG) {
+               //  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal], score);   
+               //} else {
+                 this.addToParallelDict(text_rom_normal,text_nonrom, [], score); 
+               //}
+               this.addToParallelDict(text_nonrom_normal,text_rom_stripped, [], score);   
+            }
+            if(text_rom_parts.length == text_nonrom_parts.length) {         
               for(let m = 0; m < text_rom_parts.length; m++) {
                 let rpm = text_rom_parts[m];
                 //let rpm_wgpy = this.wadegiles.WGtoPY(rpm);
@@ -1175,6 +1199,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
     if(textA == textB) {
       return;
     }    
+    //this.alert.error(textA+"|"+textB)
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
     if(found == -1) {
