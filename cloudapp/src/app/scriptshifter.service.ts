@@ -67,6 +67,9 @@ export class ScriptShifterService {
             case 'hebrew':
               marcCode = 'heb'
               break
+            case 'georgian': 
+              marcCode = 'geo'
+              break
           }
           this.languageList.push({code: langList[i], marcCode: marcCode, name: res[langList[i]].name})
          }
