@@ -551,6 +551,7 @@ export class MainComponent implements OnInit, OnDestroy {
                     entries = entries.concat(entries_roman)
                   }
                   if(entries != undefined && entries.length > 0) {
+                    entries = entries.filter((a, index) => entries.indexOf(a) === index)
                     //this.alert.warn(JSON.stringify(entries))
                     await this.addToStorage(entries)
                   }
@@ -559,7 +560,6 @@ export class MainComponent implements OnInit, OnDestroy {
             } 
           } 
           options = await this.lookupInDictionary(sf.data);     
-          //this.alert.error(sf.data+"|"+JSON.stringify(options))  
         }                
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
@@ -827,7 +827,7 @@ export class MainComponent implements OnInit, OnDestroy {
         }
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {          
           if(res != undefined) {  
-            //this.alert.warn(sfsections[g] + "|" + JSON.stringify(res.parallels))
+            
             options_d = res.parallels.map(a => a.text)      
           }
         });
@@ -875,7 +875,7 @@ export class MainComponent implements OnInit, OnDestroy {
             options_d = options_temp;
           }
         }
-      }
+      }    
       if(options_final.length == 0) {
         options_final = options_d;
       } else {
@@ -889,6 +889,7 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     }    
     options_final.unshift(...options_full)
+    options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
     //this.alert.error(startpunct+"|"+endpunct+"|"+JSON.stringify(options_final))
     for(let i = 0; i < options_final.length; i++) {    
       m = sfdata.match(this.etal_re);
@@ -952,6 +953,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let getCount = 0
     let setCount = 0
 
+    //this.alert.warn(JSON.stringify(pairs))
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {            
