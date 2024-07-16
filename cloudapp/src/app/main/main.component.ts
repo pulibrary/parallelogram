@@ -25,6 +25,7 @@ import { take, finalize, timeout } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { ScriptShifterService } from '../scriptshifter.service';
+import { P } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-main',
@@ -406,18 +407,16 @@ export class MainComponent implements OnInit, OnDestroy {
       'Authorization': 'Bearer ' + this.authToken,
       'Accept': 'application/json'
     })
-
     let retrievedRecords = new Array()
-   
     this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).pipe(
-      timeout(15000),finalize(() => {           
+      timeout(15000),finalize(() => {      
         this.completedSearches++;
         this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
         this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
         if(this.completedSearches == this.totalSearches) {
-          this.changeSpinner("saving")
+          this.changeSpinner("saving")          
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
-          this.addParallelDictToStorage().finally(async () => {     
+          this.addParallelDictToStorage().finally(async () => {    
             if(!this.doPresearch) {   
               this.changeSpinner("clear")
             } 
@@ -552,13 +551,15 @@ export class MainComponent implements OnInit, OnDestroy {
                     entries = entries.concat(entries_roman)
                   }
                   if(entries != undefined && entries.length > 0) {
+                    //this.alert.warn(JSON.stringify(entries))
                     await this.addToStorage(entries)
                   }
                 }
               }
             } 
           } 
-          options = await this.lookupInDictionary(sf.data);         
+          options = await this.lookupInDictionary(sf.data);     
+          //this.alert.error(sf.data+"|"+JSON.stringify(options))  
         }                
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
@@ -800,7 +801,7 @@ export class MainComponent implements OnInit, OnDestroy {
         options_full = res.parallels.map(a => a.text)      
       }
     });
-    //this.alert.warn(sfdata+"|"+JSON.stringify(options_final))
+    //this.alert.warn(sfdata+"|"+JSON.stringify(options_full))
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
   
     for(let g = 0; g < sfsections.length; g++) {
@@ -826,10 +827,11 @@ export class MainComponent implements OnInit, OnDestroy {
         }
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {          
           if(res != undefined) {  
+            //this.alert.warn(sfsections[g] + "|" + JSON.stringify(res.parallels))
             options_d = res.parallels.map(a => a.text)      
           }
         });
-      }
+      }      
       options_d = options_d.filter(a => !a.match(/^<>/))
       if(options_d.length == 0) {
         let sfparts = sfsections[g].split(new RegExp("("+ this.punctuationPattern + ")","u")); 
@@ -885,29 +887,47 @@ export class MainComponent implements OnInit, OnDestroy {
         });
         options_final = options_temp;
       }
-    }
+    }    
     options_final.unshift(...options_full)
+    //this.alert.error(startpunct+"|"+endpunct+"|"+JSON.stringify(options_final))
     for(let i = 0; i < options_final.length; i++) {    
       m = sfdata.match(this.etal_re);
       if(m) {
         options_final[i] = options_final[i].replace(this.etal_re,m[0]);
       }
-      if(options_final[i].substring(options_final[i].length - endpunct.length) == endpunct) {
-        endpunct = "";
+      for(var z = endpunct.length; z > 0; z--) {
+        //this.alert.error("*"+options_final[i].substring(options_final[i].length - z) + "|" + endpunct)
+        if(options_final[i].substring(options_final[i].length - z) == endpunct.substring(0,z)) {
+          //this.alert.error("*"+options_final[i] + "|" + endpunct)
+          if(z == endpunct.length) {
+            endpunct = ""
+          } else {
+            endpunct = endpunct.substring(z);
+          }
+          //this.alert.error("**"+options_final[i] + "|" + endpunct)
+          break
+        }
       }
-      if(options_final[i].substring(0,startpunct.length) == startpunct) {
-        startpunct = "";
+      for(var z = startpunct.length; z > 0; z--) {
+        if(options_final[i].substring(0,z) == startpunct.substring(startpunct.length-z)) {
+          if(z == startpunct.length) {
+            startpunct = ""
+          } else {
+            startpunct = startpunct.substring(0,z)
+          }
+          break
+        }
       }
       options_final[i] = startpunct + options_final[i] + endpunct;
     }
-    
+    //this.alert.error(JSON.stringify(options_final))
     options_final = options_final.filter(a=> !a.trim().match(/^<>/))
     return options_final;
 }
 
   addParallelDictToStorage(): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
-    let storePairs: DictEntry[] = [];    
+    let storePairs: DictEntry[] = []; 
     for(let i = 0; i < this.parallelDict.length && storePairs.length <= this.dictMax; i++) {
       let entry = this.parallelDict[i]
       let pairExists = storePairs.findIndex(a => a.key == entry.key)
@@ -934,7 +954,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     getOperations.subscribe({
       next: (res) => {
-        if(res != undefined) {  
+        if(res != undefined) {            
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
           let newPair: DictEntry = pairs.find(a => {return a.key == prevPair.key})
           let i = pairs2.findIndex(a => {return a.key == prevPair.key})

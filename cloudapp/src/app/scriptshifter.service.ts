@@ -70,6 +70,12 @@ export class ScriptShifterService {
             case 'georgian': 
               marcCode = 'geo'
               break
+            case 'ethiopic':
+              marcCode = "amh"
+              break
+            case 'armenian':
+              marcCode = "arm"
+              break
           }
           this.languageList.push({code: langList[i], marcCode: marcCode, name: res[langList[i]].name})
          }
@@ -96,7 +102,7 @@ export class ScriptShifterService {
         let search_term_escaped = JSON.stringify(searchTerm).replace(/\"$/,"").replace(/^\"/,"")
         let tdir = (toroman) ? "s2r" : "r2s"
         let ssQueryJSON =  '{"text":"' + search_term_escaped + '", "lang":"' + lang + '", ' +  
-          '"t_dir":"' + tdir + '", "options": {"marc_field":""}}'
+          '"t_dir":"' + tdir + '", "options": {}, "capitalize": "no_change"}'
         let ssURL = Settings.ssBaseURL
         return new Promise<string>((resolve, reject) => {
             this.http.post(ssURL, ssQueryJSON, {
