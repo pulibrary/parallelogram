@@ -894,11 +894,23 @@ export class MainComponent implements OnInit, OnDestroy {
     for(let i = 0; i < options_final.length; i++) {    
       m = sfdata.match(this.etal_re);
       if(m) {
-        options_final[i] = options_final[i].replace(this.etal_re,m[0]);
+        var etal = m[0]
+        options_final[i] = options_final[i].replace(this.etal_re,etal);
+        for(var z = endpunct.length; z > 0; z--) {
+          if(etal.substring(etal.length - z) == endpunct.substring(0,z)) {
+            if(z == endpunct.length) {
+              endpunct = ""
+            } else {
+              endpunct = endpunct.substring(z)
+            }
+          }
+        }
       }
       for(var z = endpunct.length; z > 0; z--) {
         //this.alert.error("*"+options_final[i].substring(options_final[i].length - z) + "|" + endpunct)
-        if(options_final[i].substring(options_final[i].length - z) == endpunct.substring(0,z)) {
+        var ep_trim = endpunct.trim().substring(0,z)
+        if((ep_trim.length > 0 && 
+          options_final[i].substring(options_final[i].length - ep_trim.length) == ep_trim)) {
           //this.alert.error("*"+options_final[i] + "|" + endpunct)
           if(z == endpunct.length) {
             endpunct = ""
@@ -910,7 +922,9 @@ export class MainComponent implements OnInit, OnDestroy {
         }
       }
       for(var z = startpunct.length; z > 0; z--) {
-        if(options_final[i].substring(0,z) == startpunct.substring(startpunct.length-z)) {
+        var sp_trim = startpunct.trim().substring(startpunct.length-z)
+        if(sp_trim.length > 0 && 
+          options_final[i].substring(0,z) == sp_trim) {
           if(z == startpunct.length) {
             startpunct = ""
           } else {
@@ -923,6 +937,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     //this.alert.error(JSON.stringify(options_final))
     options_final = options_final.filter(a=> !a.trim().match(/^<>/))
+
     return options_final;
 }
 
