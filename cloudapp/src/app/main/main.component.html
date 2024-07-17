@@ -19,7 +19,7 @@
       </button>
       &nbsp;&nbsp;
         <mat-form-field>
-          <mat-label>ScriptShifter Language</mat-label>
+          <mat-label>{{'Translate.SSLang' | translate}}</mat-label>
           <mat-select [(value)]="this.settings.ssLang">
             <mat-option *ngFor="let lang of ssLanguages" (click)="setSSLanguage(lang.code)" [value]="lang.code">{{lang.name}}</mat-option>
           </mat-select> 

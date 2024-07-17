@@ -3,8 +3,6 @@ import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Settings } from './models/settings';
 import { AlertService } from '@exlibris/exl-cloudapp-angular-lib';
 import { TranslateService } from '@ngx-translate/core';
-import { BreakpointObserver } from '@angular/cdk/layout';
-import { L } from '@angular/cdk/keycodes';
 
 
 @Injectable({
@@ -84,7 +82,7 @@ export class ScriptShifterService {
          }
        }).catch((err) => {
         this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-        " " + "**SCRIPTSHIFTER**" + " " +  
+        " " + this.translate.instant('ScriptShifter')+ " " +  
         this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
         this.translate.instant('Translate.ResultsMayNotBeOptimal'))
        })

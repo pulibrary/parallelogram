@@ -46,6 +46,12 @@
         "WCAPIInvalid": "WorldCat API Key or Client Secret is not valid",
         "OAuthError": "Trouble authenticating with WorldCat.  Please try again later",
         "Yes": "Yes",
-        "No": "No"
+        "No": "No",
+        "ScriptShifter": "ScriptShifter Service",
+        "SSLang": "ScriptShifter Language",
+        "SSDefaultLang": "ScriptShifter Default Language",
+        "SSAutoSelect": "Auto-select ScriptShifter language based on field 008",
+        "SearchWC": "Search WorldCat"
+
     }
 }

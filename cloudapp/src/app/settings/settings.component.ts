@@ -78,8 +78,14 @@ export class SettingsComponent implements OnInit {
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.authUtils = new AuthUtils(this.http)
-    this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
-    this.ssLanguages.unshift({code: "none",name: "None"})
+    if(this.ssLanguages == undefined) {
+      let authToken = this.eventsService.getAuthToken().toPromise().then((aut) => {
+        this.scriptshifter.loadLanguageList(aut).then((res) => {
+          this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
+          this.ssLanguages.unshift({code: "none",name: "None"})
+        })
+      })      
+    }
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
       this.admin = this.isAdmin(); 
