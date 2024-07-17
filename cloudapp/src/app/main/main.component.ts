@@ -525,7 +525,7 @@ export class MainComponent implements OnInit, OnDestroy {
       }
       for(let j = 0; j < field.subfields.length; j++) {
         let sf = field.subfields[j];
-        if(sf.code == "0") {
+        if(sf.code.match(/[0-9]/) || sf.data.match("/^http:/")) {
           parallel_field.addSubfield(sf.id,sf.code,sf.data)
           continue
         }        
