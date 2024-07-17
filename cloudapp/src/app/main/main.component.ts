@@ -533,7 +533,7 @@ export class MainComponent implements OnInit, OnDestroy {
         if(cached_options != undefined && cached_options.has(sf.id)) {
           options = cached_options.get(sf.id)
         } else {   
-          var sfdataparts = sf.data.split(new RegExp("(" + this.delimiterPattern + ")","u"));
+          var sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));
           for(let k = 0; k < sfdataparts.length; k++) {
             if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
               let ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.authToken)             
