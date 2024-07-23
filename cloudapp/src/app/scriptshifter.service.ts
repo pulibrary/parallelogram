@@ -30,7 +30,7 @@ export class ScriptShifterService {
          this.languageList = new Array()
          var langList: Array<string> = Object.keys(res)
          for(var i = 0 ; i < langList.length; i++) {
-          var marcCode = ""
+          /*
           switch(langList[i]) {
             case 'chinese':
               marcCode = 'chi'
@@ -78,7 +78,8 @@ export class ScriptShifterService {
               marcCode = "mal"
               break
           }
-          this.languageList.push({code: langList[i], marcCode: marcCode, name: res[langList[i]].name})
+            */
+          this.languageList.push({code: langList[i], marcCode: res[langList[i]].marc_code, name: res[langList[i]].name})
          }
        }).catch((err) => {
         this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
@@ -86,6 +87,7 @@ export class ScriptShifterService {
         this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
         this.translate.instant('Translate.ResultsMayNotBeOptimal'))
        })
+
      }
 
      public lookupMarcCode(marcCode: string): string {
