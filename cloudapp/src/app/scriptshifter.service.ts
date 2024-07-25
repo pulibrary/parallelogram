@@ -92,9 +92,13 @@ export class ScriptShifterService {
 
      public lookupMarcCode(marcCode: string): string {
         var ssLang = ""
+        var ssListLen = 9999
         for(var i = 0; i < this.languageList.length; i++) {
-          if(this.languageList[i].marcCode == marcCode) {
+          if(this.languageList[i].marcCode != undefined && 
+            this.languageList[i].marcCode.includes(marcCode) && 
+            this.languageList[i].marcCode.length < ssListLen) {
             ssLang = this.languageList[i].code
+            ssListLen = this.languageList[i].marcCode.length
             break
           }
         }
