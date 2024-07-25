@@ -890,6 +890,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }    
     options_final.unshift(...options_full)
     options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
+    //this.alert.error(JSON.stringify(options_final))
     //this.alert.error(startpunct+"|"+endpunct+"|"+JSON.stringify(options_final))
     for(let i = 0; i < options_final.length; i++) {    
       m = sfdata.match(this.etal_re);
@@ -937,7 +938,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     //this.alert.error(JSON.stringify(options_final))
     options_final = options_final.filter(a=> !a.trim().match(/^<>/))
-
+    options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
     return options_final;
 }
 
