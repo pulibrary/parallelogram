@@ -27,6 +27,6 @@ export class Settings {
     interfaceLang: string = ""
     adminWC: boolean = false;
     adminLock: boolean = false;
-    ssLang: string = ""
+    ssLang: string = "None"
     autoSelectSSLang = true
 }

@@ -82,7 +82,7 @@ export class SettingsComponent implements OnInit {
       let authToken = this.eventsService.getAuthToken().toPromise().then((aut) => {
         this.scriptshifter.loadLanguageList(aut).then((res) => {
           this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
-          this.ssLanguages.unshift({code: "none",name: "None"})
+          this.ssLanguages.unshift({code: "none",name: "None"})          
         })
       })      
     }
