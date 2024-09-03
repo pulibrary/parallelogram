@@ -15,20 +15,23 @@
 <div *ngIf="form">
   <form [formGroup]="form">
     <section class="settings-section" style="width: 100px">
-      <mat-form-field appeearance="fill">
+      <mat-form-field appearance="fill">
         <mat-label>{{'Translate.Language' | translate}}</mat-label>
         <mat-select formControlName="interfaceLang">
           <mat-option *ngFor="let lang of languages" (click)="setLang(lang.code)" [value]="lang.code">{{lang.name}}</mat-option>
         </mat-select>
       </mat-form-field>
     </section>
-    <section class="settings-section" style="width: 100px">
-      <mat-form-field appeearance="fill">
+    <section class="settings-section" style="width: 400px">
+      <mat-form-field appearance="fill" style="width: 200px">
         <mat-label>{{'Translate.SSDefaultLang' | translate}}</mat-label>
         <mat-select formControlName="ssLang">
-          <mat-option *ngFor="let lang of ssLanguages" [value]="lang.code">{{lang.name}}</mat-option>
+          <mat-option *ngFor="let lang of ssLanguages" [value]="lang.code" (click)="getSSlangSettings(lang.code)">{{lang.name}}</mat-option>
         </mat-select>
       </mat-form-field>
+      &nbsp;&nbsp;
+        <mat-label>{{this.ssLangDirection === 's2r' ? ('Translate.SSs2r' | translate) : ''}}</mat-label>
+        <mat-label>{{this.ssLangDirection === 'r2s' ? ('Translate.SSr2s' | translate) : ''}}</mat-label>
     </section>
     <section>
       <mat-checkbox formControlName="autoSelectSSLang">{{'Translate.SSAutoSelect' | translate}}</mat-checkbox>

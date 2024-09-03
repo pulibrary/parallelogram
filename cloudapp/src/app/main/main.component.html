@@ -24,6 +24,9 @@
             <mat-option *ngFor="let lang of ssLanguages" (click)="setSSLanguage(lang.code)" [value]="lang.code">{{lang.name}}</mat-option>
           </mat-select> 
         </mat-form-field>
+        &nbsp;&nbsp;
+        <mat-label>{{this.ssLangDirection === 's2r' ? ('Translate.SSs2r' | translate) : ''}}</mat-label>
+        <mat-label>{{this.ssLangDirection === 'r2s' ? ('Translate.SSr2s' | translate) : ''}}</mat-label>
     </div>
     <div><br/></div>
     <mat-card-content>      

@@ -29,6 +29,7 @@ export class SettingsComponent implements OnInit {
   admin: Observable<boolean>;
   hideWCKey = true
   authUtils: AuthUtils
+  ssLangDirection = 'both'
 
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
@@ -75,6 +76,12 @@ export class SettingsComponent implements OnInit {
     this.translate.use(lang)
   }
 
+  getSSlangSettings(lang: string) {
+    this.eventsService.getAuthToken().toPromise().then(async (authToken) =>  
+      this.ssLangDirection = await this.scriptshifter.getLanguageDirection(lang,authToken)
+    )
+  }
+
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.authUtils = new AuthUtils(this.http)
@@ -92,6 +99,9 @@ export class SettingsComponent implements OnInit {
       if(!settings.interfaceLang) {
         this.setLang("en")
         this.form.get("interfaceLang").setValue("en")
+      }
+      if(!settings.ssLang) {
+        settings.ssLang = "none"
       }
       if(this.form.get("doSwap").value) {
         this.form.get("swapType").enable()

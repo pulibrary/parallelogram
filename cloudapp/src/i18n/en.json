@@ -51,7 +51,9 @@
         "SSLang": "ScriptShifter Language",
         "SSDefaultLang": "ScriptShifter Default Language",
         "SSAutoSelect": "Auto-select ScriptShifter language based on field 008",
-        "SearchWC": "Search WorldCat"
+        "SearchWC": "Search WorldCat",
+        "SSs2r": "Script-to-Roman only",
+        "SSr2s": "Roman-to-Script only"
 
     }
 }
