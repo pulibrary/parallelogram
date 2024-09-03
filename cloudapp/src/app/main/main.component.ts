@@ -39,6 +39,7 @@ export class MainComponent implements OnInit, OnDestroy {
   private _apiResult: any;
   initData: InitData
   defaultLang: string
+  ssLangDirection = "both"
 
   hasApiResult: boolean = false;
   loading = false;
@@ -127,14 +128,16 @@ export class MainComponent implements OnInit, OnDestroy {
       if(this.settings.interfaceLang == undefined) {
         this.settings.interfaceLang = "eng"
       } 
+      if(this.settings.ssLang == undefined) {
+        this.settings.ssLang = "None"
+      } 
+      if(this.settings.autoSelectSSLang == undefined) {
+        this.settings.autoSelectSSLang = true
+      } 
       this.translate.use(this.settings.interfaceLang) 
       this.configService.get().subscribe(cfg => {  
         let adminKey: string = cfg.wckey
         let adminSecret: string = cfg.wcsecret
-        if((adminKey != "" && adminKey != undefined && this.settings.wckey != adminKey) ||
-          (adminSecret != "" && adminSecret != undefined && this.settings.wcsecret != adminSecret)) {
-          this.router.navigate(['settings'],{relativeTo: this.route})
-        }
         if((adminKey != undefined && adminKey != "")) {   
           this.settings.wckey = adminKey
           this.settings.wcsecret = adminSecret      
@@ -145,9 +148,6 @@ export class MainComponent implements OnInit, OnDestroy {
         this.doPresearch = this.settings.doPresearch;      
         if(!this.settings.doWCSearch) {
           this.doSearch = false;
-        } else if(this.settings.wckey == undefined || this.settings.wckey == "" ||
-          this.settings.wcsecret == undefined || this.settings.wcsecret == "") {   
-          this.router.navigate(['settings'],{relativeTo: this.route})
         } 
         this.preSearchArray = this.settings.preSearchList
         if(this.settings.interfaceLang == "") {
@@ -183,7 +183,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
  
 
-  setSSLanguage(lang: string) {
+  async setSSLanguage(lang: string) {
     if(lang == "auto-select") {
       var autoLang = this.scriptshifter.lookupMarcCode(this.languageCode)
       if(autoLang == "") {
@@ -193,6 +193,7 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     }
     this.settings.ssLang = lang
+    this.ssLangDirection = await this.scriptshifter.getLanguageDirection(lang,this.authToken)    
     this.fieldCache.clear()
     this.performPresearch()
     this.defaultSSScore += 3
@@ -249,7 +250,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
           if(this.settings.autoSelectSSLang) {
-            this.setSSLanguage("auto-select")
+            this.setSSLanguage("auto-select")            
           }
           this.mms_id = bib.mms_id;
           this.extractParallelFields(this.bib.anies);
@@ -536,8 +537,14 @@ export class MainComponent implements OnInit, OnDestroy {
           var sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));
           for(let k = 0; k < sfdataparts.length; k++) {
             if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
-              let ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.authToken)             
-              let ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.authToken)       
+              let ssResult_nonrom = ""
+              if(this.ssLangDirection != "s2r") {
+                ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.authToken)            
+              } 
+              let ssResult_roman = ""
+              if(this.ssLangDirection != "r2s") {
+                ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.authToken)      
+              } 
               if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
                 let sfdata_norm = this.cjkNormalize(sfdataparts[k])
                 if(sfdata_norm != "") {

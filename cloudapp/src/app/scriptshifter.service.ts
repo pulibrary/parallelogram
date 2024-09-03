@@ -30,55 +30,6 @@ export class ScriptShifterService {
          this.languageList = new Array()
          var langList: Array<string> = Object.keys(res)
          for(var i = 0 ; i < langList.length; i++) {
-          /*
-          switch(langList[i]) {
-            case 'chinese':
-              marcCode = 'chi'
-              break
-            case 'hindi':
-              marcCode = 'hin'
-              break
-            case 'thai':
-              marcCode = 'tha'
-              break
-            case 'tibetan':
-              marcCode = "tib"
-              break
-            case 'uighur_cyrillic':
-              marcCode = 'uig'
-              break
-            case 'mongolian_cyrillic':
-              marcCode = 'mon'
-              break
-            case 'korean_nonames':
-              marcCode = 'kor'
-              break
-            case 'burmese':
-              marcCode = 'bur'
-              break
-            case 'arabic':
-              marcCode = 'ara'
-              break
-            case 'persian':
-              marcCode = 'per'
-              break
-            case 'hebrew':
-              marcCode = 'heb'
-              break
-            case 'georgian': 
-              marcCode = 'geo'
-              break
-            case 'ethiopic':
-              marcCode = "amh"
-              break
-            case 'armenian':
-              marcCode = "arm"
-              break
-            case 'malayalam':
-              marcCode = "mal"
-              break
-          }
-            */
           this.languageList.push({code: langList[i], marcCode: res[langList[i]].marc_code, name: res[langList[i]].name})
          }
        }).catch((err) => {
@@ -127,6 +78,34 @@ export class ScriptShifterService {
           //" " + "**SCRIPTSHIFTER**" + " " +  
           //this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
           //this.translate.instant('Translate.ResultsMayNotBeOptimal'))
+          resolve("")
+        })
+      })
+    }
+
+    async getLanguageDirection(lang: string, authToken: string) {
+      return new Promise<string>((resolve, reject) => {
+        let direction = ""
+        this.http.get(Settings.ssLangOptsURL + "/" + lang, {
+          headers: new HttpHeaders({
+            'X-Proxy-Host': Settings.ssHost,
+            'Authorization': 'Bearer ' + authToken,
+            'Content-type': 'application/json'
+          })
+        }).toPromise().then(async (res) => { 
+          let resSTR = JSON.stringify(res)
+          if(resSTR.includes("script_to_roman")) {
+            if(resSTR.includes("roman_to_script")) {
+              direction = "both"
+            } else {
+              direction = "s2r"
+            }
+          } else {
+            direction = "r2s"
+          }          
+          
+          resolve(direction)
+        }).catch((err) => {
           resolve("")
         })
       })

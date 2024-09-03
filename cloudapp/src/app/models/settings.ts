@@ -5,6 +5,7 @@ export class Settings {
     static readonly wcMDQueryParamName: string = "q"
     static readonly ssBaseURL: string = Settings.awsBaseURL + "trans"
     static readonly ssLangURL: string = Settings.awsBaseURL + "languages"
+    static readonly ssLangOptsURL: string = Settings.awsBaseURL + "table"
     //static readonly ssBaseURL: string = Settings.awsBaseURL + "scriptshifter/trans"
     //static readonly ssLangURL: string = Settings.awsBaseURL + "scriptshifter/languages"
 
@@ -28,5 +29,5 @@ export class Settings {
     adminWC: boolean = false;
     adminLock: boolean = false;
     ssLang: string = "None"
-    autoSelectSSLang = true
+    autoSelectSSLang: boolean = true
 }
