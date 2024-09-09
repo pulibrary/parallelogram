@@ -53,7 +53,12 @@
         "SSAutoSelect": "Auto-select ScriptShifter language based on field 008",
         "SearchWC": "Search WorldCat",
         "SSs2r": "Script-to-Roman only",
-        "SSr2s": "Roman-to-Script only"
+        "SSr2s": "Roman-to-Script only",
+        "GeneralSettings": "General Settings",
+        "SSoptions": "ScriptShifter Settings",
+        "WorldCatSettings": "WorldCat Settings",
+        "AdminSettings": "Administrator Settings",
+        "Capitalization": "Capitalization"
 
     }
 }

@@ -30,4 +30,6 @@ export class Settings {
     adminLock: boolean = false;
     ssLang: string = "none"
     autoSelectSSLang: boolean = true
+    ssCapitalize: string = "no_change"
+    ssOptionsValues: string = "{}"
 }

@@ -56,11 +56,11 @@ export class ScriptShifterService {
         return ssLang
      }
 
-     async query(searchTerm: string, lang: string, toroman: boolean = true, authToken: string): Promise<string> {
+     async query(searchTerm: string, lang: string, toroman: boolean = true, capitalize: string = "no_change", options: string = "{}", authToken: string): Promise<string> {
         let search_term_escaped = JSON.stringify(searchTerm).replace(/\"$/,"").replace(/^\"/,"")
         let tdir = (toroman) ? "s2r" : "r2s"
         let ssQueryJSON =  '{"text":"' + search_term_escaped + '", "lang":"' + lang + '", ' +  
-          '"t_dir":"' + tdir + '", "options": {}, "capitalize": "no_change"}'
+          '"t_dir":"' + tdir + '", "options": ' + options + ', "capitalize": "' + capitalize + '"}'
         let ssURL = Settings.ssBaseURL
         return new Promise<string>((resolve, reject) => {
             this.http.post(ssURL, ssQueryJSON, {
@@ -83,7 +83,7 @@ export class ScriptShifterService {
       })
     }
 
-    async getLanguageDirection(lang: string, authToken: string) {
+    async getLanguageDirection(lang: string, authToken: string): Promise<string> {
       return new Promise<string>((resolve, reject) => {
         let direction = ""
         this.http.get(Settings.ssLangOptsURL + "/" + lang, {
@@ -105,6 +105,27 @@ export class ScriptShifterService {
           }          
           
           resolve(direction)
+        }).catch((err) => {
+          resolve("")
+        })
+      })
+    }
+
+    async getLanguageOptions(lang: string, authToken: string): Promise<string> {
+      return new Promise<string>((resolve, reject) => {
+        let options = ""
+        this.http.get(Settings.ssLangOptsURL + "/" + lang, {
+          headers: new HttpHeaders({
+            'X-Proxy-Host': Settings.ssHost,
+            'Authorization': 'Bearer ' + authToken,
+            'Content-type': 'application/json'
+          })
+        }).toPromise().then(async (res) => {        
+          options = JSON.stringify(res['options'])   
+          if(options == undefined) {
+            options = "[]"
+          }       
+          resolve(options)
         }).catch((err) => {
           resolve("")
         })

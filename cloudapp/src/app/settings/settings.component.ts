@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { AppService } from '../app.service';
 import { FormGroup, FormControl } from '@angular/forms';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
@@ -8,7 +8,7 @@ import { AlertService, CloudAppSettingsService, FormGroupUtil,
   CloudAppEventsService, CloudAppConfigService, CloudAppRestService } from '@exlibris/exl-cloudapp-angular-lib';
 import { Settings } from '../models/settings';
 import { MatChipInputEvent } from '@angular/material/chips'
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { C, COMMA, ENTER, P } from '@angular/cdk/keycodes';
 import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import { AuthUtils } from '../main/auth-utils'
@@ -30,6 +30,11 @@ export class SettingsComponent implements OnInit {
   hideWCKey = true
   authUtils: AuthUtils
   ssLangDirection = 'both'
+  ssOptionsDefault = []
+  ssOptionsCurrent = {}
+  ssLoadFromSaved = true
+
+  //@ViewChild('ssAdditionalOptions',{'static': false}) ssAdditionalOptions: ElementRef<HTMLElement>
 
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
@@ -44,6 +49,7 @@ export class SettingsComponent implements OnInit {
   ]
 
   ssLanguages: Array<{code: string, name: string}>
+
 
   constructor(
     private appService: AppService,
@@ -72,16 +78,6 @@ export class SettingsComponent implements OnInit {
     return true;
   }	
 
-  setLang(lang: string) {
-    this.translate.use(lang)
-  }
-
-  getSSlangSettings(lang: string) {
-    this.eventsService.getAuthToken().toPromise().then(async (authToken) =>  
-      this.ssLangDirection = await this.scriptshifter.getLanguageDirection(lang,authToken)
-    )
-  }
-
   ngOnInit() {    
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.authUtils = new AuthUtils(this.http)
@@ -102,6 +98,10 @@ export class SettingsComponent implements OnInit {
       }
       if(!settings.ssLang) {
         settings.ssLang = "none"
+      } else {        
+        this.ssOptionsCurrent = JSON.parse(settings.ssOptionsValues)
+        this.ssLoadFromSaved = true
+        this.getSSlangSettings(settings.ssLang)
       }
       if(this.form.get("doSwap").value) {
         this.form.get("swapType").enable()
@@ -161,6 +161,48 @@ export class SettingsComponent implements OnInit {
         }
       });
     });    
+  }
+
+  setLang(lang: string) {
+    this.translate.use(lang)
+  }
+
+  getSSlangSettings(lang: string) {
+    this.eventsService.getAuthToken().toPromise().then(async (authToken) => {
+      this.ssLangDirection = await this.scriptshifter.getLanguageDirection(lang,authToken)
+      let ssLangOptions = await this.scriptshifter.getLanguageOptions(lang,authToken)
+      this.ssOptionsDefault = JSON.parse(ssLangOptions)
+      this.setSSlangOptions()
+    })
+  }
+
+  setSSlangOptions(event = null) {   
+    if(event != null) {
+      if(event.hasOwnProperty('checked')) { //checkbox
+        if(event.checked) {
+          this.ssOptionsCurrent[event.source.id] = true
+        } else {
+          this.ssOptionsCurrent[event.source.id] = false
+        }
+      } else if(event.hasOwnProperty('source')) {  //selection list   
+        this.ssOptionsCurrent[event.source.id] = event.source.value
+      } else { //text input
+        let target = event.target as HTMLInputElement
+        this.ssOptionsCurrent[target.id] = target.value
+      }
+      this.form.get("ssOptionsValues").markAsDirty()
+    } else {      
+      if(!this.ssLoadFromSaved) {
+        this.ssOptionsCurrent = {}                
+      } 
+      if(Object.keys(this.ssOptionsCurrent).length == 0) {        
+        for(let i = 0; i < this.ssOptionsDefault.length; i++) {          
+          this.ssOptionsCurrent[this.ssOptionsDefault[i].id] = this.ssOptionsDefault[i].default                    
+        }        
+      } 
+      this.ssLoadFromSaved = false
+    }
+    this.form.get("ssOptionsValues").setValue(JSON.stringify(this.ssOptionsCurrent))
   }
   
 
@@ -242,6 +284,7 @@ export class SettingsComponent implements OnInit {
     let adminLock = this.form.get("adminLock").value 
     if(this.form.get("doWCSearch").value == false ||
       (wcKey == undefined || wcKey == "" || wcSecret == undefined || wcSecret == "")) {
+      console.log(this.form.value)
       this.settingsService.set(this.form.value).subscribe(
         response => {
           if(this.form.get("adminWC").value) {

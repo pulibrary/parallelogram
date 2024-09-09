@@ -539,11 +539,11 @@ export class MainComponent implements OnInit, OnDestroy {
             if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
               let ssResult_nonrom = ""
               if(this.ssLangDirection != "s2r") {
-                ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.authToken)            
+                ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.settings.ssCapitalize, this.settings.ssOptionsValues, this.authToken)            
               } 
               let ssResult_roman = ""
               if(this.ssLangDirection != "r2s") {
-                ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.authToken)      
+                ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.settings.ssCapitalize, this.settings.ssOptionsValues, this.authToken)      
               } 
               if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
                 let sfdata_norm = this.cjkNormalize(sfdataparts[k])
