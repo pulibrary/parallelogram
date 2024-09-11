@@ -96,10 +96,13 @@ export class SettingsComponent implements OnInit {
         this.setLang("en")
         this.form.get("interfaceLang").setValue("en")
       }
+      
       if(!settings.ssLang) {
-        settings.ssLang = "none"
-      } else {        
-        this.ssOptionsCurrent = JSON.parse(settings.ssOptionsValues)
+        settings.ssLang = "none"        
+      } else {       
+        if(settings.ssOptionsValues.length > 2) {
+          this.ssOptionsCurrent = JSON.parse(settings.ssOptionsValues)
+        }
         this.ssLoadFromSaved = true
         this.getSSlangSettings(settings.ssLang)
       }
@@ -171,7 +174,9 @@ export class SettingsComponent implements OnInit {
     this.eventsService.getAuthToken().toPromise().then(async (authToken) => {
       this.ssLangDirection = await this.scriptshifter.getLanguageDirection(lang,authToken)
       let ssLangOptions = await this.scriptshifter.getLanguageOptions(lang,authToken)
-      this.ssOptionsDefault = JSON.parse(ssLangOptions)
+      if(ssLangOptions != "") {
+        this.ssOptionsDefault = JSON.parse(ssLangOptions)
+      }
       this.setSSlangOptions()
     })
   }
