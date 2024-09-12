@@ -10,7 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
 })
 export class ScriptShifterService {
 
-    languageList: Array<{code: string, marcCode: string, name: string}>
+    languageList: Array<{code: string, marcCode: string, name: string, has_r2s: boolean, has_s2r: boolean}>
 
     constructor(private http: HttpClient,
                 private alert: AlertService,
@@ -30,7 +30,8 @@ export class ScriptShifterService {
          this.languageList = new Array()
          var langList: Array<string> = Object.keys(res)
          for(var i = 0 ; i < langList.length; i++) {
-          this.languageList.push({code: langList[i], marcCode: res[langList[i]].marc_code, name: res[langList[i]].label})
+          this.languageList.push({code: langList[i], marcCode: res[langList[i]].marc_code, 
+            name: res[langList[i]].label, has_r2s: res[langList[i]].has_r2s, has_s2r: res[langList[i]].has_s2r})
          }
        }).catch((err) => {
         this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
@@ -83,32 +84,24 @@ export class ScriptShifterService {
       })
     }
 
-    async getLanguageDirection(lang: string, authToken: string): Promise<string> {
-      return new Promise<string>((resolve, reject) => {
-        let direction = ""
-        this.http.get(Settings.ssLangOptsURL + "/" + lang, {
-          headers: new HttpHeaders({
-            'X-Proxy-Host': Settings.ssHost,
-            'Authorization': 'Bearer ' + authToken,
-            'Content-type': 'application/json'
-          })
-        }).toPromise().then(async (res) => { 
-          let resSTR = JSON.stringify(res)
-          if(resSTR.includes("script_to_roman")) {
-            if(resSTR.includes("roman_to_script")) {
+    getLanguageDirection(lang: string): string {
+      let direction = ""
+      for(var i = 0; i < this.languageList.length; i++) {
+        let lang_i = this.languageList[i]
+        if(lang_i.code == lang) {
+          if(lang_i.has_r2s) {
+            if(lang_i.has_s2r) {
               direction = "both"
             } else {
-              direction = "s2r"
+              direction = "r2s"
             }
-          } else {
-            direction = "r2s"
-          }          
-          
-          resolve(direction)
-        }).catch((err) => {
-          resolve("")
-        })
-      })
+          } else if (lang_i.has_s2r) {
+            direction = "s2r"
+          }
+          break
+        }
+      }
+      return direction
     }
 
     async getLanguageOptions(lang: string, authToken: string): Promise<string> {

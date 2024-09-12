@@ -172,7 +172,7 @@ export class SettingsComponent implements OnInit {
 
   getSSlangSettings(lang: string) {
     this.eventsService.getAuthToken().toPromise().then(async (authToken) => {
-      this.ssLangDirection = await this.scriptshifter.getLanguageDirection(lang,authToken)
+      this.ssLangDirection = this.scriptshifter.getLanguageDirection(lang)
       let ssLangOptions = await this.scriptshifter.getLanguageOptions(lang,authToken)
       if(ssLangOptions != "") {
         this.ssOptionsDefault = JSON.parse(ssLangOptions)

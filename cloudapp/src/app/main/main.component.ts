@@ -193,7 +193,7 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     }
     this.settings.ssLang = lang
-    this.ssLangDirection = await this.scriptshifter.getLanguageDirection(lang,this.authToken) 
+    this.ssLangDirection = this.scriptshifter.getLanguageDirection(lang) 
     this.fieldCache.clear()
     this.performPresearch()
     this.defaultSSScore += 3
