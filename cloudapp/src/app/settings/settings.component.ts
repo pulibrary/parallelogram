@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { AppService } from '../app.service';
 import { FormGroup, FormControl } from '@angular/forms';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
@@ -33,8 +33,6 @@ export class SettingsComponent implements OnInit {
   ssOptionsDefault = []
   ssOptionsCurrent = {}
   ssLoadFromSaved = true
-
-  //@ViewChild('ssAdditionalOptions',{'static': false}) ssAdditionalOptions: ElementRef<HTMLElement>
 
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;

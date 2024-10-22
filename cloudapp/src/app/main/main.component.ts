@@ -6,7 +6,6 @@ import {
   CloudAppStoreService,
   InitData,
 } from '@exlibris/exl-cloudapp-angular-lib';
-//import { WadegilesService } from "../wadegiles.service"
 import { Bib, BibUtils } from './bib-utils';
 import { AuthUtils } from './auth-utils'
 import { DictEntry } from './dict-entry'
@@ -17,7 +16,6 @@ import { Settings } from '../models/settings';
 import { OclcQuery } from './oclc-query';
 import { MarcDataField } from './marc-datafield';
 import { Router, ActivatedRoute } from '@angular/router';
-//import { PinyinService } from '../pinyin.service';
 import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import { AppService } from '../app.service'
@@ -103,8 +101,6 @@ export class MainComponent implements OnInit, OnDestroy {
     private storeService: CloudAppStoreService,
     private http: HttpClient,
     private route: ActivatedRoute,
-    //private wadegiles: WadegilesService,
-    //private pinyin:PinyinService,
     private scriptshifter: ScriptShifterService,
     private router: Router,
     public dialog: MatDialog) { }
@@ -281,23 +277,9 @@ export class MainComponent implements OnInit, OnDestroy {
               }
             }
             let titles = [this.bib.title];
-            //let title_wg = this.wadegiles.WGtoPY(this.bib.title);
-            //if(this.settings.searchWG && title_wg.toLowerCase() != this.bib.title.toLowerCase()) {
-            //    titles.push(title_wg);
-            //}
                         
             if(t2) {
-              //let t1wg = this.wadegiles.WGtoPY(t1);
-              //let t2wg = this.wadegiles.WGtoPY(t2);
               titles.push(t1,t2);
-              //if(this.settings.searchWG) {
-              //  if(t1.toLowerCase() != t1wg.toLowerCase()) {
-              //    titles.push(t1wg);
-              //  }
-              //  if(t2.toLowerCase() != t2wg.toLowerCase()) {
-              //    titles.push(t2wg);
-              //  }
-              //}
             }            
             this.bib.names = this.bibUtils.getBibField(bib,"100","a".trim()) + "|" + 
               this.bibUtils.getBibField(bib,"700","a").trim();
@@ -316,15 +298,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 
                 let tnq = new OclcQuery("ti","exact",title);
                 tnq.addParams("au","=",name);
-                oclcQueries.push(tnq);
-                //if(this.settings.searchWG) {
-                //  let name_wg = this.wadegiles.WGtoPY(name);
-                //  if(name_wg.toLowerCase() != name.toLowerCase()) {
-                //    let tnq_wg = new OclcQuery("ti","exact",title);
-                //    tnq_wg.addParams("au","=",name_wg);
-                //    oclcQueries.push(tnq_wg);
-                //  }
-                //}                
+                oclcQueries.push(tnq);              
               });
               oclcQueries.push(new OclcQuery("ti","exact",title));
             });
@@ -353,8 +327,6 @@ export class MainComponent implements OnInit, OnDestroy {
       this.apiResult = {};
     }
   });
-  //});
-  //});
   setTimeout(() => {
     if(document.getElementById("noRecord")) {
       return document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")}
@@ -401,7 +373,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let wcURL:string   
     let wcHeaders: HttpHeaders
     wcURL = Settings.wcMDBaseURL + "?" + Settings.wcMDQueryParamName + "=" +
-      oq.getQueryString("metadata") +"&limit=50"
+      oq.getQueryString() +"&limit=50"
     wcHeaders = new HttpHeaders({
       'X-Proxy-Host': Settings.wcMetadataHost,
       'X-Proxy-Auth': 'Bearer ' + this.access_token,
@@ -506,102 +478,88 @@ export class MainComponent implements OnInit, OnDestroy {
     let options_map = new Map<string, Array<string>>()
     let cached_options = this.fieldCache.get(fkey)
 
+    let linkedDataURL = field.subfields.find(a => a.code == "0")
+    if(linkedDataURL != undefined && !this.linkedDataCache.includes(linkedDataURL.data)) {
+      await this.getLinkedData(linkedDataURL.data)
+      this.linkedDataCache.push(linkedDataURL.data)
 
-    //if(!this.settings.doWCSearch) {
-    //  for(let j = 0; j < field.subfields.length; j++) {
-    //    let sf = field.subfields[j];
-    //    //let pylookup = this.pinyin.lookup(sf.data,field.tag,field.ind1,sf.code)
-    //    if(presearch) {
-    //      this.preSearchFields.set(fkey,true)
-    //      break
-    //    }
-    //    //parallel_field.addSubfield(sf.id,sf.code,pylookup)
-    //  }
-    //} else {
-      let linkedDataURL = field.subfields.find(a => a.code == "0")
-      if(linkedDataURL != undefined && !this.linkedDataCache.includes(linkedDataURL.data)) {
-        await this.getLinkedData(linkedDataURL.data)
-        this.linkedDataCache.push(linkedDataURL.data)
-
-      }
-      for(let j = 0; j < field.subfields.length; j++) {
-        let sf = field.subfields[j];
-        if(sf.code.match(/[0-9]/) || sf.data.match("/^http:/")) {
-          parallel_field.addSubfield(sf.id,sf.code,sf.data)
-          continue
-        }        
-        let options = new Array<string>()
-        if(cached_options != undefined && cached_options.has(sf.id)) {
-          options = cached_options.get(sf.id)
-        } else {   
-          var sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));
-          for(let k = 0; k < sfdataparts.length; k++) {
-            if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
-              let ssResult_nonrom = ""
-              let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues)
-              if(this.ssMarcSensitive) {
-                ssOptionsObj['marc_field'] = field.tag
-              }
-              let ssOptions = JSON.stringify(ssOptionsObj)
-              if(this.ssLangDirection != "s2r") {
-                ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.settings.ssCapitalize, ssOptions, this.authToken)            
-              } 
-              let ssResult_roman = ""
-              if(this.ssLangDirection != "r2s") {
-                ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.settings.ssCapitalize, ssOptions, this.authToken)      
-              } 
-              if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
-                let sfdata_norm = this.cjkNormalize(sfdataparts[k])
-                if(sfdata_norm != "") {
-                  let entries = new Array<DictEntry>()
-                  if(ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != sfdata_norm && ssResult_nonrom != "") {
-                    let entries_nonrom = this.addToParallelDict(sfdata_norm, ssResult_nonrom, [sfdataparts[k]], this.defaultSSScore)
-                    entries = entries.concat(entries_nonrom)
-                  }
-                  if(ssResult_roman != sfdataparts[k] && ssResult_roman != ssResult_nonrom && ssResult_roman != sfdata_norm&& ssResult_roman != "") {
-                    let entries_roman = this.addToParallelDict(sfdata_norm, ssResult_roman, [sfdataparts[k]], this.defaultSSScore)
-                    entries = entries.concat(entries_roman)
-                  }
-                  if(entries != undefined && entries.length > 0) {
-                    entries = entries.filter((a, index) => entries.indexOf(a) === index)
-                    //this.alert.warn(JSON.stringify(entries))
-                    await this.addToStorage(entries)
-                  }
+    }
+    for(let j = 0; j < field.subfields.length; j++) {
+      let sf = field.subfields[j];
+      if(sf.code.match(/[0-9]/) || sf.data.match("/^http:/")) {
+        parallel_field.addSubfield(sf.id,sf.code,sf.data)
+        continue
+      }        
+      let options = new Array<string>()
+      if(cached_options != undefined && cached_options.has(sf.id)) {
+        options = cached_options.get(sf.id)
+      } else {   
+        var sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));
+        for(let k = 0; k < sfdataparts.length; k++) {
+          if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
+            let ssResult_nonrom = ""
+            let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues)
+            if(this.ssMarcSensitive) {
+              ssOptionsObj['marc_field'] = field.tag
+            }
+            let ssOptions = JSON.stringify(ssOptionsObj)
+            if(this.ssLangDirection != "s2r") {
+              ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.settings.ssCapitalize, ssOptions, this.authToken)            
+            } 
+            let ssResult_roman = ""
+            if(this.ssLangDirection != "r2s") {
+              ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.settings.ssCapitalize, ssOptions, this.authToken)      
+            } 
+            if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
+              let sfdata_norm = this.cjkNormalize(sfdataparts[k])
+              if(sfdata_norm != "") {
+                let entries = new Array<DictEntry>()
+                if(ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != sfdata_norm && ssResult_nonrom != "") {
+                  let entries_nonrom = this.addToParallelDict(sfdata_norm, ssResult_nonrom, [sfdataparts[k]], this.defaultSSScore)
+                  entries = entries.concat(entries_nonrom)
+                }
+                if(ssResult_roman != sfdataparts[k] && ssResult_roman != ssResult_nonrom && ssResult_roman != sfdata_norm&& ssResult_roman != "") {
+                  let entries_roman = this.addToParallelDict(sfdata_norm, ssResult_roman, [sfdataparts[k]], this.defaultSSScore)
+                  entries = entries.concat(entries_roman)
+                }
+                if(entries != undefined && entries.length > 0) {
+                  entries = entries.filter((a, index) => entries.indexOf(a) === index)
+                  await this.addToStorage(entries)
                 }
               }
-            } 
+            }
           } 
-          options = await this.lookupInDictionary(sf.data);    
-        }           
-        if(presearch && options[0] != sf.data) {
-          this.preSearchFields.set(fkey,true)
-        }   
-        let best = 0  
-        let bookends = ""
-        if(sf.data.match(new RegExp("^\\p{P}",'u'))) {
-          bookends += sf.data.charAt(0)
-        }
-        if(sf.data.match(new RegExp("\\p{P}$",'u'))) {
-          bookends += sf.data.charAt(sf.data.length-1)
-        }
-        for(let k = 0; k < options.length; k++) {
-          let opt_k = options[k]
-          let bookends_k = ""
-          if(opt_k.match(new RegExp("^\\p{P}",'u'))) {
-            bookends_k += opt_k.charAt(0)
-          }
-          if(opt_k.match(new RegExp("\\p{P}$",'u'))) {
-            bookends_k += opt_k.charAt(opt_k.length-1)
-          }
-          if(bookends == bookends_k) {
-            best = k
-            break
-          }
-        }
-        parallel_field.addSubfield(sf.id,sf.code,options[best]) 
-        options_map.set(sf.id,options)   
+        } 
+        options = await this.lookupInDictionary(sf.data);    
+      }           
+      if(presearch && options[0] != sf.data) {
+        this.preSearchFields.set(fkey,true)
+      }   
+      let best = 0  
+      let bookends = ""
+      if(sf.data.match(new RegExp("^\\p{P}",'u'))) {
+        bookends += sf.data.charAt(0)
       }
-    //}
+      if(sf.data.match(new RegExp("\\p{P}$",'u'))) {
+        bookends += sf.data.charAt(sf.data.length-1)
+      }
+      for(let k = 0; k < options.length; k++) {
+        let opt_k = options[k]
+        let bookends_k = ""
+        if(opt_k.match(new RegExp("^\\p{P}",'u'))) {
+          bookends_k += opt_k.charAt(0)
+        }
+        if(opt_k.match(new RegExp("\\p{P}$",'u'))) {
+          bookends_k += opt_k.charAt(opt_k.length-1)
+        }
+        if(bookends == bookends_k) {
+          best = k
+          break
+        }
+      }
+      parallel_field.addSubfield(sf.id,sf.code,options[best]) 
+      options_map.set(sf.id,options)   
+    }
     this.changeSpinner("clear")
     if(!presearch) {
       if(field.tag == "880") {
@@ -719,10 +677,6 @@ export class MainComponent implements OnInit, OnDestroy {
       let ki = this.deletions[i].key     
       let k_normal = this.cjkNormalize(ki)
       let keys = [ki,k_normal]
-      //if(this.settings.searchWG) {
-      //  let k_wg = this.cjkNormalize(this.wadegiles.WGtoPY(ki))
-      //  keys.push(k_wg)
-      //}
       let v = this.deletions[i].value
       if((i > 0 && prevkey != ki) || i == this.deletions.length - 1) {
         if(i == this.deletions.length - 1) {
@@ -813,7 +767,6 @@ export class MainComponent implements OnInit, OnDestroy {
         options_full = res.parallels.map(a => a.text)      
       }
     });
-    //this.alert.warn(sfdata+"|"+JSON.stringify(options_full))
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
   
     for(let g = 0; g < sfsections.length; g++) {
@@ -823,12 +776,6 @@ export class MainComponent implements OnInit, OnDestroy {
       if(text_normal_d != sfsections[g]) {
         search_keys_d.push(text_normal_d)
       }
-      //if(this.settings.searchWG) {
-      //  let text_normal_wgpy_d = this.cjkNormalize(this.wadegiles.WGtoPY(sfsections[g]));
-      //  if(text_normal_wgpy_d != text_normal_d) {
-      //    search_keys_d.push(text_normal_wgpy_d);
-      //  }
-      //}
       for(let h = 0; h < search_keys_d.length; h++) {        
         let hi = search_keys_d[h];      
         if(hi.length == 0) {
@@ -852,10 +799,6 @@ export class MainComponent implements OnInit, OnDestroy {
           let options = new Array<string>();
           let text_normal = this.cjkNormalize(search_text);
           let search_keys = [search_text,text_normal];
-          //if(this.settings.searchWG) {
-          //  let text_normal_wgpy = this.cjkNormalize(this.wadegiles.WGtoPY(search_text));    
-          //  search_keys.push(text_normal_wgpy);
-          //}
           for(let i = 0; i < search_keys.length; i++) {
             let ki = search_keys[i].trim();
             if(ki.length == 0) {
@@ -902,8 +845,6 @@ export class MainComponent implements OnInit, OnDestroy {
     }    
     options_final.unshift(...options_full)
     options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
-    //this.alert.error(JSON.stringify(options_final))
-    //this.alert.error(startpunct+"|"+endpunct+"|"+JSON.stringify(options_final))
     for(let i = 0; i < options_final.length; i++) {    
       m = sfdata.match(this.etal_re);
       if(m) {
@@ -920,17 +861,14 @@ export class MainComponent implements OnInit, OnDestroy {
         }
       }
       for(var z = endpunct.length; z > 0; z--) {
-        //this.alert.error("*"+options_final[i].substring(options_final[i].length - z) + "|" + endpunct)
         var ep_trim = endpunct.trim().substring(0,z)
         if((ep_trim.length > 0 && 
           options_final[i].substring(options_final[i].length - ep_trim.length) == ep_trim)) {
-          //this.alert.error("*"+options_final[i] + "|" + endpunct)
           if(z == endpunct.length) {
             endpunct = ""
           } else {
             endpunct = endpunct.substring(z);
           }
-          //this.alert.error("**"+options_final[i] + "|" + endpunct)
           break
         }
       }
@@ -948,7 +886,6 @@ export class MainComponent implements OnInit, OnDestroy {
       }
       options_final[i] = startpunct + options_final[i] + endpunct;
     }
-    //this.alert.error(JSON.stringify(options_final))
     options_final = options_final.filter(a=> !a.trim().match(/^<>/))
     options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
     return options_final;
@@ -981,7 +918,6 @@ export class MainComponent implements OnInit, OnDestroy {
     let getCount = 0
     let setCount = 0
 
-    //this.alert.warn(JSON.stringify(pairs))
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) {            
@@ -1164,16 +1100,11 @@ export class MainComponent implements OnInit, OnDestroy {
               parallelFields.set(linkage, new Array<Element>());
             }
             parallelFields.get(linkage).push(datafields[j]);
-            //if(isOCLC) {
-            //this.alert.warn(linkage + ":" + parallelFields.get(linkage).map(a=>a.innerHTML).join("|"))
-           //}
+
           }
         }
       }
       let score = (isPreferredInst) ? this.preferredWCscore : 1
-      //if(isOCLC) {
-        //continue
-      //}
       parallelFields.forEach((value, key) => {
         if(value.length != 2) {
           return;
@@ -1199,42 +1130,30 @@ export class MainComponent implements OnInit, OnDestroy {
           if(text_rom != text_nonrom) {
             let text_rom_stripped = text_rom.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"");
             text_rom_stripped = text_rom_stripped.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"");
-            //let text_rom_wgpy = this.wadegiles.WGtoPY(text_rom);
 
             text_nonrom = text_nonrom.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"");
             text_nonrom = text_nonrom.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"");
 
             let text_rom_normal = this.cjkNormalize(text_rom);
-            //let text_rom_wgpy_normal = this.cjkNormalize(text_rom_wgpy);
             let text_nonrom_normal = this.cjkNormalize(text_nonrom);
 
             let text_rom_parts: string[] = text_rom_stripped.split(new RegExp("(" + this.delimiterPattern + ")","u"));
             let text_nonrom_parts: string[] = text_nonrom.split(new RegExp("(" + this.delimiterPattern + ")","u"));
 
             if(text_rom != text_nonrom) { 
-               //if(this.settings.searchWG) {
-               //  this.addToParallelDict(text_rom_normal,text_nonrom,[text_rom_wgpy_normal], score);   
-               //} else {
-                 this.addToParallelDict(text_rom_normal,text_nonrom, [], score); 
-               //}
-               this.addToParallelDict(text_nonrom_normal,text_rom_stripped, [], score);   
+              this.addToParallelDict(text_rom_normal,text_nonrom, [], score); 
+              this.addToParallelDict(text_nonrom_normal,text_rom_stripped, [], score);   
             }
             if(text_rom_parts.length == text_nonrom_parts.length) {         
               for(let m = 0; m < text_rom_parts.length; m++) {
                 let rpm = text_rom_parts[m];
-                //let rpm_wgpy = this.wadegiles.WGtoPY(rpm);
                 let cpm = text_nonrom_parts[m];
                 let rpm_normal = this.cjkNormalize(rpm);
-                //let rpm_wgpy_normal = this.cjkNormalize(rpm_wgpy);
                 let cpm_normal = this.cjkNormalize(cpm); 
 
                 if(!rpm.match(new RegExp("^" + this.delimiterPattern + "$","u")) && 
                     rpm_normal != cpm_normal) { 
-                      //if(this.settings.searchWG) {
-                      //  this.addToParallelDict(rpm_normal,cpm,[rpm_wgpy_normal], score);
-                      //} else {
-                        this.addToParallelDict(rpm_normal,cpm, [], score);
-                      //}
+                      this.addToParallelDict(rpm_normal,cpm, [], score);
                       this.addToParallelDict(cpm_normal,rpm, [], score);
                 }                
               }
@@ -1249,7 +1168,6 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
     if(textA == textB) {
       return;
     }    
-    //this.alert.error(textA+"|"+textB)
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
     if(found == -1) {
@@ -1300,10 +1218,25 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
       for(let i = 0; i < subfields.length; i++) {
         let sf = subfields[i]  
         let opts = new Array();
-        //if(this.settings.doWCSearch) {
-          let cached_options = this.fieldCache.get(pfkey)
-          if(cached_options != undefined && cached_options.has(sf.id)) {
-            opts = cached_options.get(sf.id)
+        let cached_options = this.fieldCache.get(pfkey)
+        if(cached_options != undefined && cached_options.has(sf.id)) {
+          opts = cached_options.get(sf.id)
+          if(!opts.includes(sf.data)) {
+            opts.push(sf.data);
+          }    
+          sfo.set(sf.id,opts);
+          if(i == subfields.length - 1) { 
+            this.subfield_options.set(fkey, sfo);  
+            this.changeSpinner("clear")
+            this.showDetails = fkey
+          }
+        } else {
+          await this.lookupInDictionary(sf.data).then((res) => {
+            for(let j = 0; j < res.length; j++) {   
+              let str = res[j]       
+              opts.push(str); 
+            }
+          }).finally(() => {  
             if(!opts.includes(sf.data)) {
               opts.push(sf.data);
             }    
@@ -1312,39 +1245,9 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
               this.subfield_options.set(fkey, sfo);  
               this.changeSpinner("clear")
               this.showDetails = fkey
-            }
-          } else {
-            await this.lookupInDictionary(sf.data).then((res) => {
-              for(let j = 0; j < res.length; j++) {   
-                let str = res[j]       
-                opts.push(str); 
-              }
-            }).finally(() => {
-            
-              if(!opts.includes(sf.data)) {
-                opts.push(sf.data);
-              }    
-              sfo.set(sf.id,opts);
-              if(i == subfields.length - 1) { 
-                this.subfield_options.set(fkey, sfo);  
-                this.changeSpinner("clear")
-                this.showDetails = fkey
-              }            
-            });
-          }
-        //} else {
-          //let pylookup = this.pinyin.lookup(sf.data,parallel_field.tag,parallel_field.ind1,sf.code);
-          //if(pylookup != sf.data && !opts.includes(pylookup)) {
-          //  opts.push(pylookup);
-          //}
-        //  if(!opts.includes(sf.data)) {
-        //    opts.push(sf.data);
-        //  }
-        //  sfo.set(sf.id,opts);
-        //  this.subfield_options.set(fkey, sfo);  
-        //  this.changeSpinner("clear")     
-        //  this.showDetails = fkey
-        //}  
+            }            
+          });
+        } 
       }         
   }
 
