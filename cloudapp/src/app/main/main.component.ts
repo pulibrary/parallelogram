@@ -40,6 +40,7 @@ export class MainComponent implements OnInit, OnDestroy {
   initData: InitData
   defaultLang: string
   ssLangDirection = "both"
+  ssMarcSensitive = false
 
   hasApiResult: boolean = false;
   loading = false;
@@ -192,6 +193,8 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.settings.ssLang = lang
     this.ssLangDirection = this.scriptshifter.getLanguageDirection(lang) 
+    var langOptions = await this.scriptshifter.getLanguageOptions(lang, this.authToken)
+    this.ssMarcSensitive = langOptions.includes("marc_field")
     this.fieldCache.clear()
     this.performPresearch()
     this.defaultSSScore += 3
@@ -214,8 +217,7 @@ export class MainComponent implements OnInit, OnDestroy {
     if(this.route.snapshot.queryParamMap.has('doSearch') && this.doSearch) {
       this.doSearch = (this.route.snapshot.queryParamMap.get('doSearch') == "true")
     }
-    //this.wadegiles.ready.then((wg_ready) =>  {
-    //this.pinyin.ready.then((py_ready) => {
+
     this.authToken_ready.then(async (aut) => {
     this.authToken = aut    
     if(this.ssLanguages == undefined) {
@@ -536,12 +538,17 @@ export class MainComponent implements OnInit, OnDestroy {
           for(let k = 0; k < sfdataparts.length; k++) {
             if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
               let ssResult_nonrom = ""
+              let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues)
+              if(this.ssMarcSensitive) {
+                ssOptionsObj['marc_field'] = field.tag
+              }
+              let ssOptions = JSON.stringify(ssOptionsObj)
               if(this.ssLangDirection != "s2r") {
-                ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.settings.ssCapitalize, this.settings.ssOptionsValues, this.authToken)            
+                ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.settings.ssCapitalize, ssOptions, this.authToken)            
               } 
               let ssResult_roman = ""
               if(this.ssLangDirection != "r2s") {
-                ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.settings.ssCapitalize, this.settings.ssOptionsValues, this.authToken)      
+                ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.settings.ssCapitalize, ssOptions, this.authToken)      
               } 
               if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
                 let sfdata_norm = this.cjkNormalize(sfdataparts[k])

@@ -35,7 +35,7 @@ export class ScriptShifterService {
          }
        }).catch((err) => {
         this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-        " " + this.translate.instant('ScriptShifter')+ " " +  
+        " " + "ScriptShifter" + " " +  
         this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
         this.translate.instant('Translate.ResultsMayNotBeOptimal'))
        })
@@ -75,10 +75,10 @@ export class ScriptShifterService {
             var resultSTR = resOBJ.output;
             resolve(resultSTR)
         }).catch((err) => {
-          //this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-          //" " + "**SCRIPTSHIFTER**" + " " +  
-          //this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
-          //this.translate.instant('Translate.ResultsMayNotBeOptimal'))
+          this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+          " " + "ScriptShifter" + " " +  
+          this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+          this.translate.instant('Translate.ResultsMayNotBeOptimal'))
           resolve("")
         })
       })
@@ -103,6 +103,8 @@ export class ScriptShifterService {
       }
       return direction
     }
+
+    
 
     async getLanguageOptions(lang: string, authToken: string): Promise<string> {
       return new Promise<string>((resolve, reject) => {
