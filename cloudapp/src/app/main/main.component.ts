@@ -773,7 +773,7 @@ export class MainComponent implements OnInit, OnDestroy {
       let options_d = new Array<string>();
       let text_normal_d = this.cjkNormalize(sfsections[g]);
       let search_keys_d = [sfsections[g]];
-      if(text_normal_d != sfsections[g]) {
+      if(text_normal_d != sfsections[g].toLowerCase()) {
         search_keys_d.push(text_normal_d)
       }
       for(let h = 0; h < search_keys_d.length; h++) {        
@@ -798,7 +798,10 @@ export class MainComponent implements OnInit, OnDestroy {
           let search_text = sfparts[h];
           let options = new Array<string>();
           let text_normal = this.cjkNormalize(search_text);
-          let search_keys = [search_text,text_normal];
+          let search_keys = [search_text];
+          if(text_normal != search_text.toLowerCase()) {
+            search_keys.push(text_normal)
+          }
           for(let i = 0; i < search_keys.length; i++) {
             let ki = search_keys[i].trim();
             if(ki.length == 0) {
@@ -888,6 +891,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     options_final = options_final.filter(a=> !a.trim().match(/^<>/))
     options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
+    options_final = options_final.filter(a=>!(a == sfdata.toLowerCase() && a != sfdata))
     return options_final;
 }
 
