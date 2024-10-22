@@ -51,8 +51,10 @@ export class ScriptShifterService {
             this.languageList[i].marcCode.length < ssListLen) {
             ssLang = this.languageList[i].code
             ssListLen = this.languageList[i].marcCode.length
-            break
           }
+        }
+        if(marcCode == 'kor') {
+          ssLang = 'korean_nonames'
         }
         return ssLang
      }
