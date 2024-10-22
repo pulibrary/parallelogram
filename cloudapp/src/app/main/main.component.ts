@@ -181,8 +181,6 @@ export class MainComponent implements OnInit, OnDestroy {
     this.hasApiResult = result && Object.keys(result).length > 0;
   }
 
- 
-
   async setSSLanguage(lang: string) {
     if(lang == "auto-select") {
       var autoLang = this.scriptshifter.lookupMarcCode(this.languageCode)
@@ -417,7 +415,7 @@ export class MainComponent implements OnInit, OnDestroy {
         if(this.completedSearches == this.totalSearches) {
           this.changeSpinner("saving")          
           this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
-          this.addParallelDictToStorage().finally(async () => {    
+          this.addParallelDictToStorage().finally(async () => {   
             if(!this.doPresearch) {   
               this.changeSpinner("clear")
             } 
@@ -566,8 +564,8 @@ export class MainComponent implements OnInit, OnDestroy {
               }
             } 
           } 
-          options = await this.lookupInDictionary(sf.data);     
-        }                
+          options = await this.lookupInDictionary(sf.data);    
+        }           
         if(presearch && options[0] != sf.data) {
           this.preSearchFields.set(fkey,true)
         }   
