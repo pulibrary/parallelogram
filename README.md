@@ -104,12 +104,26 @@ After configuring the app's options, click the "Save" button in the upper right.
 
 ### Reporting Bugs and Making Suggestions
 
-If you encounter any problems with this tool or would like to request new features, please go to the "Issues" tab at the top of this github page, and click the "New Issue" button.  Also, if you would like to translate the app interface into a new language, please let me know by creating a new issue. There are about 40 short phrases used in the various buttons and alerts in the app, which I can provide in a spreadsheet.   I welcome such contributions and thank any contributers in advance!
+If you encounter any problems with this tool or would like to request new features, please go to the "Issues" tab at the top of this github page, and click the "New Issue" button.  Alternatively, you can provide feedback using the form below. (Please select the option "Feedback regarding website or software tools".)
+
+https://library.princeton.edu/eastasian/contact
+
+Also, if you would like to translate the app interface into a new language, please let me know by creating a new issue. There are about 40 short phrases used in the various buttons and alerts in the app, which I can provide in a spreadsheet.   I welcome such contributions and thank any contributers in advance!
 
 ### Acknowledgments
 
 Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Nannan Liu, Joshua Seufert, Chiharu Watsky, and Mark Zelesky.  
 
+### License
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a>
+
+Parallelogram by Princeton University Library is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+
+The program contains a dictionary of Chinese characters and phrases based on three sources:
+
+- The <a href="http://unicode.org/charts/unihan.html">Unihan database</a>, copyright 1991-2023, Unicode, Inc.  Last updated 2020-02-18.
+- <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict">CC-CEDICT</a>, copyright 2023, MDBG.  Last updated 2021-04-21.
+- User feedback: To suggest additional characters or phrases for the dictionary, please use the <a target="_blank" href="https://library.princeton.edu/eastasian/oclcpinyin/pinyinform.php">suggestion form</a> for Princeton's other pinyin tools.
 ### Parallelogram 2.0 Beta
 
 The next major release of Parallelogram will make use of [ScriptShifter](https://bibframe.org/scriptshifter/), a transliteration tool created by the Library of Congress.  This tool provides ALA-compliant transliterations in a variety of languages.  Combining ScriptShifter with the data sources already used by Parallelogram will produce an even more powerful and flexible tool.
