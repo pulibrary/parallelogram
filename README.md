@@ -128,7 +128,7 @@ If you are interested in beta-testing this new version, open the Cloud App cente
 
 After activating the beta version, the interface will look slightly different.  When opening a record in Parallelogram, a small menu will appear at the top that says "ScriptShifter Language".  
 
-|<img src="docs/images/screenshot9.png" width=300></img>|
+|<img src="docs/images/screenshot9.png" width=500></img>|
 |-|
 
 The tool will attempt to auto-detect the language based on field 008 of the record.  However, you can also select a different language, or set the language to "None" if you do not want to incorportate ScriptShifter results.  Note that some languages/scripts have more than one entry in this menu.  For example, Korean has separate entries for general use and personal names.  And Uighur has separate entries for Cyrillic and Arabic script.
