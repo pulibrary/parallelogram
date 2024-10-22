@@ -106,7 +106,7 @@ After configuring the app's options, click the "Save" button in the upper right.
 
 If you encounter any problems with this tool or would like to request new features, please go to the "Issues" tab at the top of this github page.
 
-Also, if you would like to translate the app interface into a new language, please let me know by creating a new issue. There are about 40 short phrases used in the various buttons and alerts in the app, which I can provide in a spreadsheet.   I welcome such contributions and thank any contributers in advance!
+Also, if you would like to translate the app interface into a new language, please let me know by creating a new issue. There are about 40 short phrases used in the various buttons and alerts in the app, which I can provide in a spreadsheet.   We welcome such contributions and thank any contributers in advance!
 
 ### Acknowledgments
 
