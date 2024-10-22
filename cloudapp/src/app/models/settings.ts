@@ -3,7 +3,7 @@ export class Settings {
     static readonly wcMDBaseURL: string = Settings.awsBaseURL + "worldcat/search/brief-bibs"
     static readonly wcMDSingleBaseURL: string = Settings.awsBaseURL + "worldcat/manage/bibs"
     static readonly wcMDQueryParamName: string = "q"
-    static readonly ssLangOptsURL: string = Settings.awsBaseURL + "table"
+    static readonly ssLangOptsURL: string = Settings.awsBaseURL + "scriptshifter/table"
     static readonly ssBaseURL: string = Settings.awsBaseURL + "scriptshifter/trans"
     static readonly ssLangURL: string = Settings.awsBaseURL + "scriptshifter/languages"
 
