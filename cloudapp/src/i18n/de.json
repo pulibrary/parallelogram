@@ -46,6 +46,17 @@
         "WCAPIInvalid": "Der WorldCat API Schlüssel oder das Client-Geheimnis sind ungültig",
         "OAuthError": "Problem bei der Authentifizierung mit WorldCat.  Bitte versuchen Sie es später erneut",
         "Yes": "Ja",
-        "No": "Nein"
+        "No": "Nein",
+        "SSLang": "ScriptShifter Sprache",
+        "SSDefaultLang": "ScriptShifter Voreingestellte Sprache",
+        "SSAutoSelect": "Die Auto-Auswahl der ScriptShifter Sprache basiert of Feld 008",
+        "SearchWC": "Durchsuche WorldCat",
+        "SSs2r": "Nur Zeichen ins lateinische Alphabet",
+        "SSr2s": "Nur lateinisches Alphabet in Zeichen",
+        "GeneralSettings": "Allgemeine Einstellungen",
+        "SSoptions": "ScriptShifter Einstellungen",
+        "WorldCatSettings": "WorldCat Einstellungen",
+        "AdminSettings": "Administrator Einstellungen",
+        "Capitalization": "Großschreibung"
     }
 }

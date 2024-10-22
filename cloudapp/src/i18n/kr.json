@@ -46,6 +46,17 @@
         "WCAPIInvalid": " 월드캣 API 키 또는 클라이언트 보안비밀이 유효하지 않습니다",
         "OAuthError": "월드캣과의 인증에 문제가 발생하였습니다. 나중에 다시 시도해 주세요",
 		"Yes":"예",
-		"No":"아니요"
+		"No":"아니요",
+		"SSLang": "ScriptShifter (스크립트 시프터) 언어",
+		"SSDefaultLang": "ScriptShifter (스크립트 시프터) 디폴트 언어",
+		"SSAutoSelect": "008필드에 따른 ScriptShifter (스크립트 시프터) 언어 자동 선택",
+		"SearchWC": "월드캣 검색",
+		"SSs2r": "스크립트에서 로마자로 전환 전용",
+		"SSr2s": "로마자에서 스크립트로 전환 전용",
+		"GeneralSettings": "일반 설정",
+		"SSoptions": "ScriptShifter (스크립트 시프터) 설정",
+		"WorldCatSettings": "월드캣 설정",
+		"AdminSettings": "관리자 설정",
+		"Capitalization": "대문자 사용"
 	}
 }

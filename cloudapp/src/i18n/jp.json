@@ -46,6 +46,17 @@
         "WCAPIInvalid": "ワールドキャットエーピーアイキーあるいはクライアント シークレットが有効ではありません",
         "OAuthError": "ワールドキャットとの認証に問題が生じました。後ほどもう一度お試しください",
 		"Yes": "はい",
-		"No": "いいえ"
+		"No": "いいえ",
+		"SSLang": "言語",
+		"SSDefaultLang": "ScriptShifter既定の言語",
+		"SSAutoSelect": "欄008に基づいてScriptShifter言語を自動選択",
+		"SearchWC": "WorldCatを検索",
+		"SSs2r": "スクリプトからローマ字のみ",
+		"SSr2s": "ローマ字からスクリプトのみ",
+		"GeneralSettings": "一般設定",
+		"SSoptions": "ScriptShifter設定",
+		"WorldCatSettings": "WorldCat設定",
+        "AdminSettings": "管理者設定",
+		"Capitalization": "大文字化"
     }
 }

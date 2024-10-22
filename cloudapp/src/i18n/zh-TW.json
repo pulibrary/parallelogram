@@ -34,7 +34,7 @@
         "PinyinOnly": "中文: 不用搜索WorldCat, 只需把漢字轉換成拼音",
         "WadeGilesSearch": "中文: 搜索與漢語拼音 對應的韋氏拼音",
         "WCAPIAdminSet": "為所有使用者設立WorldCat應用編程接口密鑰",
-        "WCAPIAdminLock": "隱藏所有使用者 WorldCat應用編程接口密鑰",
+        "WCAPIAdminLock": "隱藏所有使用者WorldCat應用編程接口密鑰",
         "GotoRecordWarning": "請先找好需編目的記錄, 再打開APP",
         "OneRecordWarning": "注意: (此程序) 一次只能修改一個記錄. 如需修改另一個不同的記錄, 請在 Alma 中操作記錄並再次啟動app[程序].",
         "TroubleConnectingTo": "無法連接到",
@@ -43,9 +43,20 @@
         "LOCLinkedDataService": "國會圖書館關聯數據服務",
         "TroubleConnectingToAfter": "",
         "ClientSecret": "用戶密文密碼",
-        "WCAPIInvalid": "WorldCat API 密鑰或用戶密文密碼無效",
-        "OAuthError": "使用 WorldCat 進行身份驗證時出現問題。請稍後再試",
+        "WCAPIInvalid": "WorldCat API密鑰或用戶密文密碼無效",
+        "OAuthError": "使用WorldCat進行身份驗證時出現問題。請稍後再試",
         "Yes": "是",
-        "No": "否"
+        "No": "否",
+        "SSLang":  "ScriptShifter語言", 
+        "SSDefaultLang": "ScriptShifter預設語言", 
+        "SSAutoSelect": "使用 008 字段自動選擇ScriptShifter語言", 
+        "SearchWC": "搜索WorldCat", 
+        "SSs2r": "僅限把非羅馬字转羅馬字", 
+        "SSr2s": "僅限把羅馬字转非羅馬字", 
+        "GeneralSettings": "常規設置", 
+        "SSoptions": "ScriptShifter設置", 
+        "WorldCatSettings": "WorldCat設置", 
+        "AdminSettings": "管理員設置", 
+        "Capitalization": "大寫"
     }
 }

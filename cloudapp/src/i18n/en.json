@@ -47,7 +47,6 @@
         "OAuthError": "Trouble authenticating with WorldCat.  Please try again later",
         "Yes": "Yes",
         "No": "No",
-        "ScriptShifter": "ScriptShifter Service",
         "SSLang": "ScriptShifter Language",
         "SSDefaultLang": "ScriptShifter Default Language",
         "SSAutoSelect": "Auto-select ScriptShifter language based on field 008",
