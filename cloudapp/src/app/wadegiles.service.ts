@@ -41,7 +41,7 @@ export class WadegilesService {
   }  
 
   WGLookup(wgstr: string) : string {
-    wgstr = wgstr.replace(/[\p{Pf}\p{Pi}\u02BB]/gu, "'");
+    wgstr = wgstr.replace(new RegExp("[\p{Pf}\p{Pi}\u02BB]","gu"), "'");
     wgstr = wgstr.replace(/ü/g,"ü");
     let startpunct = ""
     let endpunct = ""
@@ -67,7 +67,7 @@ export class WadegilesService {
 
   WGtoPY(wgstr: string) : string {
     wgstr = wgstr.toLowerCase();
-    let wgs: string[] = wgstr.split(/([^\s\p{Pd}\p{Pc}\p{Ps}\p{Pe}]+)/u);
+    let wgs: string[] = wgstr.split(new RegExp("([^\s\p{Pd}\p{Pc}\p{Ps}\p{Pe}]+)","u"));
     for (let i = 0; i < wgs.length; i++) {
       if (wgs[i].match(/[a-z]/)) {      
         let lookup = this.WGLookup(wgs[i]);
