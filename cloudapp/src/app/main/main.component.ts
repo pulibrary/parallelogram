@@ -239,7 +239,7 @@ export class MainComponent implements OnInit, OnDestroy {
             if(!t2) {
               [t1,t2] = this.bib.title.split(/\s*\(/,2);
               if(t2) {
-                t2 = t2.replace(/[\p{P}\s]*$/u,"");
+                t2 = t2.replace(new RegExp("[\p{P}\s]*$",""),"");
               }
             }
             let titles = [this.bib.title];
@@ -492,19 +492,19 @@ export class MainComponent implements OnInit, OnDestroy {
         }   
         let best = 0  
         let bookends = ""
-        if(sf.data.match(/^\p{P}/u)) {
+        if(sf.data.match(new RegExp("^\\p{P}","u"))) {
           bookends += sf.data.charAt(0)
         }
-        if(sf.data.match(/\p{P}$/u)) {
+        if(sf.data.match(new RegExp("\\p{P}$","u"))) {
           bookends += sf.data.charAt(sf.data.length-1)
         }
         for(let k = 0; k < options.length; k++) {
           let opt_k = options[k]
           let bookends_k = ""
-          if(opt_k.match(/^\p{P}/u)) {
+          if(opt_k.match(new RegExp("^\\p{P}","u"))) {
             bookends_k += opt_k.charAt(0)
           }
-          if(opt_k.match(/\p{P}$/u)) {
+          if(opt_k.match(new RegExp("\\p{P}$","u"))) {
             bookends_k += opt_k.charAt(opt_k.length-1)
           }
        if(bookends == bookends_k) {
@@ -662,7 +662,7 @@ export class MainComponent implements OnInit, OnDestroy {
             let d = these_dels.dels[i]
             let dn = d.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"")
             dn = dn.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"")
-            dn = dn.replace(/\s*\([^\)]+\)[\s\p{P}]*$/u,"");
+            dn = dn.replace(new RegExp("\s*\([^\)]+\)[\s\p{P}]*$","u"),"");
             if(!ne.deleteParallel(d)) {
               ne.deleteParallel(dn)
             }
@@ -951,7 +951,7 @@ export class MainComponent implements OnInit, OnDestroy {
     let var_rom = new Array()
     let var_nonrom = new Array()
 
-    if(main_s.match(/[\u0370-\u1CFF\u1F00-\uFE19\uFE30-\uFFFF]/u)) {
+    if(main_s.match(new RegExp("[\u0370-\u1CFF\u1F00-\uFE19\uFE30-\uFFFF]","u"))) {
       var_nonrom.push(main_s)
     } else {
       var_rom.push(main_s)
@@ -959,7 +959,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     for(let i = 0; i < variants.length; i++) {
       let v = variants[i].textContent.trim()
-      if(v.match(/[\u0370-\u1CFF\u1F00-\uFE19\uFE30-\uFFFF]/u)) {
+      if(v.match(new RegExp("[\u0370-\u1CFF\u1F00-\uFE19\uFE30-\uFFFF]","u"))) {
         if(!var_nonrom.includes(v)) {
           var_nonrom.push(v)
         }
@@ -1235,10 +1235,10 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
     outputString = outputString.normalize("NFD");
     outputString = outputString.replace(this.etal_re,"");
     if (outputString.match(this.cjk_re)) {
-      outputString = outputString.replace(/[\p{P}\p{Mn}\s]+$/gu, "");
-      outputString = outputString.replace(/^[\p{P}\p{Mn}\s]+/gu, "");
+      outputString = outputString.replace(new RegExp("[\\p{P}\\p{Mn}\\s]+$","gu"), "");
+      outputString = outputString.replace(new RegExp("^[\\p{P}\\p{Mn}\\s]+","gu"), "");
     } else {
-      outputString = outputString.replace(/[\p{P}\p{Mn}\p{Lm}\s]/gu, "");
+      outputString = outputString.replace(new RegExp("[\\p{P}\\p{Mn}\\p{Lm}\\s]","gu"), "");
     }
     return outputString;
   }
