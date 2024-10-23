@@ -891,7 +891,8 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     options_final = options_final.filter(a=> !a.trim().match(/^<>/))
     options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
-    options_final = options_final.filter(a=>!(a == sfdata.toLowerCase() && a != sfdata))
+    options_final = options_final.filter(a=>!(
+      this.cjkNormalize(a) == this.cjkNormalize(sfdata) && a != sfdata))
     return options_final;
 }
 
