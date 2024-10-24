@@ -59,7 +59,7 @@ export class ScriptShifterService {
         return ssLang
      }
 
-     async query(searchTerm: string, lang: string, toroman: boolean = true, capitalize: string = "no_change", options: string = "{}", authToken: string): Promise<string> {
+     async query(searchTerm: string, lang: string, toroman: boolean = true, capitalize: string = "no_change", options: string = "{}", authToken: string): Promise<string> { 
         let search_term_escaped = JSON.stringify(searchTerm).replace(/\"$/,"").replace(/^\"/,"")
         let tdir = (toroman) ? "s2r" : "r2s"
         let ssQueryJSON =  '{"text":"' + search_term_escaped + '", "lang":"' + lang + '", ' +  

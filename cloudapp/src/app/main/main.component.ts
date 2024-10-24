@@ -381,23 +381,8 @@ export class MainComponent implements OnInit, OnDestroy {
       'Accept': 'application/json'
     })
     let retrievedRecords = new Array()
-    this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).pipe(
-      timeout(15000),finalize(() => {      
-        this.completedSearches++;
-        this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
-        this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
-        if(this.completedSearches == this.totalSearches) {
-          this.changeSpinner("saving")          
-          this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
-          this.addParallelDictToStorage().finally(async () => {   
-            if(!this.doPresearch) {   
-              this.changeSpinner("clear")
-            } 
-          })
-        }
-      }          
-    )).subscribe(
-      (res) => {
+    this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).subscribe(
+      async (res) => {
         let jsonBrief = JSON.parse(res)                    
         if(jsonBrief["briefRecords"]) {
           let recs = jsonBrief["briefRecords"]
@@ -418,12 +403,27 @@ export class MainComponent implements OnInit, OnDestroy {
             }
           }          
           let results = ""         
-          forkJoin(singleRecRequests).subscribe(
-            (resps) => {                                       
+          forkJoin(singleRecRequests).pipe(
+            timeout(15000),finalize(() => {      
+              this.completedSearches++;
+              this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
+              this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
+              if(this.completedSearches == this.totalSearches) {
+                this.changeSpinner("saving")          
+                this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
+                this.addParallelDictToStorage().finally(async () => {   
+                  if(!this.doPresearch) {   
+                    this.changeSpinner("clear")
+                  } 
+                })
+              }
+            }          
+          )).subscribe(
+            (resps) => {                                   
               results = "<records>\n" + resps.join('') + "\n</records>" 
               results = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
                 + results.replace(/<\?xml[^>]*>/g,"")             
-              this.extractParallelFields(results,true)            
+              this.extractParallelFields(results,true)        
               },
             (err) => {
               if(!this.warnedTimeout) {
@@ -494,8 +494,8 @@ export class MainComponent implements OnInit, OnDestroy {
       if(cached_options != undefined && cached_options.has(sf.id)) {
         options = cached_options.get(sf.id)
       } else {   
-        var sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));
-        for(let k = 0; k < sfdataparts.length; k++) {
+        var sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));        
+        for(let k = 0; k < sfdataparts.length; k++) {              
           if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
             let ssResult_nonrom = ""
             let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues)
@@ -529,9 +529,10 @@ export class MainComponent implements OnInit, OnDestroy {
               }
             }
           } 
-        } 
+        }  
         options = await this.lookupInDictionary(sf.data);    
-      }           
+      }   
+             
       if(presearch && options[0] != sf.data) {
         this.preSearchFields.set(fkey,true)
       }   
@@ -559,6 +560,7 @@ export class MainComponent implements OnInit, OnDestroy {
       }
       parallel_field.addSubfield(sf.id,sf.code,options[best]) 
       options_map.set(sf.id,options)   
+      
     }
     this.changeSpinner("clear")
     if(!presearch) {
@@ -766,9 +768,9 @@ export class MainComponent implements OnInit, OnDestroy {
       if(res != undefined) {  
         options_full = res.parallels.map(a => a.text)      
       }
-    });
+    });    
+
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
-  
     for(let g = 0; g < sfsections.length; g++) {
       let options_d = new Array<string>();
       let text_normal_d = this.cjkNormalize(sfsections[g]);
@@ -777,7 +779,7 @@ export class MainComponent implements OnInit, OnDestroy {
         search_keys_d.push(text_normal_d)
       }
       for(let h = 0; h < search_keys_d.length; h++) {        
-        let hi = search_keys_d[h];      
+        let hi = search_keys_d[h];    
         if(hi.length == 0) {
           continue;
         }
@@ -785,12 +787,11 @@ export class MainComponent implements OnInit, OnDestroy {
           break;
         }
         await this.storeService.get(hi).toPromise().then((res: DictEntry) => {          
-          if(res != undefined) {  
-            
+          if(res != undefined) {        
             options_d = res.parallels.map(a => a.text)      
           }
         });
-      }      
+      } 
       options_d = options_d.filter(a => !a.match(/^<>/))
       if(options_d.length == 0) {
         let sfparts = sfsections[g].split(new RegExp("("+ this.punctuationPattern + ")","u")); 
@@ -838,14 +839,32 @@ export class MainComponent implements OnInit, OnDestroy {
         options_final = options_d;
       } else {
         let options_temp = new Array<string>();
-        options_final.forEach((opt1) => {
-          options_d.forEach((opt2) => {
-            options_temp.push(opt1 + opt2);
-          });
-        });
+        if(options_final.length > 1 && options_d.length > 1) {
+          for(var i = 0; i < options_final.length; i++) {
+            var opt1 = options_final[i]
+            if(i < options_final.length-1) {
+              for(var j = 0; j < options_d.length-1; j++) {
+                var opt2 = options_d[j]
+                options_temp.push(opt1 + opt2);
+              }
+            } else {
+              options_temp.push(opt1+options_d[options_d.length-1])
+            }
+          }
+        } else {
+          for(var i = 0; i < options_final.length; i++) {
+            var opt1 = options_final[i]
+            for(var j = 0; j < options_d.length; j++) {
+              var opt2 = options_d[j]
+              options_temp.push(opt1 + opt2);
+            }
+          } 
+        }
         options_final = options_temp;
+        console.log("options_final: "+JSON.stringify(options_final))
       }
     }    
+    
     options_final.unshift(...options_full)
     options_final = options_final.filter((a,i) => options_final.indexOf(a) === i)
     for(let i = 0; i < options_final.length; i++) {    
@@ -897,7 +916,7 @@ export class MainComponent implements OnInit, OnDestroy {
 }
 
   addParallelDictToStorage(): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
+    return new Promise<boolean>((resolve) => {          
     let storePairs: DictEntry[] = []; 
     for(let i = 0; i < this.parallelDict.length && storePairs.length <= this.dictMax; i++) {
       let entry = this.parallelDict[i]
@@ -913,7 +932,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   addToStorage(pairs: Array<DictEntry>): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
+    return new Promise<boolean>((resolve) => {      
     let pairs2 = new Array<DictEntry>();
     for(let i = 0; i < pairs.length; i++) {
       pairs2.push(pairs[i])
@@ -925,7 +944,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     getOperations.subscribe({
       next: (res) => {
-        if(res != undefined) {            
+        if(res != undefined) { 
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
           let newPair: DictEntry = pairs.find(a => {return a.key == prevPair.key})
           let i = pairs2.findIndex(a => {return a.key == prevPair.key})
