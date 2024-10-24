@@ -1,6 +1,6 @@
 ## "Parallelogram" Cloud App for Generating Parallel Fields
 
-**NEW!** A beta version of Parallelogram 2.0 is now available!  This new version uses the Library of Congress [ScriptShifter](https://bibframe.org/scriptshifter/) tool in addition to WorldCat and authority records, greatly increasing the flexibility and accuracy of the tool.  If you are interested in trying the beta, see the section "Parallelogram 2.0 Beta" at the end of this documentation.
+**NEW!** A beta version of Parallelogram 2.0 is now available!  This new version uses the Library of Congress [ScriptShifter](https://bibframe.org/scriptshifter/) tool in addition to WorldCat and authority records, greatly increasing the flexibility and accuracy of the tool.  If you are interested in trying the beta, see the section [Parallelogram 2.0 Beta](https://github.com/pulibrary/parallelogram/tree/main?tab=readme-ov-file#parallelogram-20-beta) at the end of this documentation.
 
 ### Introduction
 
