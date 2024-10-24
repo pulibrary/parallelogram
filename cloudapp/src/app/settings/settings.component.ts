@@ -157,12 +157,9 @@ export class SettingsComponent implements OnInit {
       () => {
         //if "pinyin only setting" from previous version is unset and wc key/secret exists,
         //then enable WC searching
-        console.log(settings.pinyinonly+"|"+settings.wckey +"|"+settings.wcsecret)
-        if(!settings.pinyinonly && settings.wckey != "" && settings.wcsecret != "") {
-          settings.doWCSearch = true
-          console.log("checked")
-          this.form.get("doWCSearch").setValue(true)
-          settings.pinyinonly = false
+        if(settings.doWCSearch === undefined) {
+          settings.doWCSearch = !settings.pinyinonly
+          this.form.get("doWCSearch").setValue(settings.doWCSearch)
         }  
         if((settings.wckey == undefined || settings.wckey == "" || 
           settings.wcsecret == undefined || settings.wcsecret == "") && settings.doWCSearch) {
@@ -294,8 +291,7 @@ export class SettingsComponent implements OnInit {
     let wcSecret = this.form.get("wcsecret").value;
     let adminLock = this.form.get("adminLock").value 
     if(this.form.get("doWCSearch").value == false ||
-      (wcKey == undefined || wcKey == "" || wcSecret == undefined || wcSecret == "")) {
-      console.log(this.form.value)
+      (wcKey == undefined || wcKey == "" || wcSecret == undefined || wcSecret == "")) {      
       this.settingsService.set(this.form.value).subscribe(
         response => {
           if(this.form.get("adminWC").value) {

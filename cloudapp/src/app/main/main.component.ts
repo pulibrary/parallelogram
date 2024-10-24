@@ -143,14 +143,16 @@ export class MainComponent implements OnInit, OnDestroy {
       (err) => this.alert.error(err),
       () => {              
         this.doPresearch = this.settings.doPresearch; 
+        console.log(this.settings)
         //if "pinyin only setting" from previous version is unset and wc key/secret exists,
         //then enable WC searching
-        if(!this.settings.pinyinonly && this.settings.wckey != "" && this.settings.wcsecret != "") {
-          this.settings.doWCSearch = true
-        }     
+        if(this.settings.doWCSearch === undefined) {
+          this.settings.doWCSearch = !this.settings.pinyinonly
+        }    
         if(!this.settings.doWCSearch) {
           this.doSearch = false
         } 
+        console.log("s:"+this.doSearch)
         this.preSearchArray = this.settings.preSearchList
         if(this.settings.interfaceLang == "") {
           this.eventsService.getInitData().subscribe(data=> {
@@ -231,7 +233,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     this.bibUtils = new BibUtils(this.restService,this.alert);
     this.authUtils = new AuthUtils(this.http)
-    if(this.settings.doWCSearch) {
+    if(this.doSearch) {
       this.access_token = await this.authUtils.getOAuthToken(
           this.authToken,this.settings.wckey,this.settings.wcsecret)
     }
