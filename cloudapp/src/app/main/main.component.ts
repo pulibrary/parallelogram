@@ -532,7 +532,9 @@ export class MainComponent implements OnInit, OnDestroy {
         }  
         options = await this.lookupInDictionary(sf.data);    
       }   
-             
+      if(options.length == 0) {
+        options = [sf.data]
+      }  
       if(presearch && options[0] != sf.data) {
         this.preSearchFields.set(fkey,true)
       }   
@@ -557,7 +559,7 @@ export class MainComponent implements OnInit, OnDestroy {
           best = k
           break
         }
-      }
+      }      
       parallel_field.addSubfield(sf.id,sf.code,options[best]) 
       options_map.set(sf.id,options)   
       
@@ -861,7 +863,6 @@ export class MainComponent implements OnInit, OnDestroy {
           } 
         }
         options_final = options_temp;
-        console.log("options_final: "+JSON.stringify(options_final))
       }
     }    
     
