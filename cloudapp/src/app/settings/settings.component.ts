@@ -136,13 +136,7 @@ export class SettingsComponent implements OnInit {
           }
           if(settings.wcsecret != adminSecret) {
             settings.wcsecret = adminSecret
-          }
-          //if "pinyin only setting" from previous version is unset and wc key/secret exists,
-          //then enable WC searching
-           if(!settings.pinyinonly && settings.wckey != "" && settings.wcsecret) {
-            settings.doWCSearch = true
-            settings.pinyinonly = false
-          }   
+          }           
           this.settingsService.set(this.form.value).subscribe()
         }
         if(adminLock) {
@@ -161,6 +155,15 @@ export class SettingsComponent implements OnInit {
       },
       (err) => this.alert.error(err),
       () => {
+        //if "pinyin only setting" from previous version is unset and wc key/secret exists,
+        //then enable WC searching
+        console.log(settings.pinyinonly+"|"+settings.wckey +"|"+settings.wcsecret)
+        if(!settings.pinyinonly && settings.wckey != "" && settings.wcsecret != "") {
+          settings.doWCSearch = true
+          console.log("checked")
+          this.form.get("doWCSearch").setValue(true)
+          settings.pinyinonly = false
+        }  
         if((settings.wckey == undefined || settings.wckey == "" || 
           settings.wcsecret == undefined || settings.wcsecret == "") && settings.doWCSearch) {
           this.alert.warn(this.translate.instant("Translate.NoWCAPI"))
