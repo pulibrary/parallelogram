@@ -197,7 +197,9 @@ export class MainComponent implements OnInit, OnDestroy {
     var langOptions = await this.scriptshifter.getLanguageOptions(lang, this.authToken)
     this.ssMarcSensitive = langOptions.includes("marc_field")
     this.fieldCache.clear()
-    this.performPresearch()
+    if(this.doSearch && this.searchProgress == 100) {
+      this.performPresearch()
+    }
     this.defaultSSScore += 3
   }
 
@@ -312,16 +314,18 @@ export class MainComponent implements OnInit, OnDestroy {
               this.totalSearches = oclcQueries.length;
               if(this.totalSearches > 0) {
                 this.changeSpinner("loading")
-               this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: 0%";
+                this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: 0%";
               }     
               this.warnedTimeout = false
-              interval(500).pipe(take(oclcQueries.length)).subscribe(oq => {
-                this.getOCLCrecords(oclcQueries[oq])
+              interval(500).pipe(take(oclcQueries.length)).subscribe((oq) => {
+                if(oq == oclcQueries.length-1) {
+                  this.getOCLCrecords(oclcQueries[oq],true)
+                } else {
+                  this.getOCLCrecords(oclcQueries[oq],false)
+                }              
               },
-              (err) => {},
-              async () => {
-                this.performPresearch()
-              })   
+              (err) => {}
+            );
             }
          } else {
            this.performPresearch()
@@ -374,7 +378,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.changeSpinner("clear")
   }
 
-  async getOCLCrecords(oq: OclcQuery) {
+  async getOCLCrecords(oq: OclcQuery,final: boolean) {
     let wcURL:string   
     let wcHeaders: HttpHeaders
     wcURL = Settings.wcMDBaseURL + "?" + Settings.wcMDQueryParamName + "=" +
@@ -389,42 +393,42 @@ export class MainComponent implements OnInit, OnDestroy {
     this.http.get(wcURL, {headers: wcHeaders, responseType: 'text'}).subscribe(
       async (res) => {
         let jsonBrief = JSON.parse(res)                    
-        if(jsonBrief["briefRecords"]) {
-          let recs = jsonBrief["briefRecords"]
-          let wcSingleHeaders = new HttpHeaders({
-            'X-Proxy-Host': Settings.wcMetadataHost,
-            'X-Proxy-Auth': 'Bearer ' + this.access_token,
-            'Authorization': 'Bearer ' + this.authToken,
-            'Accept': 'application/marcxml+xml'
-          })
-          let singleRecRequests:Observable<string>[] = []
-          for(let i = 0; i < recs.length; i++) {
-            let oclcNo:string = recs[i]["oclcNumber"]
-            if(!retrievedRecords.includes(oclcNo)) {
-              retrievedRecords.push(oclcNo)
-              let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo             
-              let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})              
-              singleRecRequests.push(req)                
-            }
-          }          
-          let results = ""         
-          forkJoin(singleRecRequests).pipe(
-            timeout(15000),finalize(() => {      
-              this.completedSearches++;
-              this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
-              this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
-              if(this.completedSearches == this.totalSearches) {
-                this.changeSpinner("saving")          
-                this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
+        let recs = jsonBrief["briefRecords"] || []
+        let singleRecRequests:Observable<string>[] = []
+        let wcSingleHeaders = new HttpHeaders({
+          'X-Proxy-Host': Settings.wcMetadataHost,
+          'X-Proxy-Auth': 'Bearer ' + this.access_token,
+          'Authorization': 'Bearer ' + this.authToken,
+          'Accept': 'application/marcxml+xml'
+        })          
+        for(let i = 0; i < recs.length; i++) {
+          let oclcNo:string = recs[i]["oclcNumber"]
+          if(!retrievedRecords.includes(oclcNo)) {
+            retrievedRecords.push(oclcNo)
+            let wcSingleURL = Settings.wcMDSingleBaseURL + "/" + oclcNo             
+            let req = this.http.get(wcSingleURL,{headers: wcSingleHeaders,responseType: "text"})              
+            singleRecRequests.push(req)                
+          }
+        }        
+        let results = ""     
+        forkJoin(singleRecRequests).pipe(
+          timeout(15000),finalize(() => {    
+            this.completedSearches++;
+            this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
+            this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
+            if(this.completedSearches == this.totalSearches) {         
+              this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
+              this.changeSpinner("saving")
+              if(final) {
                 this.addParallelDictToStorage().finally(async () => {   
-                  if(!this.doPresearch) {   
                     this.changeSpinner("clear")
-                  } 
+                    this.performPresearch()
                 })
               }
-            }          
+            }
+          }          
           )).subscribe(
-            (resps) => {                                   
+            (resps) => {                                
               results = "<records>\n" + resps.join('') + "\n</records>" 
               results = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
                 + results.replace(/<\?xml[^>]*>/g,"")             
@@ -440,7 +444,6 @@ export class MainComponent implements OnInit, OnDestroy {
               }
             },
           )
-        }
       }, 
       (err) => {
         if(!this.warnedTimeout) {
@@ -922,7 +925,7 @@ export class MainComponent implements OnInit, OnDestroy {
 }
 
   addParallelDictToStorage(): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {          
+    return new Promise<boolean>((resolve) => {        
     let storePairs: DictEntry[] = []; 
     for(let i = 0; i < this.parallelDict.length && storePairs.length <= this.dictMax; i++) {
       let entry = this.parallelDict[i]
@@ -938,7 +941,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   addToStorage(pairs: Array<DictEntry>): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {      
+    return new Promise<boolean>((resolve) => {    
     let pairs2 = new Array<DictEntry>();
     for(let i = 0; i < pairs.length; i++) {
       pairs2.push(pairs[i])
@@ -947,6 +950,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     let getCount = 0
     let setCount = 0
+   
 
     getOperations.subscribe({
       next: (res) => {
