@@ -147,7 +147,6 @@ export class MainComponent implements OnInit, OnDestroy {
         //then enable WC searching
         if(!this.settings.pinyinonly && this.settings.wckey != "" && this.settings.wcsecret) {
           this.settings.doWCSearch = true
-          this.settings.pinyinonly = false
         }     
         if(!this.settings.doWCSearch) {
           this.doSearch = false;
