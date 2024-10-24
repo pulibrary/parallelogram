@@ -137,4 +137,8 @@ The tool still functions in basically the same way as before.  However, if Scri
 
 When first using the beta version, be sure to visit the settings screen again to make sure the settings are set properly for you. This screen as been reorganized somewhat, with a section for ScriptShifter settings.  This includes the option to auto-detect the language of the record from field 008, and the ability to set a default language.  ScriptShifter options specific to a certain language will also be displayed when that language is selected. (These options are not available on the main record display screen.)  Options specific to the Chinese language have been removed, since ScriptShifter is now being used for Chinese script-to-roman transliteration.  Also, WorldCat searching can be disabled if one wants to use ScriptShifter exclusively (or does not have the needed subscription to WorldCat).
 
+Some script conversions supported by ScriptShifter are based on tools developed by the Princeton University Library East Asian Library, and so the results will be similar to those produced by these tools:
+- Korean romanization is based on [K-Romanizer](https://github.com/pulibrary/K-Romanizer), developed by Hyoungbae Lee.
+- Chinese romanization is based on the [OCLC Connexion Pinyin Conversion Macro](https://github.com/pulibrary/oclcpinyin), developed by Tom Ventimiglia.
+
 Please feel free to use the discusson forum to share any feedback about this new version.  Special thanks to Stefano Cossu, Jessalyn Zoom, and the team at the Library of Congress that has made this collaboration possible.
