@@ -1,4 +1,7 @@
 ## "Parallelogram" Cloud App for Generating Parallel Fields
+
+**NEW!** A beta version of Parallelogram 2.0 is now available!  This new version uses the Library of Congress [ScriptShifter](https://bibframe.org/scriptshifter/) tool in addition to WorldCat and authority records, greatly increasing the flexibility and accuracy of the tool.  If you are interested in trying the beta, see the section "Parallelogram 2.0 Beta" at the end of this documentation.
+
 ### Introduction
 
 The "Parallelogram" Cloud App for Alma is used to generate parallel fields in bibliographic records.  It can add a non-roman text field to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record (provided it can find such text).
@@ -114,3 +117,24 @@ Many thanks to those who helped with beta testing the tool and translating the l
 
 Parallelogram by Princeton University Library is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
 
+### Parallelogram 2.0 Beta
+
+The next major release of Parallelogram will make use of [ScriptShifter](https://bibframe.org/scriptshifter/), a transliteration tool created by the Library of Congress.  This tool provides ALA-compliant transliterations in a variety of languages.  Combining ScriptShifter with the data sources already used by Parallelogram will produce an even more powerful and flexible tool.
+
+If you are interested in beta-testing this new version, open the Cloud App center, and click the "i" symbol in the upper right of the Parallelogram menu item.  This will show more details about the app.  Under "More Information", click "Try v2.0.0" (The last digit of the version number may change as new beta versions are released).
+
+|<img src="docs/images/screenshot8.png" width=300></img>|
+|-|
+
+After activating the beta version, the interface will look slightly different.  When opening a record in Parallelogram, a small menu will appear at the top that says "ScriptShifter Language".  
+
+|<img src="docs/images/screenshot9.png" width=500></img>|
+|-|
+
+The tool will attempt to auto-detect the language based on field 008 of the record.  However, you can also select a different language, or set the language to "None" if you do not want to incorportate ScriptShifter results.  Note that some languages/scripts have more than one entry in this menu.  For example, Korean has separate entries for general use and personal names.  And Uighur has separate entries for Cyrillic and Arabic script.
+
+The tool still functions in basically the same way as before.  However, if ScriptShifter produces results different than those found by searching WorldCat or authority records, these will be included in the candidate list for a subfield.  (In general, results found from WorldCat or authority records will still be given preference.)
+
+When first using the beta version, be sure to visit the settings screen again to make sure the settings are set properly for you. This screen as been reorganized somewhat, with a section for ScriptShifter settings.  This includes the option to auto-detect the language of the record from field 008, and the ability to set a default language.  ScriptShifter options specific to a certain language will also be displayed when that language is selected. (These options are not available on the main record display screen.)  Options specific to the Chinese language have been removed, since ScriptShifter is now being used for Chinese script-to-roman transliteration.  Also, WorldCat searching can be disabled if one wants to use ScriptShifter exclusively (or does not have the needed subscription to WorldCat).
+
+Please feel free to use the discusson forum to share any feedback about this new version.  Special thanks to Stefano Cossu, Jessalyn Zoom, and the team at the Library of Congress that has made this collaboration possible.
