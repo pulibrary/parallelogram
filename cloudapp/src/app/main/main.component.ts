@@ -142,7 +142,13 @@ export class MainComponent implements OnInit, OnDestroy {
       },
       (err) => this.alert.error(err),
       () => {              
-        this.doPresearch = this.settings.doPresearch;      
+        this.doPresearch = this.settings.doPresearch; 
+        //if "pinyin only setting" from previous version is unset and wc key/secret exists,
+        //then enable WC searching
+        if(!this.settings.pinyinonly && this.settings.wckey != "" && this.settings.wcsecret) {
+          this.settings.doWCSearch = true
+          this.settings.pinyinonly = false
+        }     
         if(!this.settings.doWCSearch) {
           this.doSearch = false;
         } 

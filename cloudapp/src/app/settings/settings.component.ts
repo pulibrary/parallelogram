@@ -137,7 +137,12 @@ export class SettingsComponent implements OnInit {
           if(settings.wcsecret != adminSecret) {
             settings.wcsecret = adminSecret
           }
-          
+          //if "pinyin only setting" from previous version is unset and wc key/secret exists,
+          //then enable WC searching
+           if(!settings.pinyinonly && settings.wckey != "" && settings.wcsecret) {
+            settings.doWCSearch = true
+            settings.pinyinonly = false
+          }   
           this.settingsService.set(this.form.value).subscribe()
         }
         if(adminLock) {
