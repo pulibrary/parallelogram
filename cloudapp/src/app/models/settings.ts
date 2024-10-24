@@ -18,7 +18,7 @@ export class Settings {
     doPresearch: boolean = false;
     doSwap: boolean = false;
     doWCSearch: boolean = undefined;
-    pinyinonly: boolean = false;
+    pinyinonly: boolean = true;
     swapType: string = "nonroman"
     preSearchList: Array<string> = ["1xx","245","26x","7xx"]
     preferInstitutions: boolean = false;
