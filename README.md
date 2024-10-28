@@ -121,7 +121,7 @@ Parallelogram by Princeton University Library is licensed under a <a rel="licens
 
 The next major release of Parallelogram will make use of [ScriptShifter](https://bibframe.org/scriptshifter/), a transliteration tool created by the Library of Congress.  This tool provides ALA-compliant transliterations in a variety of languages.  Combining ScriptShifter with the data sources already used by Parallelogram will produce an even more powerful and flexible tool.
 
-If you are interested in beta-testing this new version, open the Cloud App center, and click the "i" symbol in the upper right of the Parallelogram menu item.  This will show more details about the app.  Under "More Information", click "Try v2.0.0" (The last digit of the version number may change as new beta versions are released).
+If you are interested in beta-testing this new version, open the Cloud App center, and click the blue "i" symbol in the upper right of the Parallelogram menu item.  This will show more details about the app.  Under "More Information", click "Try v2.0.x-beta" (The last digit of the version number may change as new beta versions are released).
 
 |<img src="docs/images/screenshot8.png" width=300></img>|
 |-|
