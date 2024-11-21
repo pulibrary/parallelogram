@@ -379,6 +379,22 @@ export class MainComponent implements OnInit, OnDestroy {
     this.changeSpinner("clear")
   }
 
+  async incrementSearchProgress(final:boolean) {
+    this.completedSearches++;
+    this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
+    this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
+    if(this.completedSearches == this.totalSearches) {         
+      this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
+      this.changeSpinner("saving")
+      if(final) {
+        this.addParallelDictToStorage().finally(async () => {   
+          this.changeSpinner("clear")
+          this.performPresearch()
+        })
+      }
+    }
+  }
+
   async getOCLCrecords(oq: OclcQuery,final: boolean) {
     let wcURL:string   
     let wcHeaders: HttpHeaders
@@ -413,20 +429,8 @@ export class MainComponent implements OnInit, OnDestroy {
         }        
         let results = ""     
         forkJoin(singleRecRequests).pipe(
-          timeout(15000),finalize(() => {    
-            this.completedSearches++;
-            this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
-            this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
-            if(this.completedSearches == this.totalSearches) {         
-              this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
-              this.changeSpinner("saving")
-              if(final) {
-                this.addParallelDictToStorage().finally(async () => {   
-                    this.changeSpinner("clear")
-                    this.performPresearch()
-                })
-              }
-            }
+          timeout(15000),finalize(async () => {    
+            await this.incrementSearchProgress(final)
           }          
           )).subscribe(
             (resps) => {                                
@@ -446,14 +450,15 @@ export class MainComponent implements OnInit, OnDestroy {
             },
           )
       }, 
-      (err) => {
+      async (err) => {
         if(!this.warnedTimeout) {
           this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
             " " + this.translate.instant('Translate.WorldCatMetadataAPI') + " " + 
             this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
             this.translate.instant('Translate.ResultsMayNotBeOptimal'))
-          this.warnedTimeout = true
+          this.warnedTimeout = true          
         }
+        await this.incrementSearchProgress(final)
       },
     )
   }
