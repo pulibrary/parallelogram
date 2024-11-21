@@ -45,26 +45,6 @@
         </mat-form-field>
       </section>
       <section class="settings-section">
-        <mat-checkbox formControlName="preferInstitutions">{{'Translate.PreferInstitutions' | translate}}</mat-checkbox>
-      </section>   
-      <section class="settings-section">
-        <mat-form-field appearance="fill">
-          <mat-chip-list #preferredInstitutionCodes>
-            <mat-chip 
-              *ngFor="let field of form.get('preferredInstitutionList').value"
-              (removed)="deletePreferredInstitution(field)" >
-              {{field}}
-              <mat-icon matChipRemove>cancel</mat-icon>
-            </mat-chip>
-            <input matChipInput [placeholder]="'Translate.AddPreferredInstitution' | translate"
-             [matChipInputFor]="preferredInstitutionCodes"
-             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-             [matChipInputAddOnBlur]="addOnBlur"
-             (matChipInputTokenEnd)="addPreferredInstitution($event)">
-          </mat-chip-list>
-        </mat-form-field>
-      </section>  
-      <section class="settings-section">
         <mat-checkbox formControlName="doSwap">{{'Translate.Swap880Option' | translate}}</mat-checkbox>
       </section>
       <section class="settings-section">
@@ -158,6 +138,26 @@
       <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
         <mat-label>{{'Translate.ClientSecret' | translate}}: </mat-label> 
         <input matInput formControlName="wcsecret">
+      </mat-form-field>
+    </section>  
+    <section class="settings-section">
+      <mat-checkbox formControlName="preferInstitutions">{{'Translate.PreferInstitutions' | translate}}</mat-checkbox>
+    </section>   
+    <section class="settings-section">
+      <mat-form-field appearance="fill">
+        <mat-chip-list #preferredInstitutionCodes>
+          <mat-chip 
+            *ngFor="let field of form.get('preferredInstitutionList').value"
+            (removed)="deletePreferredInstitution(field)" >
+            {{field}}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
+          <input matChipInput [placeholder]="'Translate.AddPreferredInstitution' | translate"
+           [matChipInputFor]="preferredInstitutionCodes"
+           [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+           [matChipInputAddOnBlur]="addOnBlur"
+           (matChipInputTokenEnd)="addPreferredInstitution($event)">
+        </mat-chip-list>
       </mat-form-field>
     </section>    
     </mat-card>
