@@ -304,8 +304,9 @@ export class MainComponent implements OnInit, OnDestroy {
                   return;
                 }
                 
-                let tnq = new OclcQuery("ti","exact",title);
-                tnq.addParams("au","=",name);
+                
+                let tnq = new OclcQuery("au","=",name);
+                tnq.addParams("tite","exact",title);
                 oclcQueries.push(tnq);              
               });
               oclcQueries.push(new OclcQuery("ti","exact",title));

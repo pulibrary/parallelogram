@@ -1,6 +1,7 @@
 import {OclcQueryParams} from './oclc-query-params';
 
 export class OclcQuery {
+    maxWords: number = 30
     paramsList: Array<OclcQueryParams>;
     
     constructor(index: string, matcher: string, value: string) {
@@ -15,10 +16,18 @@ export class OclcQuery {
     public getQueryString(): string
     {
         let resultString = "";  
-        for(let i = 0; i < this.paramsList.length; i++) {
+        let totalWords = 0
+        for(let i = 0; i < this.paramsList.length && totalWords <= this.maxWords; i++) {
             let oqp = this.paramsList[i]
+            let words = oqp.value.split(/ /)
+            if(words.length + totalWords > this.maxWords) {
+                var wordsSlice = words.slice(0,this.maxWords - totalWords)
+                oqp.value = wordsSlice.join(" ")
+            }
+            words = oqp.value.split(/ /)
+            totalWords += words.length
             if (resultString != "") {
-                resultString += "+AND+";
+                resultString += "%20AND%20";
             }
             if (oqp.matcher == "all" || oqp.matcher == "any") {
                 oqp.matcher = "%3A"
@@ -33,7 +42,7 @@ export class OclcQuery {
             }
             for(let i =0; i < vals.length; i++) {
                 if(i > 0) {
-                    resultString += "+OR+"
+                    resultString += "%20OR%20"
                 }
                 resultString += oqp.index + oqp.matcher + encodeURI(vals[i]) 
             }
