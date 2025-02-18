@@ -2,6 +2,8 @@
 
 **NEW!** A beta version of Parallelogram 2.0 is now available!  This new version uses the Library of Congress [ScriptShifter](https://bibframe.org/scriptshifter/) tool in addition to WorldCat and authority records, greatly increasing the flexibility and accuracy of the tool.  If you are interested in trying the beta, see the section [Parallelogram 2.0 Beta](https://github.com/pulibrary/parallelogram/tree/main?tab=readme-ov-file#parallelogram-20-beta) at the end of this documentation.
 
+**NOTE:** There is a known issue with running Parallelogram under the New Titles Search in Alma.  Details and workarounds can be found [here](https://github.com/pulibrary/parallelogram/issues/1).
+
 ### Introduction
 
 The "Parallelogram" Cloud App for Alma is used to generate parallel fields in bibliographic records.  It can add a non-roman text field to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record (provided it can find such text).
