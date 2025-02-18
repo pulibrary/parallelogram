@@ -60,7 +60,7 @@ export class ScriptShifterService {
      }
 
      async query(searchTerm: string, lang: string, toroman: boolean = true, capitalize: string = "no_change", options: string = "{}", authToken: string): Promise<string> { 
-        let search_term_escaped = JSON.stringify(searchTerm).replace(/\"$/,"").replace(/^\"/,"")
+        let search_term_escaped = JSON.stringify(searchTerm).replace(/\"$/,"").replace(/^\"/,"").normalize("NFC")
         let tdir = (toroman) ? "s2r" : "r2s"
         let ssQueryJSON =  '{"text":"' + search_term_escaped + '", "lang":"' + lang + '", ' +  
           '"t_dir":"' + tdir + '", "options": ' + options + ', "capitalize": "' + capitalize + '"}'
