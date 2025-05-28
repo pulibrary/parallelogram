@@ -710,7 +710,6 @@ export class MainComponent implements OnInit, OnDestroy {
       prevkey = ki
       kdels.push(v)      
     }
-
     let getOperations = from(alldels).pipe(concatMap(entry => this.storeService.get(entry.key)))
     let newEntries = new Array<DictEntry>();
     getOperations.subscribe({
@@ -733,7 +732,10 @@ export class MainComponent implements OnInit, OnDestroy {
               ne.deleteParallel(dn)
             }
           }
-          newEntries.push(ne)
+          for(let i = 0; i < ne.variants.length; i++) {
+            let nev = new DictEntry(ne.variants[i],ne.variants,ne.parallels)
+            newEntries.push(nev)
+          }
         }
       },
       complete: () => {
