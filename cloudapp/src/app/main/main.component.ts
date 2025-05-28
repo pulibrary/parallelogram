@@ -710,6 +710,7 @@ export class MainComponent implements OnInit, OnDestroy {
       prevkey = ki
       kdels.push(v)      
     }
+
     let getOperations = from(alldels).pipe(concatMap(entry => this.storeService.get(entry.key)))
     let newEntries = new Array<DictEntry>();
     getOperations.subscribe({
@@ -719,10 +720,16 @@ export class MainComponent implements OnInit, OnDestroy {
           let these_dels = alldels.find(a => {return a.key == res.key})
           for(let i = 0; i < these_dels.dels.length; i++) {
             let d = these_dels.dels[i]
-            let dn = d.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"")
-            dn = dn.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"")
-            dn = dn.replace(new RegExp("\\s*\\([^\\)]+\\)[\\s\\p{P}]*$",'u'),"");
-            if(!ne.deleteParallel(d)) {
+            let success = ne.deleteParallel(d) 
+            let dn = d
+            while(!success && dn.match(new RegExp("\\p{P}","u"))) {
+              dn = dn.slice(0,-1)
+              success = ne.deleteParallel(dn)
+            }
+            if(!success) {
+              dn = d.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"")
+              dn = dn.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"")
+              dn = dn.replace(new RegExp("\\s*\\([^\\)]+\\)[\\s\\p{P}]*$","u"),"");
               ne.deleteParallel(dn)
             }
           }
@@ -958,7 +965,6 @@ export class MainComponent implements OnInit, OnDestroy {
     let getCount = 0
     let setCount = 0
    
-
     getOperations.subscribe({
       next: (res) => {
         if(res != undefined) { 
@@ -974,6 +980,16 @@ export class MainComponent implements OnInit, OnDestroy {
         } 
       },
       complete: () => {  
+        let extraPairs: DictEntry[] = [];
+        for(let i = 0; i < pairs2.length; i++) {
+          let pi = pairs2[i]
+          for(let j = 0; j < pi.variants.length; j++) {
+            if(pi.key != pi.variants[j]) {
+              extraPairs.push(new DictEntry(pi.variants[j],pi.variants,pi.parallels))
+            }
+        }
+        }
+        pairs2.push(...extraPairs)
         let storeOperations = from(pairs2).pipe(concatMap(entry => this.storeService.set(entry.key,entry)))
         storeOperations.subscribe({
           complete: () => resolve(true)
