@@ -690,57 +690,66 @@ export class MainComponent implements OnInit, OnDestroy {
 
     this.deletions.sort((a,b) => 0 - (a.key > b.key ? 1 : -1))
     let prevkey = ""
-    let alldels = new Array<{key: string, dels: Array<string>}>();
-    let kdels = new Array<string>();
+    let alldels = new Map<string, Array<string>>();
     for(let i = 0; i < this.deletions.length; i++) {
       let ki = this.deletions[i].key     
       let k_normal = this.cjkNormalize(ki)
       let keys = [ki,k_normal]
       let v = this.deletions[i].value
-      if((i > 0 && prevkey != ki) || i == this.deletions.length - 1) {
-        if(i == this.deletions.length - 1) {
-          kdels.push(v)
+      for(let j = 0 ; j < keys.length; j++) {
+        let jk = keys[j] 
+        if(alldels.has(jk)) {
+          let newdels = alldels.get(jk)
+          newdels.push(v)
+          alldels.set(jk,newdels)
+        } else {       
+          alldels.set(jk,[v])
         }
-        for(let j = 0 ; j < keys.length; j++) {
-          let jk = keys[j]          
-          alldels.push({key: jk,dels: kdels})
-        }        
-        kdels = new Array<string>();        
-      } 
-      prevkey = ki
-      kdels.push(v)      
+      }           
     }
-    let getOperations = from(alldels).pipe(concatMap(entry => this.storeService.get(entry.key)))
+    let getOperations = from(alldels).pipe(concatMap((entry) => this.storeService.get(entry[0])))
     let newEntries = new Array<DictEntry>();
     getOperations.subscribe({
       next: (res: DictEntry) => {
         if(res != undefined) {
           let ne = new DictEntry(res.key, res.variants, res.parallels)          
-          let these_dels = alldels.find(a => {return a.key == res.key})
-          for(let i = 0; i < these_dels.dels.length; i++) {
-            let d = these_dels.dels[i]
-            let success = ne.deleteParallel(d) 
+          let this_del = alldels.get(res.key)
+          this_del ||= []
+          for(let i = 0; i < this_del.length; i++) {
+            let d = this_del[i]
+            let success = ne.deleteParallel(d)
+            this.removeFromParallelDict(ne.key,d) 
             let dn = d
-            while(!success && dn.match(new RegExp("\\p{P}","u"))) {
+            while(!success && dn.match(new RegExp("\\p{P}$","u"))) {
               dn = dn.slice(0,-1)
               success = ne.deleteParallel(dn)
+              this.removeFromParallelDict(ne.key,dn) 
             }
             if(!success) {
               dn = d.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"")
               dn = dn.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"")
               dn = dn.replace(new RegExp("\\s*\\([^\\)]+\\)[\\s\\p{P}]*$","u"),"");
               ne.deleteParallel(dn)
+              this.removeFromParallelDict(ne.key,dn) 
             }
           }
           for(let i = 0; i < ne.variants.length; i++) {
-            let nev = new DictEntry(ne.variants[i],ne.variants,ne.parallels)
-            newEntries.push(nev)
+            if(!newEntries.map(a=>a.key).includes(ne.variants[i])) {
+              let nev = new DictEntry(ne.variants[i],ne.variants,ne.parallels) 
+              newEntries.push(nev)
+            }
           }
         }
       },
       complete: () => {
         let storeOperations = from(newEntries).pipe(
-          concatMap(entry => this.storeService.set(entry.key,entry))
+          concatMap(entry => {
+            if(entry.parallels.length == 0) {
+              return this.storeService.remove(entry.key)
+            } else {
+              return this.storeService.set(entry.key,entry)
+            }
+          })
         )
         storeOperations.subscribe()
 
@@ -1222,6 +1231,28 @@ export class MainComponent implements OnInit, OnDestroy {
       });
     }
   }
+
+removeFromParallelDict(textA: string, textB: string) {
+    if(textA == textB) {
+      return;
+    }    
+    let found = this.parallelDict.findIndex(a => a.key == textA)
+    let entry: DictEntry;
+    if(found > -1) {
+      entry = this.parallelDict[found]
+      entry.deleteParallel(textB)   
+      for(let i = 0; i < entry.variants.length; i++) {
+        let v = entry.variants[i]  
+        if(v != textA) {
+          let found2 = this.parallelDict.findIndex(a => a.key == v)
+          if(found2 > -1) {
+            this.parallelDict[found2].deleteParallel(textB)
+          }
+        }
+      }
+    }   
+    return
+}
 
 addToParallelDict(textA: string, textB: string, variants: string[] = [], score = 1): Array<DictEntry> {
     if(textA == textB) {
