@@ -272,6 +272,39 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  addExclusion(event: MatChipInputEvent) {
+    let tag = (event.value || '').trim()
+    if(tag == "") {
+      return
+    }
+    if(tag.length != 4 || !tag.match(/[0-9Xx][0-9Xx][0-9Xx][a-z]/)) {
+      this.alert.clear()
+      this.alert.warn(this.translate.instant("Translate.InvalidTagFormat"))
+    } else {
+      this.alert.clear()
+      tag = tag.toLowerCase()
+      let exclusionList: Array<string> = this.form.get("exclusionList").value
+      if(!exclusionList.includes(tag)) {
+        exclusionList.push(tag)
+        exclusionList.sort()
+        this.form.markAsDirty()
+      }
+    }
+    event.input.value = ""
+  }
+
+  deleteExclusion(tag: string) {
+    let exclusionList: Array<string> = this.form.get("exclusionList").value
+    if(tag != undefined) {
+      let found = exclusionList.indexOf(tag)
+      if(found > -1) {
+         exclusionList.splice(found,1)
+         this.form.markAsDirty()
+      }
+    }
+  }
+
+
   isAdmin(): Observable<boolean> {
     return this.eventsService.getInitData().pipe(
       switchMap( initData => this.restService.call(`/users/${initData.user.primaryId}`)),

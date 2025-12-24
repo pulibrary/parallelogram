@@ -57,7 +57,9 @@
         "SSoptions": "ScriptShifter Settings",
         "WorldCatSettings": "WorldCat Settings",
         "AdminSettings": "Administrator Settings",
-        "Capitalization": "Capitalization"
+        "Capitalization": "Capitalization",
+        "ExcludeSubfields": "Exclude the following subfields from conversion:",
+        "AddExclusion": "Add Subfield Tag (e.g. 490v, 5xxa)"
 
     }
 }

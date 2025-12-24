@@ -36,11 +36,31 @@
               {{field}}
               <mat-icon matChipRemove>cancel</mat-icon>
             </mat-chip>
-            <input matChipInput [placeholder]="'Translate.AddTag' | translate"
+            <input title="addtag" matChipInput [placeholder]="'Translate.AddTag' | translate"
              [matChipInputFor]="preSearchTags"
              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
              [matChipInputAddOnBlur]="addOnBlur"
              (matChipInputTokenEnd)="addPreSearchField($event)">
+          </mat-chip-list>
+        </mat-form-field>
+      </section>
+      <section class="settings-section">
+        <mat-checkbox formControlName="excludeSubfields">{{'Translate.ExcludeSubfields' | translate}}</mat-checkbox>
+      </section>   
+      <section class="settings-section">
+        <mat-form-field appearance="fill">
+          <mat-chip-list #exclusionTags>
+            <mat-chip 
+              *ngFor="let field of form.get('exclusionList').value"
+              (removed)="deleteExclusion(field)" >
+              {{field}}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+            <input title="addexclusion" matChipInput [placeholder]="'Translate.AddExclusion' | translate"
+             [matChipInputFor]="exclusionTags"
+             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+             [matChipInputAddOnBlur]="addOnBlur"
+             (matChipInputTokenEnd)="addExclusion($event)">
           </mat-chip-list>
         </mat-form-field>
       </section>
@@ -82,7 +102,7 @@
         </mat-select>
       </mat-form-field>
     -->
-      <input [hidden]="true" matInput formControlName="ssOptionsValues" value="{{this.ssOptionsCurrent | json}}">
+      <input title="ssoptions" [hidden]="true" matInput formControlName="ssOptionsValues" value="{{this.ssOptionsCurrent | json}}">
       <div #ssAdditionalOptions>        
         <div *ngFor="let option of this.ssOptionsDefault">
         <ng-container *ngIf="option.type === 'boolean';then ssBooleanOption else ssOtherOptions">
@@ -108,7 +128,7 @@
           <ng-template #ssStringOption>
             <mat-form-field style="width: 200px">
               <mat-label>{{option.label}}</mat-label>
-              <input matInput [id]="option.id" [value]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (change)="setSSlangOptions($event)">
+              <input title="option" matInput [id]="option.id" [value]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (change)="setSSlangOptions($event)">
             </mat-form-field>
             <div *ngIf="option.description" class="ssLangCaption">
               {{option.description}}
@@ -131,13 +151,13 @@
     <section class="settings-section">
       <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
         <mat-label>{{'Translate.WCAPIKey' | translate}}: </mat-label> 
-        <input matInput formControlName="wckey">
+        <input title="wckey" matInput formControlName="wckey">
       </mat-form-field>
     </section>
     <section class="settings-section">
       <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
         <mat-label>{{'Translate.ClientSecret' | translate}}: </mat-label> 
-        <input matInput formControlName="wcsecret">
+        <input title="wcsecret" matInput formControlName="wcsecret">
       </mat-form-field>
     </section>  
     <section class="settings-section">
@@ -152,7 +172,7 @@
             {{field}}
             <mat-icon matChipRemove>cancel</mat-icon>
           </mat-chip>
-          <input matChipInput [placeholder]="'Translate.AddPreferredInstitution' | translate"
+          <input title="prefinst" matChipInput [placeholder]="'Translate.AddPreferredInstitution' | translate"
            [matChipInputFor]="preferredInstitutionCodes"
            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
            [matChipInputAddOnBlur]="addOnBlur"

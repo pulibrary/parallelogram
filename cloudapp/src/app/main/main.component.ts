@@ -499,12 +499,31 @@ export class MainComponent implements OnInit, OnDestroy {
       this.linkedDataCache.push(linkedDataURL.data)
 
     }
+
     for(let j = 0; j < field.subfields.length; j++) {
       let sf = field.subfields[j];
+      let skip_sf = false
+      if(this.settings.excludeSubfields) {
+        for(let k = 0; k < this.settings.exclusionList.length; k++) {
+          let exc = this.settings.exclusionList[k]
+          if((exc[0] == 'x' || exc[0] == fkey[0]) &&
+              (exc[1] == 'x' || exc[1] == fkey[1]) &&
+              (exc[2] == 'x' || exc[2] == fkey[2]) &&
+              (exc[3] == sf.code)
+          ) {
+            skip_sf = true
+          }
+        }
+      }
+      
       if(sf.code.match(/[0-9]/) || sf.data.match("/^http:/")) {
+        skip_sf = true
+        
+      } 
+      if(skip_sf) {
         parallel_field.addSubfield(sf.id,sf.code,sf.data)
         continue
-      }        
+      }
       let options = new Array<string>()
       if(cached_options != undefined && cached_options.has(sf.id)) {
         options = cached_options.get(sf.id)
@@ -1303,8 +1322,8 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
       let main_field = this.fieldTable.get(fkey)
       let parallel_field = this.fieldTable.get(pfkey);
       
-      let subfields = parallel_field.subfields.filter(a => a.code != '6' && a.code != '0');
-            
+      let subfields = parallel_field.subfields.filter(a => a.code.match(/[06]/));
+
       for(let i = 0; i < subfields.length; i++) {
         let sf = subfields[i]  
         let opts = new Array();

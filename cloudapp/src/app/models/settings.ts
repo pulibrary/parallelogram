@@ -16,11 +16,13 @@ export class Settings {
     wckey: string = "";
     wcsecret: string = "";
     doPresearch: boolean = false;
+    excludeSubfields: boolean = true;
     doSwap: boolean = false;
     doWCSearch: boolean = undefined;
     pinyinonly: boolean = true;
     swapType: string = "nonroman"
     preSearchList: Array<string> = ["1xx","245","26x","7xx"]
+    exclusionList: Array<string> = ["1xxe","7xxe","856u","xxxi"]
     preferInstitutions: boolean = false;
     preferredInstitutionList: Array<string> = ["DLC"]
     interfaceLang: string = ""
