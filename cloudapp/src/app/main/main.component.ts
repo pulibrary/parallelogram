@@ -471,6 +471,30 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     let field = this.fieldTable.get(fkey)
     let placeholder_tag = field.tag
+
+    let selText = ""
+    let selBefore = ""
+    let selAfter = ""
+    let processedSubfields = new MarcDataField(field.tag,'','')
+    let selStart = -1
+    let selEnd = -1
+    let inExclusion = false
+    let runningLength = 2
+
+    if(!presearch) {  
+      let sel = document.getSelection()
+      selText = sel.toString()
+      if(selText != "") {
+        selStart = (sel.anchorOffset < sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
+        selEnd = (sel.anchorOffset > sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
+        if(selText != field.getSubfieldString().substring(selStart-1,selEnd-1)) {
+          this.alert.error(this.translate.instant('Translate.SelectionError'))
+          return
+        }      
+        selBefore = sel.anchorNode.textContent.substring(0,selStart-1)
+        selAfter = sel.anchorNode.textContent.substring(selEnd)
+      }
+    }
     
     if(placeholder_tag == "880") {
       let t = field.getSubfield("61")
@@ -501,7 +525,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
 
     for(let j = 0; j < field.subfields.length; j++) {
-      let sf = field.subfields[j];
+      let sf = field.subfields[j];      
       let skip_sf = false
       if(this.settings.excludeSubfields) {
         for(let k = 0; k < this.settings.exclusionList.length; k++) {
@@ -515,21 +539,30 @@ export class MainComponent implements OnInit, OnDestroy {
           }
         }
       }
+
+      if(!presearch && selText != "") {
+        let sfSoFar = processedSubfields.getSubfieldString()
+        if((sfSoFar.length + sf.data.length + 3 >= selBefore.length) &&
+             (sfSoFar.length < selBefore.length + selText.length)) {
+              skip_sf = true
+            }
+        }
       
-      if(sf.code.match(/[0-9]/) || sf.data.match("/^http:/")) {
+      if(sf.code.match(/[0-9]/)) {
         skip_sf = true
-        
       } 
       if(skip_sf) {
         parallel_field.addSubfield(sf.id,sf.code,sf.data)
+        processedSubfields.addSubfield(sf.id,sf.code,sf.data)
         continue
       }
+
       let options = new Array<string>()
       if(cached_options != undefined && cached_options.has(sf.id)) {
         options = cached_options.get(sf.id)
-      } else {   
-        var sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));        
-        for(let k = 0; k < sfdataparts.length; k++) {              
+      } else {
+        let sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));        
+        for(let k = 0; k < sfdataparts.length; k++) {        
           if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
             let ssResult_nonrom = ""
             let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues)
@@ -595,6 +628,7 @@ export class MainComponent implements OnInit, OnDestroy {
         }
       }      
       parallel_field.addSubfield(sf.id,sf.code,options[best]) 
+      processedSubfields.addSubfield(sf.id,sf.code,sf.data)
       options_map.set(sf.id,options)   
       
     }
@@ -1322,7 +1356,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
       let main_field = this.fieldTable.get(fkey)
       let parallel_field = this.fieldTable.get(pfkey);
       
-      let subfields = parallel_field.subfields.filter(a => a.code.match(/[06]/));
+      let subfields = parallel_field.subfields.filter(a => !a.code.match(/[06]/));
 
       for(let i = 0; i < subfields.length; i++) {
         let sf = subfields[i]  
@@ -1357,7 +1391,7 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
             }            
           });
         } 
-      }         
+      }       
   }
 
   generateBGColor(linkage: string) {

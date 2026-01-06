@@ -59,7 +59,8 @@
         "AdminSettings": "Administrator Settings",
         "Capitalization": "Capitalization",
         "ExcludeSubfields": "Exclude the following subfields from conversion:",
-        "AddExclusion": "Add Subfield Tag (e.g. 490v, 5xxa)"
+        "AddExclusion": "Add Subfield Tag (e.g. 490v, 5xxa)",
+        "SelectionError": "Excluded text must all be within the same field"
 
     }
 }
