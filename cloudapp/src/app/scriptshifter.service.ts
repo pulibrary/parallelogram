@@ -75,6 +75,13 @@ export class ScriptShifterService {
             }).toPromise().then(async (res) => {
             var resOBJ = JSON.parse(JSON.stringify(res))
             var resultSTR = resOBJ.output;
+            //Fix SS errors in Chinese spacing/punctuation
+            if(lang.includes("chinese")) {
+              console.log(resultSTR)
+              resultSTR = resultSTR.replace(new RegExp(" ([,\\.])",'gu'),"$1 ")
+              resultSTR = resultSTR.replace(new RegExp("([0-9])([A-Za-z])",'gu'),"$1 $2")
+              console.log(resultSTR)
+            }
             resolve(resultSTR)
         }).catch((err) => {
           this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
