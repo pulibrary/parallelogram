@@ -306,7 +306,7 @@ export class MainComponent implements OnInit, OnDestroy {
                 
                 
                 let tnq = new OclcQuery("au","=",name);
-                tnq.addParams("tite","exact",title);
+                tnq.addParams("ti","exact",title);
                 oclcQueries.push(tnq);              
               });
               oclcQueries.push(new OclcQuery("ti","exact",title));
@@ -384,15 +384,13 @@ export class MainComponent implements OnInit, OnDestroy {
     this.completedSearches++;
     this.searchProgress = Math.floor(this.completedSearches*100/this.totalSearches);
     this.statusString = this.translate.instant('Translate.Searching') + " WorldCat: " + this.searchProgress  + "%";
-    if(this.completedSearches == this.totalSearches) {         
+    if((this.completedSearches == this.totalSearches) || final) {         
       this.statusString = this.translate.instant('Translate.AnalyzingRecords') + "... "
       this.changeSpinner("saving")
-      if(final) {
-        this.addParallelDictToStorage().finally(async () => {   
-          this.changeSpinner("clear")
-          this.performPresearch()
-        })
-      }
+      this.addParallelDictToStorage().finally(async () => {   
+        this.changeSpinner("clear")
+        this.performPresearch()
+      })
     }
   }
 

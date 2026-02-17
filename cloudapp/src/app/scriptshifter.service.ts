@@ -81,7 +81,6 @@ export class ScriptShifterService {
               resultSTR = resultSTR.replace(new RegExp("\\. $",'gu'),".")
               resultSTR = resultSTR.replace(new RegExp("([0-9])([A-Za-z])",'gu'),"$1 $2")
               resultSTR = resultSTR.replace(new RegExp('( "[^"]*) "([A-Za-z])','gu'), '$1" $2')
-              console.log(resultSTR)
             }
             resolve(resultSTR)
         }).catch((err) => {
