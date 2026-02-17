@@ -525,7 +525,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
 
     for(let j = 0; j < field.subfields.length; j++) {
-      let sf = field.subfields[j];      
+      let sf = field.subfields[j];   
       let skip_sf = false
       if(this.settings.excludeSubfields) {
         for(let k = 0; k < this.settings.exclusionList.length; k++) {
@@ -565,7 +565,7 @@ export class MainComponent implements OnInit, OnDestroy {
         for(let k = 0; k < sfdataparts.length; k++) {        
           if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
             let ssResult_nonrom = ""
-            let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues)
+            let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues ?? "{}")
             if(this.ssMarcSensitive) {
               ssOptionsObj['marc_field'] = field.tag
             }
