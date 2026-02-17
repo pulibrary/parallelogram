@@ -92,7 +92,6 @@
       <mat-checkbox formControlName="autoSelectSSLang">{{'Translate.SSAutoSelect' | translate}}</mat-checkbox>
     </section>
     <section>
-      <!--
       <mat-form-field appearance="fill" style="width: 200px">
         <mat-label>{{'Translate.Capitalization' | translate}}</mat-label>
         <mat-select formControlName="ssCapitalize"> 
@@ -101,7 +100,6 @@
           <mat-option value="all">All words</mat-option>
         </mat-select>
       </mat-form-field>
-    -->
       <input title="ssoptions" [hidden]="true" matInput formControlName="ssOptionsValues" value="{{this.ssOptionsCurrent | json}}">
       <div #ssAdditionalOptions>        
         <div *ngFor="let option of this.ssOptionsDefault">
