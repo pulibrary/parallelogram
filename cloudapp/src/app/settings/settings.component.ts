@@ -35,7 +35,7 @@ export interface AlmaUser {
   styleUrls: ['./settings.component.scss']
 })
 export class SettingsComponent implements OnInit {
-  form!: FormGroup;
+  form!: FormGroup
   saving = false;
   running = false;
   wcKeyValid = false;
@@ -83,7 +83,7 @@ export class SettingsComponent implements OnInit {
          noString: this.translate.instant("Translate.No")
        } 
      });
-      return dialogRef.afterClosed()
+      return dialogRef.afterClosed() 
     }    
     return true;
   }	
@@ -102,12 +102,13 @@ export class SettingsComponent implements OnInit {
       })      
     }
     this.settingsService.get().subscribe( settings => {
-      this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))   
+      this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))  
       this.admin = this.isAdmin(); 
       if(!settings.interfaceLang) {
+        settings.interfaceLang = "en"
         this.setLang("en")
-        this.form.get("interfaceLang")?.setValue("en")        
       } 
+
       if(!settings.ssLang) {
         settings.ssLang = "none"        
       } else {       
@@ -117,6 +118,7 @@ export class SettingsComponent implements OnInit {
         this.ssLoadFromSaved = true
         this.getSSlangSettings(settings.ssLang)
       }
+
       if(this.form.get("doSwap")?.value) {
         this.form.get("swapType")?.enable()
       } else {

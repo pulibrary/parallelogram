@@ -12,7 +12,7 @@
 <div class="loading-shade" *ngIf="saving">
   <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
 </div>
-<div>
+<div *ngIf="form">
   <form [formGroup]="form">
     <mat-card>
     <mat-card-header>{{'Translate.GeneralSettings' | translate}}:</mat-card-header>
