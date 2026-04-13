@@ -3,7 +3,7 @@ export class Settings {
     static readonly wcMDBaseURL: string = Settings.awsBaseURL + "worldcat/search/brief-bibs"
     static readonly wcMDSingleBaseURL: string = Settings.awsBaseURL + "worldcat/manage/bibs"
     static readonly wcMDQueryParamName: string = "q"
-    static readonly ssLangOptsURL: string = Settings.awsBaseURL + "scriptshifter/table"
+    static readonly ssLangOptsURL: string = Settings.awsBaseURL + "scriptshifter/options"
     static readonly ssBaseURL: string = Settings.awsBaseURL + "scriptshifter/trans"
     static readonly ssLangURL: string = Settings.awsBaseURL + "scriptshifter/languages"
 
@@ -18,14 +18,14 @@ export class Settings {
     doPresearch: boolean = false;
     excludeSubfields: boolean = true;
     doSwap: boolean = false;
-    doWCSearch: boolean = undefined;
+    doWCSearch: boolean = false;
     pinyinonly: boolean = true;
     swapType: string = "nonroman"
     preSearchList: Array<string> = ["1xx","245","26x","7xx"]
     exclusionList: Array<string> = ["1xxe","7xxe","856u","xxxi"]
     preferInstitutions: boolean = false;
     preferredInstitutionList: Array<string> = ["DLC"]
-    interfaceLang: string = ""
+    interfaceLang: string = "en"
     adminWC: boolean = false;
     adminLock: boolean = false;
     ssLang: string = "none"

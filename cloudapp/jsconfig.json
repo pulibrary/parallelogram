@@ -1,6 +1,6 @@
 {
+  "extends": "../.ng/tsconfig.json",
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "target": "es5"
+    "ignoreDeprecations": "6.0"
   }
 }

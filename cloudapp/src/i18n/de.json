@@ -57,6 +57,9 @@
         "SSoptions": "ScriptShifter Einstellungen",
         "WorldCatSettings": "WorldCat Einstellungen",
         "AdminSettings": "Administrator Einstellungen",
-        "Capitalization": "Großschreibung"
+        "Capitalization": "Großschreibung",
+        "ExcludeSubfields": "Die folgenden Unterfelder von der Konvertierung ausschließen:",
+        "AddExclusion": "Unterfeld Tag hinzufügen (z.B. 490v, 7xxe)",
+        "SelectionError": "Nur Text aus demselben Feld kann ausgeschlossen werden."
     }
 }

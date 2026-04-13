@@ -1,9 +1,9 @@
 export class MarcDataField {
-    tag: string;
-    ind1: string;
-    ind2: string;
-    subfields: Array<{id: string, code: string, data: string}>;
-    hasParallel: boolean;
+    tag!: string;
+    ind1!: string;
+    ind2!: string;
+    subfields!: Array<{id: string, code: string, data: string}>;
+    hasParallel!: boolean;
 
     constructor(tag: string, ind1: string, ind2: string) {
         this.tag = tag;
@@ -41,7 +41,7 @@ export class MarcDataField {
         return "";
     }
     
-    deleteSubfield(sfid) {
+    deleteSubfield(sfid: string) {
         this.subfields = this.subfields.filter(a => a.id != sfid)
     }
 

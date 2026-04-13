@@ -57,6 +57,9 @@
         "SSoptions": "ScriptShifter設置", 
         "WorldCatSettings": "WorldCat設置", 
         "AdminSettings": "管理員設置", 
-        "Capitalization": "大寫"
+        "Capitalization": "大寫",
+        "ExcludeSubfields": "轉換時跳過以下子字段:",
+        "AddExclusion": "添加子字段標籤 (例如: 490v, 7xxe)",
+        "SelectionError": "跳過的文字必須全部位於同一字段內" 
     }
 }

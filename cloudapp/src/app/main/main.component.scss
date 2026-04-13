@@ -4,6 +4,20 @@ section>h1 {
   margin-top: 10px;
 }
 
+mat-card {
+  background-color: white;
+}
+
+div.controlRow {
+  margin: 10px;
+}
+
+.ssLangSelect mat-label, mat-select,mat-option {
+  color: black;
+  font-size: 110%;
+  vertical-align: middle;
+}
+
 textarea {
   padding: 2px;
   border-width: 1px;
@@ -36,9 +50,6 @@ textarea {
   color: red;
 }
 
-.mat-raised-button {
-  min-width: 30px!important
-}
 table.marc {
   border-collapse: collapse;
   width: 100%;
@@ -54,6 +65,21 @@ table.marc td {
 table.marc td.mainContent {
   width: 100%
 }
+
+table.marc td.subfieldButtons {
+  max-height: 24px;  
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+table.marc td.subfieldEdit {
+  width: 100%;
+}
+
+table.marc td.subfieldEdit textarea {
+  height: 100%;
+}
+
 table.parallelOptions td {
   border: none
 }

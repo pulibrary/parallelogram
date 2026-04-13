@@ -74,7 +74,7 @@ export class BibUtils {
     let field008 = doc.evaluate("/record/controlfield[@tag='008']",doc,null,
       XPathResult.ANY_UNORDERED_NODE_TYPE,null)
     let language = ""
-      if(field008.singleNodeValue) {
+      if(field008.singleNodeValue && field008.singleNodeValue.textContent) {
         language = field008.singleNodeValue.textContent.substring(35,38)
       }
     return language
@@ -91,19 +91,18 @@ export class BibUtils {
     for(let i = 0; i < dfields.length; i++) {
       let field = dfields[i];
       let linkage = ""
-      let mdf = new MarcDataField(field.getAttribute("tag"),
-              field.getAttribute("ind1"),field.getAttribute("ind2"));
+      let mdf = new MarcDataField(field.getAttribute("tag") ?? "",
+              field.getAttribute("ind1") ?? "", field.getAttribute("ind2") ?? "");
 
       let sf = field.getElementsByTagName("subfield");
       let sfindices = new Map<string, number>();
       for(let j = 0 ; j < sf.length; j++) {
         let sfj = sf[j];
-        let code = sfj.getAttribute("code");
-        let data = sfj.textContent;
-        if(!sfindices.has(code)) {
-          sfindices.set(code,0);
-        }
-        sfindices.set(code, sfindices.get(code)+1);
+        let code = sfj.getAttribute("code") ??  "";
+        let data = sfj.textContent ?? "";
+
+        sfindices.set(code, (sfindices.get(code) ?? 0)+1);
+        
         let sfid = code + sfindices.get(code);
 
         mdf.addSubfield(sfid, code, data)
@@ -114,7 +113,7 @@ export class BibUtils {
       if(!tagCount.has(mdf.tag)) {
         tagCount.set(mdf.tag,0)
       }
-      tagCount.set(mdf.tag,tagCount.get(mdf.tag) + 1)
+      tagCount.set(mdf.tag,(tagCount.get(mdf.tag) ?? 0) + 1)
 
       let true_tag = mdf.tag
       let seq = ""
@@ -128,12 +127,12 @@ export class BibUtils {
 
       let pair_id = true_tag+seq
       if(parallelTable.has(pair_id)) {
-        id = parallelTable.get(pair_id);
+        id = parallelTable.get(pair_id) ?? "";
       } else {      
         if(mdf.tag == "880") {
           true_tag = "880"
         }
-        let count = tagCount.get(true_tag)-1 
+        let count = (tagCount.get(true_tag) ?? 0)-1 
         id = true_tag + ":" + (count < 10 ? "0" : "") + count
         if(seq != "" && seq != "00") {
           parallelTable.set(pair_id,id)
@@ -153,9 +152,11 @@ export class BibUtils {
     }
     unmatched.forEach((tag,id) => {       
       let mdf = fieldTable.get(id);
-      mdf.hasParallel = false
-      fieldTable.set(id,mdf)           
-    });   
+      if(mdf) {
+        mdf.hasParallel = false
+        fieldTable.set(id,mdf)           
+      }
+      });   
     return fieldTable;
   }
 
@@ -183,13 +184,18 @@ export class BibUtils {
         let linkageStr = linkage.innerHTML;
         let ptag = linkageStr.substring(0,3);
         let plink = linkageStr.substring(4,6);
-        let parfields = doc.querySelectorAll("datafield[tag='"+ptag+"']");
-        for(let i = 0; i < parfields.length; i++) {
-           let linkageVal = parfields[i].querySelector("subfield[code='6']").innerHTML.substring(4,6);
-           if(plink == linkageVal) {
-              target_field = parfields[i];
-              break;
-           }
+        let parfields = doc?.querySelectorAll("datafield[tag='"+ptag+"']");
+        if(parfields) {
+          for(let i = 0; i < parfields.length; i++) {
+            let linkageSF = parfields[i].querySelector("subfield[code='6']")
+            if(linkageSF) {
+               let linkageVal = linkageSF.innerHTML.substring(4,6);
+               if(plink == linkageVal) {
+                  target_field = parfields[i];
+                  break;
+               }
+            }
+          }
         }
       }
     }
@@ -199,7 +205,7 @@ export class BibUtils {
 
     const datafield = dom("datafield", { 
       parent: doc.documentElement, 
-      insertBefore: prevElement,
+      insertBefore: prevElement ?? undefined,
       attributes: [ ["tag", field.tag], ["ind1", field.ind1], ["ind2", field.ind2] ]
     });    
     field.subfields.forEach(sf => {
@@ -238,9 +244,13 @@ export class BibUtils {
     let tag_seq = field_id.substring(4,6);
     
     let main_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
-    let linkage = main_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
+    let linkage = ""
+    let linkageSF = main_field.querySelector("subfield[code='6']")
+    if(linkageSF) {
+      linkage = linkageSF.innerHTML.substring(4,6);
+    }
     
-    let parallel_field: Element;
+    let parallel_field: Element | null = null;
 
     let parfields = doc.querySelectorAll("datafield[tag='880']");
     for(let i = 0; i < parfields.length; i++) {
@@ -255,10 +265,12 @@ export class BibUtils {
       }
     }
     
-    main_field.querySelector("subfield[code='6']").remove();
-    let plink = parallel_field.querySelector("subfield[code='6'").innerHTML
-    parallel_field.querySelector("subfield[code='6'").innerHTML = plink.replace(/^(...)-../,"$1-00");
-    bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
+    main_field.querySelector("subfield[code='6']")?.remove();
+    let plink = parallel_field?.querySelector("subfield[code='6'")
+    if(plink) {
+      plink.innerHTML = plink.innerHTML.replace(/^(...)-../,"$1-00");
+      bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
+    }
     return bib;
   }
 
@@ -271,9 +283,9 @@ export class BibUtils {
     let tag_seq = field_id.substring(4,6);
     
     let main_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
-    let linkage = main_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
+    let linkage = main_field.querySelector("subfield[code='6']")?.innerHTML.substring(4,6);
     
-    let parallel_field: Element;
+    let parallel_field: Element | null = null;
 
     let parfields = doc.querySelectorAll("datafield[tag='880']");
     for(let i = 0; i < parfields.length; i++) {
@@ -288,8 +300,8 @@ export class BibUtils {
       }
     }
     
-    main_field.querySelector("subfield[code='6']").remove();
-    parallel_field.remove();
+    main_field.querySelector("subfield[code='6']")?.remove();
+    parallel_field?.remove();
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
     return bib;
   }
@@ -300,9 +312,8 @@ export class BibUtils {
     let tag_seq = field_id.substring(4,6);
 
     let target_field = doc.querySelectorAll("datafield[tag='"+tag+"']")[+tag_seq];
-    let parallel_field: Element;
-
-    let linkage = target_field.querySelector("subfield[code='6']").innerHTML.substring(4,6);
+    let parallel_field: Element | null = null;
+    let linkage = target_field.querySelector("subfield[code='6']")?.innerHTML.substring(4,6) || "";
 
     let parfields = doc.querySelectorAll("datafield[tag='880']");
     for(let i = 0; i < parfields.length; i++) {
@@ -317,13 +328,19 @@ export class BibUtils {
       }
     }
  
-    let t = parallel_field.innerHTML
-    parallel_field.innerHTML = target_field.innerHTML
-    parallel_field.querySelector("subfield[code='6']").innerHTML = tag + "-" + linkage;
-
-    target_field.innerHTML = t
-    target_field.querySelector("subfield[code='6']").innerHTML = "880-" + linkage;
-
+    if(parallel_field) {
+      let t = parallel_field.innerHTML
+      parallel_field.innerHTML = target_field.innerHTML
+      let plink = parallel_field.querySelector("subfield[code='6']")
+      if(plink) {
+        plink.innerHTML = tag + "-" + linkage;
+      }
+      target_field.innerHTML = t
+      let tlink = target_field.querySelector("subfield[code='6']")
+      if(tlink) {
+        tlink.innerHTML = "880-" + linkage;
+      }
+    }
     bib.anies = new XMLSerializer().serializeToString(doc.documentElement);
     return bib;
   }
@@ -337,7 +354,7 @@ export class BibUtils {
   } 
 }
 
-const dom = (name: string, options: {parent?: Element, insertBefore?: Node, text?: 
+const dom = (name: string, options: {parent?: Element, insertBefore?: ChildNode, text?: 
   string, className?: string, id?: string, attributes?: string[][]} = {}
   ): Element => {
   let ns = options.parent ? options.parent.namespaceURI : '';

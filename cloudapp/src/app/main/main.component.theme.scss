@@ -1,6 +1,7 @@
+@use '@angular/material' as mat;
 @mixin main-component-theme($theme, $typgraphy) {
   section>h1 {
-    background-color: mat-color(map-get($theme, primary));
-    color: mat-color(map-get($theme, primary), default-contrast);
+    background-color: mat.get-theme-color($theme, primary);
+    color: mat.get-theme-color($theme, on-primary);
   }
 }

@@ -1,6 +1,6 @@
 <div>
   <div class="eca-actions">
-    <button mat-flat-button color="secondary" [routerLink]="['/']">
+    <button mat-flat-button color="primary" [routerLink]="['/']">
       <mat-icon>arrow_back</mat-icon>
       {{'Translate.Homepage' | translate}}
     </button>
@@ -12,12 +12,12 @@
 <div class="loading-shade" *ngIf="saving">
   <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
 </div>
-<div *ngIf="form">
+<div>
   <form [formGroup]="form">
     <mat-card>
     <mat-card-header>{{'Translate.GeneralSettings' | translate}}:</mat-card-header>
-      <section class="settings-section" style="width: 100px">
-        <mat-form-field appearance="fill">
+      <section class="settings-section" style="width: 200px">
+        <mat-form-field>
           <mat-label>{{'Translate.Language' | translate}}</mat-label>
           <mat-select formControlName="interfaceLang">
             <mat-option *ngFor="let lang of languages" (click)="setLang(lang.code)" [value]="lang.code">{{lang.name}}</mat-option>
@@ -29,9 +29,9 @@
       </section>   
       <section class="settings-section">
         <mat-form-field appearance="fill">
-          <mat-chip-list #preSearchTags>
+          <mat-chip-grid #preSearchTags>
             <mat-chip 
-              *ngFor="let field of form.get('preSearchList').value"
+              *ngFor="let field of form.get('preSearchList')?.value"
               (removed)="deletePreSearchField(field)" >
               {{field}}
               <mat-icon matChipRemove>cancel</mat-icon>
@@ -41,17 +41,17 @@
              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
              [matChipInputAddOnBlur]="addOnBlur"
              (matChipInputTokenEnd)="addPreSearchField($event)">
-          </mat-chip-list>
+          </mat-chip-grid>
         </mat-form-field>
       </section>
       <section class="settings-section">
         <mat-checkbox formControlName="excludeSubfields">{{'Translate.ExcludeSubfields' | translate}}</mat-checkbox>
-      </section>   
+      </section>
       <section class="settings-section">
         <mat-form-field appearance="fill">
-          <mat-chip-list #exclusionTags>
+          <mat-chip-grid #exclusionTags>
             <mat-chip 
-              *ngFor="let field of form.get('exclusionList').value"
+              *ngFor="let field of form.get('exclusionList')?.value"
               (removed)="deleteExclusion(field)" >
               {{field}}
               <mat-icon matChipRemove>cancel</mat-icon>
@@ -61,7 +61,7 @@
              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
              [matChipInputAddOnBlur]="addOnBlur"
              (matChipInputTokenEnd)="addExclusion($event)">
-          </mat-chip-list>
+          </mat-chip-grid>
         </mat-form-field>
       </section>
       <section class="settings-section">
@@ -88,96 +88,96 @@
           <mat-label class="ssLangCaption">{{this.ssLangDirection === 's2r' ? ('Translate.SSs2r' | translate) : ''}}</mat-label>
           <mat-label class="ssLangCaption">{{this.ssLangDirection === 'r2s' ? ('Translate.SSr2s' | translate) : ''}}</mat-label>
       </section>
-    <section>
-      <mat-checkbox formControlName="autoSelectSSLang">{{'Translate.SSAutoSelect' | translate}}</mat-checkbox>
-    </section>
-    <section>
-      <mat-form-field appearance="fill" style="width: 200px">
-        <mat-label>{{'Translate.Capitalization' | translate}}</mat-label>
-        <mat-select formControlName="ssCapitalize"> 
-          <mat-option value="no_change" selected>No change</mat-option>
-          <mat-option value="first">First word</mat-option>
-          <mat-option value="all">All words</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <input title="ssoptions" [hidden]="true" matInput formControlName="ssOptionsValues" value="{{this.ssOptionsCurrent | json}}">
-      <div #ssAdditionalOptions>        
-        <div *ngFor="let option of this.ssOptionsDefault">
-        <ng-container *ngIf="option.type === 'boolean';then ssBooleanOption else ssOtherOptions">
-        </ng-container> 
-        <ng-template #ssBooleanOption>
-          <mat-checkbox [id]="option.id" [checked]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (change)="setSSlangOptions($event)">{{option.label}}
-            <span *ngIf="option.description">
-              <br>{{option.description}}
-            </span>
-          </mat-checkbox>
-        </ng-template>
-        <ng-template #ssOtherOptions>
-          <ng-container *ngIf="option.type === 'list';then ssListOption else ssStringOption">
-          </ng-container>
-          <ng-template #ssListOption>
-            <mat-form-field style="width: 200px">
-              <mat-label>{{option.label}}</mat-label>
-              <mat-select [id]="option.id" [value]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (selectionChange)="setSSlangOptions($event)">
-                <mat-option *ngFor="let opt of option.options" [value]="opt.id">{{opt.label}}</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </ng-template>
-          <ng-template #ssStringOption>
-            <mat-form-field style="width: 200px">
-              <mat-label>{{option.label}}</mat-label>
-              <input title="option" matInput [id]="option.id" [value]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (change)="setSSlangOptions($event)">
-            </mat-form-field>
-            <div *ngIf="option.description" class="ssLangCaption">
-              {{option.description}}
-            </div>
-          </ng-template>
-        </ng-template>
+      <section>
+        <mat-checkbox formControlName="autoSelectSSLang">{{'Translate.SSAutoSelect' | translate}}</mat-checkbox>
+      </section>
+      <section>
+        <mat-form-field appearance="fill" style="width: 200px">
+          <mat-label>{{'Translate.Capitalization' | translate}}</mat-label>
+          <mat-select formControlName="ssCapitalize"> 
+            <mat-option value="no_change" selected>No change</mat-option>
+            <mat-option value="first">First word</mat-option>
+            <mat-option value="all">All words</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <input title="ssoptions" [hidden]="true" matInput formControlName="ssOptionsValues" value="{{this.ssOptionsCurrent | json}}">
+        <div #ssAdditionalOptions>        
+          <div *ngFor="let option of this.ssOptionsDefault">
+            <ng-container *ngIf="option.type === 'boolean';then ssBooleanOption else ssOtherOptions">
+            </ng-container> 
+            <ng-template #ssBooleanOption>
+              <mat-checkbox [id]="option.id" [checked]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (change)="setSSlangOptions($event)">{{option.label}}
+                <span *ngIf="option.description">
+                  <br>{{option.description}}
+                </span>
+              </mat-checkbox>
+            </ng-template>
+            <ng-template #ssOtherOptions>
+              <ng-container *ngIf="option.type === 'list';then ssListOption else ssStringOption">
+              </ng-container>
+              <ng-template #ssListOption>
+                <mat-form-field style="width: 200px">
+                  <mat-label>{{option.label}}</mat-label>
+                  <mat-select [id]="option.id" [value]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (selectionChange)="setSSlangOptions($event)">
+                    <mat-option *ngFor="let opt of option.options" [value]="opt.id">{{opt.label}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </ng-template>
+              <ng-template #ssStringOption>
+                <mat-form-field style="width: 200px">
+                  <mat-label>{{option.label}}</mat-label>
+                  <input title="option" matInput [id]="option.id" [value]="(this.ssOptionsCurrent.hasOwnProperty(option.id) ? this.ssOptionsCurrent[option.id] : option.default)" (change)="setSSlangOptions($event)">
+                </mat-form-field>
+                <div *ngIf="option.description" class="ssLangCaption">
+                  {{option.description}}
+                </div>
+              </ng-template>
+            </ng-template>
+          </div>
         </div>
-      </div>
-    </section>  
-  </mat-card>
-  <br/>
-  <mat-card>
-    <mat-card-header>{{'Translate.WorldCatSettings' | translate}}:</mat-card-header>
-    <section class="settings-section">
-      <mat-checkbox formControlName="doWCSearch">{{'Translate.SearchWC' | translate}}</mat-checkbox>
-    </section>
-    <section class="settings-section">
-      <span class="notice" [ngClass]="!hideWCKey ? 'hiddenField' : 'none'">{{'Translate.AdminSetWCAPI' | translate}}</span>
-    </section>
-    <section class="settings-section">
-      <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
-        <mat-label>{{'Translate.WCAPIKey' | translate}}: </mat-label> 
-        <input title="wckey" matInput formControlName="wckey">
-      </mat-form-field>
-    </section>
-    <section class="settings-section">
-      <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
-        <mat-label>{{'Translate.ClientSecret' | translate}}: </mat-label> 
-        <input title="wcsecret" matInput formControlName="wcsecret">
-      </mat-form-field>
-    </section>  
-    <section class="settings-section">
-      <mat-checkbox formControlName="preferInstitutions">{{'Translate.PreferInstitutions' | translate}}</mat-checkbox>
-    </section>   
-    <section class="settings-section">
-      <mat-form-field appearance="fill">
-        <mat-chip-list #preferredInstitutionCodes>
-          <mat-chip 
-            *ngFor="let field of form.get('preferredInstitutionList').value"
-            (removed)="deletePreferredInstitution(field)" >
-            {{field}}
-            <mat-icon matChipRemove>cancel</mat-icon>
-          </mat-chip>
-          <input title="prefinst" matChipInput [placeholder]="'Translate.AddPreferredInstitution' | translate"
-           [matChipInputFor]="preferredInstitutionCodes"
-           [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-           [matChipInputAddOnBlur]="addOnBlur"
-           (matChipInputTokenEnd)="addPreferredInstitution($event)">
-        </mat-chip-list>
-      </mat-form-field>
-    </section>    
+      </section>  
+    </mat-card>
+    <br/>    
+    <mat-card>
+      <mat-card-header>{{'Translate.WorldCatSettings' | translate}}:</mat-card-header>
+      <section class="settings-section">
+        <mat-checkbox formControlName="doWCSearch">{{'Translate.SearchWC' | translate}}</mat-checkbox>
+      </section>
+      <section class="settings-section">
+        <span class="notice" [ngClass]="!hideWCKey ? 'hiddenField' : 'none'">{{'Translate.AdminSetWCAPI' | translate}}</span>
+      </section>
+      <section class="settings-section">
+        <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
+          <mat-label>{{'Translate.WCAPIKey' | translate}}: </mat-label> 
+          <input title="wckey" matInput formControlName="wckey">
+        </mat-form-field>
+      </section>
+      <section class="settings-section">
+        <mat-form-field appearance="fill" [ngClass]="hideWCKey ? 'hiddenField' : 'none'">
+          <mat-label>{{'Translate.ClientSecret' | translate}}: </mat-label> 
+          <input title="wcsecret" matInput formControlName="wcsecret">
+        </mat-form-field>
+      </section>  
+      <section class="settings-section">
+        <mat-checkbox formControlName="preferInstitutions">{{'Translate.PreferInstitutions' | translate}}</mat-checkbox>
+      </section>   
+      <section class="settings-section">
+        <mat-form-field appearance="fill">
+          <mat-chip-grid #preferredInstitutionCodes>
+            <mat-chip 
+              *ngFor="let field of form.get('preferredInstitutionList')?.value"
+              (removed)="deletePreferredInstitution(field)" >
+              {{field}}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+            <input title="prefinst" matChipInput [placeholder]="'Translate.AddPreferredInstitution' | translate"
+            [matChipInputFor]="preferredInstitutionCodes"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            [matChipInputAddOnBlur]="addOnBlur"
+            (matChipInputTokenEnd)="addPreferredInstitution($event)">
+          </mat-chip-grid>
+        </mat-form-field>
+      </section>    
     </mat-card>
     <br/>
     <div *ngIf="admin|async">

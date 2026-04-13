@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { Component, OnInit} from '@angular/core';
 import { AppService } from '../app.service';
@@ -16,22 +16,35 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from '../main/confirmation-dialog';
 import { ScriptShifterService } from '../scriptshifter.service'
 
+export interface ScriptShifterLanguageOptions {
+  default: string;
+  description: string;
+  id: string;
+  label: string;
+  options: string;
+}
+
+export interface AlmaUser {
+    role_type: string;
+    status: string;
+}
+
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
 })
 export class SettingsComponent implements OnInit {
-  form: FormGroup;
+  form!: FormGroup;
   saving = false;
   running = false;
   wcKeyValid = false;
-  admin: Observable<boolean>;
+  admin!: Observable<boolean>;
   hideWCKey = true
-  authUtils: AuthUtils
+  authUtils!: AuthUtils
   ssLangDirection = 'both'
-  ssOptionsDefault = []
-  ssOptionsCurrent = {}
+  ssOptionsDefault: { [key: string]: any }  = []
+  ssOptionsCurrent: { [key: string]: any } = {}
   ssLoadFromSaved = true
 
   addOnBlur = true;
@@ -46,8 +59,7 @@ export class SettingsComponent implements OnInit {
     {code: 'kr', name: '한국어'}
   ]
 
-  ssLanguages: Array<{code: string, name: string}>
-
+  ssLanguages!: Array<{code: string, name: string}>
 
   constructor(
     private appService: AppService,
@@ -81,10 +93,12 @@ export class SettingsComponent implements OnInit {
     this.authUtils = new AuthUtils(this.http)
     if(this.ssLanguages == undefined) {
       let authToken = this.eventsService.getAuthToken().toPromise().then((aut) => {
-        this.scriptshifter.loadLanguageList(aut).then((res) => {
-          this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
-          this.ssLanguages.unshift({code: "none",name: "None"})          
-        })
+        if(aut) {
+          this.scriptshifter.loadLanguageList(aut).then((res) => {
+            this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
+            this.ssLanguages.unshift({code: "none",name: "None"})   
+          })      
+        }
       })      
     }
     this.settingsService.get().subscribe( settings => {
@@ -92,9 +106,8 @@ export class SettingsComponent implements OnInit {
       this.admin = this.isAdmin(); 
       if(!settings.interfaceLang) {
         this.setLang("en")
-        this.form.get("interfaceLang").setValue("en")
-      }
-      
+        this.form.get("interfaceLang")?.setValue("en")        
+      } 
       if(!settings.ssLang) {
         settings.ssLang = "none"        
       } else {       
@@ -104,16 +117,16 @@ export class SettingsComponent implements OnInit {
         this.ssLoadFromSaved = true
         this.getSSlangSettings(settings.ssLang)
       }
-      if(this.form.get("doSwap").value) {
-        this.form.get("swapType").enable()
+      if(this.form.get("doSwap")?.value) {
+        this.form.get("swapType")?.enable()
       } else {
-        this.form.get("swapType").disable()
+        this.form.get("swapType")?.disable()
       }
-      this.form.get("doSwap").valueChanges.subscribe(v => {
+      this.form.get("doSwap")?.valueChanges.subscribe(v => {
         if(v) {
-          this.form.get("swapType").enable()
+          this.form.get("swapType")?.enable()
         } else {
-          this.form.get("swapType").disable()
+          this.form.get("swapType")?.disable()
         }
       })       
   
@@ -128,8 +141,8 @@ export class SettingsComponent implements OnInit {
             this.alert.clear()
             this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
           }    
-          this.form.get('wckey').setValue(adminKey)
-          this.form.get('wcsecret').setValue(adminSecret)
+          this.form.get('wckey')?.setValue(adminKey)
+          this.form.get('wcsecret')?.setValue(adminSecret)
           if(settings.wckey != adminKey) {
             settings.wckey = adminKey
             settings.wcsecret = adminSecret
@@ -140,10 +153,10 @@ export class SettingsComponent implements OnInit {
           this.settingsService.set(this.form.value).subscribe()
         }
         if(adminLock) {
-          this.form.get('adminLock').setValue(true)
+          this.form.get('adminLock')?.setValue(true)
           settings.adminLock = true
         } else {
-          this.form.get('adminLock').setValue(false)
+          this.form.get('adminLock')?.setValue(false)
           settings.adminLock = false
         }
         this.hideWCKey = (adminLock && adminKey != undefined && adminKey != "")
@@ -159,7 +172,7 @@ export class SettingsComponent implements OnInit {
         //then enable WC searching
         if(settings.doWCSearch === undefined) {
           settings.doWCSearch = !settings.pinyinonly
-          this.form.get("doWCSearch").setValue(settings.doWCSearch)
+          this.form.get("doWCSearch")?.setValue(settings.doWCSearch)
         }  
         if((settings.wckey == undefined || settings.wckey == "" || 
           settings.wcsecret == undefined || settings.wcsecret == "") && settings.doWCSearch) {
@@ -174,31 +187,31 @@ export class SettingsComponent implements OnInit {
   }
 
   getSSlangSettings(lang: string) {
-    this.eventsService.getAuthToken().toPromise().then(async (authToken) => {
+    lastValueFrom(this.eventsService.getAuthToken()).then(async (authToken) => {
       this.ssLangDirection = this.scriptshifter.getLanguageDirection(lang)
       let ssLangOptions = await this.scriptshifter.getLanguageOptions(lang,authToken)
       if(ssLangOptions != "") {
         this.ssOptionsDefault = JSON.parse(ssLangOptions)
       }
-      this.setSSlangOptions()
+      this.setSSlangOptions(null)
     })
   }
 
-  setSSlangOptions(event = null) {   
+  setSSlangOptions(event: Event | null) {   
     if(event != null) {
-      if(event.hasOwnProperty('checked')) { //checkbox
-        if(event.checked) {
-          this.ssOptionsCurrent[event.source.id] = true
+      const target = event.target as HTMLInputElement;
+      if(target.type === 'checkbox') { //checkbox
+        if(target.checked) {
+          this.ssOptionsCurrent[target.id] = true
         } else {
-          this.ssOptionsCurrent[event.source.id] = false
+          this.ssOptionsCurrent[target.id] = false
         }
-      } else if(event.hasOwnProperty('source')) {  //selection list   
-        this.ssOptionsCurrent[event.source.id] = event.source.value
+      } else if((event as any).source) {  //selection list   
+        this.ssOptionsCurrent[(event as any).source.id] = (event as any).source.value
       } else { //text input
-        let target = event.target as HTMLInputElement
         this.ssOptionsCurrent[target.id] = target.value
       }
-      this.form.get("ssOptionsValues").markAsDirty()
+      this.form.get("ssOptionsValues")?.markAsDirty()
     } else {      
       if(!this.ssLoadFromSaved) {
         this.ssOptionsCurrent = {}                
@@ -210,7 +223,7 @@ export class SettingsComponent implements OnInit {
       } 
       this.ssLoadFromSaved = false
     }
-    this.form.get("ssOptionsValues").setValue(JSON.stringify(this.ssOptionsCurrent))
+    this.form.get("ssOptionsValues")?.setValue(JSON.stringify(this.ssOptionsCurrent))
   }
   
 
@@ -225,7 +238,7 @@ export class SettingsComponent implements OnInit {
     } else {
       this.alert.clear()
       tag = tag.toLowerCase()
-      let preSearchList: Array<string> = this.form.get("preSearchList").value
+      let preSearchList: Array<string> = this.form.get("preSearchList")?.value || []
       if(!preSearchList.includes(tag)) {
         preSearchList.push(tag)
         preSearchList.sort()
@@ -236,7 +249,7 @@ export class SettingsComponent implements OnInit {
   }
 
   deletePreSearchField(tag: string) {
-    let preSearchList: Array<string> = this.form.get("preSearchList").value
+    let preSearchList: Array<string> = this.form.get("preSearchList")?.value || []
     if(tag != undefined) {
       let found = preSearchList.indexOf(tag)
       if(found > -1) {
@@ -252,7 +265,7 @@ export class SettingsComponent implements OnInit {
       return
     }
     this.alert.clear()
-    let preferredInstitutionList: Array<string> = this.form.get("preferredInstitutionList").value
+    let preferredInstitutionList: Array<string> = this.form.get("preferredInstitutionList")?.value || []
     if(!preferredInstitutionList.includes(code)) {
       preferredInstitutionList.push(code)
       preferredInstitutionList.sort()
@@ -262,7 +275,7 @@ export class SettingsComponent implements OnInit {
   }
 
   deletePreferredInstitution(code: string) {
-    let preferredInstitutionList: Array<string> = this.form.get("preferredInstitutionList").value
+    let preferredInstitutionList: Array<string> = this.form.get("preferredInstitutionList")?.value || [] 
     if(code != undefined) {
       let found = preferredInstitutionList.indexOf(code)
       if(found > -1) {
@@ -283,7 +296,7 @@ export class SettingsComponent implements OnInit {
     } else {
       this.alert.clear()
       tag = tag.toLowerCase()
-      let exclusionList: Array<string> = this.form.get("exclusionList").value
+      let exclusionList: Array<string> = this.form.get("exclusionList")?.value || []
       if(!exclusionList.includes(tag)) {
         exclusionList.push(tag)
         exclusionList.sort()
@@ -294,7 +307,7 @@ export class SettingsComponent implements OnInit {
   }
 
   deleteExclusion(tag: string) {
-    let exclusionList: Array<string> = this.form.get("exclusionList").value
+    let exclusionList: Array<string> = this.form.get("exclusionList")?.value || []
     if(tag != undefined) {
       let found = exclusionList.indexOf(tag)
       if(found > -1) {
@@ -305,11 +318,13 @@ export class SettingsComponent implements OnInit {
   }
 
 
-  isAdmin(): Observable<boolean> {
+  isAdmin(): Observable<boolean> {    
     return this.eventsService.getInitData().pipe(
       switchMap( initData => this.restService.call(`/users/${initData.user.primaryId}`)),
       map( user => {
-        if (!user.user_role.some(role=>{return (role.role_type.value=='205' && role.status.value=='ACTIVE')})) { //Catalog Administrator
+        if (!user.user_role.some((role: AlmaUser)=>{ //Catalog Administrator
+          return (role.role_type =='205' && role.status =='ACTIVE')
+        })) { 
           return false;
         }
         return true;
@@ -320,14 +335,15 @@ export class SettingsComponent implements OnInit {
   async save() {
     this.alert.clear()
     this.saving = true;
-    let wcKey = this.form.get("wckey").value;   
-    let wcSecret = this.form.get("wcsecret").value;
-    let adminLock = this.form.get("adminLock").value 
-    if(this.form.get("doWCSearch").value == false ||
+    let wcKey = this.form.get("wckey")?.value;   
+    let wcSecret = this.form.get("wcsecret")?.value;
+    let adminLock = this.form.get("adminLock")?.value 
+    let doWCSearch = this.form.get("doWCSearch")?.value
+    if(!doWCSearch ||
       (wcKey == undefined || wcKey == "" || wcSecret == undefined || wcSecret == "")) {      
       this.settingsService.set(this.form.value).subscribe(
         response => {
-          if(this.form.get("adminWC").value) {
+          if(this.form.get("adminWC")?.value) {
             let configForm: FormGroup = new FormGroup({
               wckey: new FormControl(wcKey),
               wcsecret: new FormControl(wcSecret),
@@ -345,7 +361,7 @@ export class SettingsComponent implements OnInit {
     }
     await this.validateWCkey(wcKey,wcSecret);
     if(this.wcKeyValid) { 
-      if(this.form.get("adminWC").value) {
+      if(this.form.get("adminWC")?.value) {
         let configForm: FormGroup = new FormGroup({
           wckey: new FormControl(wcKey),
           wcsecret: new FormControl(wcSecret),
@@ -369,7 +385,7 @@ export class SettingsComponent implements OnInit {
   }  
 
   public async validateWCkey(wcKey: String, wcSecret: String) {    
-    let authToken = await this.eventsService.getAuthToken().toPromise();
+    let authToken = await lastValueFrom(this.eventsService.getAuthToken());
     let access_token = await this.authUtils.getOAuthToken(authToken,wcKey,wcSecret)
     if(access_token == null) {
       this.wcKeyValid = false

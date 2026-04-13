@@ -9,16 +9,16 @@
   </div>
   <div class="warning" *ngIf="recordChanged">{{'Translate.UnsavedWorkWarning' | translate}}</div>
   <mat-card *ngIf="bib; else mms_id_search">    
-    <div>
-      <button mat-flat-button color="secondary" (click)="saveRecord()" [disabled]="!recordChanged">
+    <div class="controlRow">
+      <button mat-flat-button color="primary" (click)="saveRecord()" [disabled]="!recordChanged">
         <mat-icon>save</mat-icon> {{'Translate.SaveRecord' | translate}}
       </button>
       &nbsp;
-      <button mat-flat-button color="secondary" routerLink="/settings">
+      <button mat-flat-button color="" routerLink="/settings">
         <mat-icon>settings</mat-icon> {{'Translate.Settings' | translate}}
       </button>
       &nbsp;&nbsp;
-        <mat-form-field>
+        <mat-form-field class="ssLangSelect">
           <mat-label>{{'Translate.SSLang' | translate}}</mat-label>
           <mat-select [(value)]="this.settings.ssLang">
             <mat-option *ngFor="let lang of ssLanguages" (click)="setSSLanguage(lang.code)" [value]="lang.code">{{lang.name}}</mat-option>
@@ -41,7 +41,7 @@
               [ngStyle]="field.value.hasParallel && {'background-color': generateBGColor(field.value.getSubfield('61'))}">
               <td *ngIf="field.value.hasParallel; else addBlock">
                 <div *ngIf="showDetails != field.key; else detailsButtonBlock">
-                <button mat-stroked-button color="secondary" [matMenuTriggerFor]="fieldOptions" [disabled]="showDetails != ''">
+                <button matIconButton color="secondary" [matMenuTriggerFor]="fieldOptions" [disabled]="showDetails != ''">
                   <mat-icon>more_horiz</mat-icon>                
                 </button>
                 <mat-menu #fieldOptions="matMenu">
@@ -61,13 +61,13 @@
                 </div>
                 <ng-template #detailsButtonBlock>
                   <div>
-                  <button mat-stroked-button color="secondary" (click)="saveField(field.key);showDetails=''">
+                  <button matIconButton color="secondary" (click)="saveField(field.key);showDetails=''">
                     <mat-icon>done</mat-icon>
                   </button>
                 </div>
                 <div>                  
                 </div><div>
-                  <button mat-stroked-button color="secondary" (click)="showDetails=''; clearDeletions()">
+                  <button matIconButton color="secondary" (click)="showDetails=''; clearDeletions()">
                    <mat-icon>close</mat-icon>
                  </button>
                 </div>
@@ -75,7 +75,7 @@
               </td>
               <ng-template #addBlock>
               <td>
-                <button mat-stroked-button color="secondary" (click)="lookupField(field.key)" [disabled]="showDetails != ''">
+                <button matIconButton color="secondary" (click)="lookupField(field.key)" [disabled]="showDetails != ''">
                   <mat-icon>add</mat-icon>
                 </button>
               </td>
@@ -90,25 +90,26 @@
               <ng-template #detailsFormBlock>                 
                 <table [id]="'parallelOptions-'+field.key" class='parallelOptions' style="width: 100%">
                   <div *ngFor="let subfield of field.value.subfields; index as i;">
-                      <tr *ngIf="subfield.code!='6' && subfield.code!='0'">  
-                        <td>${{subfield.code}}</td>                        
-                        <td style="width: 150px"><button mat-stroked-button color="secondary" [matMenuTriggerFor]="options"
-                          [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">
-                          <mat-icon>translate</mat-icon>
-                        </button>
-                        <mat-menu #options="matMenu">
-                          <ng-container *ngFor="let lookup_value of subfield_options.get(field.key).get(subfield.id)">
-                          <button mat-menu-item (click)="sf.value = lookup_value">
-                               {{lookup_value}}
+                      <tr class="subfieldRow"*ngIf="subfield.code!='6' && subfield.code!='0'">  
+                        <td>${{subfield.code}}</td>
+                        <td class="subfieldButtons">
+                          <button matIconButton color="secondary" [matMenuTriggerFor]="options"
+                            [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">
+                            <mat-icon>translate</mat-icon>
                           </button>
-                        </ng-container>
-                        </mat-menu>
-                        <button mat-stroked-button color="secondary" (click)="removeOption(field.key,subfield.id,sf.value); sf.value = subfield.data"
-                          [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">
-                          <mat-icon>thumb_down</mat-icon>
-                        </button>
-                      </td>                                                                             
-                      <td style="width: 80%">
+                          <mat-menu #options="matMenu">
+                            <ng-container *ngFor="let lookup_value of subfield_options.get(field.key).get(subfield.id)">
+                              <button mat-menu-item (click)="sf.value = lookup_value">
+                                  {{lookup_value}}
+                              </button>
+                            </ng-container>
+                          </mat-menu>
+                          <button matIconButton color="secondary" (click)="removeOption(field.key,subfield.id,sf.value); sf.value = subfield.data"
+                            [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">
+                            <mat-icon>thumb_down</mat-icon>
+                          </button>
+                        </td>                                                                                                   
+                        <td class="subfieldEdit">
                           <textarea title="subfield" [id]="'input-'+field.key+'-'+subfield.id" class="subfield_input"
                              cdkTextareaAutosize #sf>{{subfield.data}}</textarea>                                                 
                         </td>

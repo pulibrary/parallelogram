@@ -1,16 +1,25 @@
 import { Injectable } from '@angular/core';
-import { HttpClient,HttpHeaders } from '@angular/common/http'; 
+import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Settings } from './models/settings';
 import { AlertService } from '@exlibris/exl-cloudapp-angular-lib';
 import { TranslateService } from '@ngx-translate/core';
+import { lastValueFrom } from 'rxjs';
 
+export interface ScriptShifterLanguage {
+  code: string;
+  marcCode: string; 
+  name: string; 
+  has_r2s: boolean; 
+  has_s2r: boolean;
+}
 
 @Injectable({
     providedIn: 'root'
 })
+
 export class ScriptShifterService {
 
-    languageList: Array<{code: string, marcCode: string, name: string, has_r2s: boolean, has_s2r: boolean}>
+    languageList: Array<ScriptShifterLanguage> = []
 
     constructor(private http: HttpClient,
                 private alert: AlertService,
@@ -19,28 +28,28 @@ export class ScriptShifterService {
 
     }
     public loadLanguageList(authToken: string): Promise<void> {
-        return this.http.get(Settings.ssLangURL, {
-         headers: new HttpHeaders({
-           'X-Proxy-Host': Settings.ssHost,
-           'Authorization': 'Bearer ' + authToken,
-           'Content-type': 'application/json'
-         }),
-         responseType: "json"
-       }).toPromise().then((res) => {
-         this.languageList = new Array()
-         var langList: Array<string> = Object.keys(res)
-         for(var i = 0 ; i < langList.length; i++) {
-          this.languageList.push({code: langList[i], marcCode: res[langList[i]].marc_code, 
-            name: res[langList[i]].label, has_r2s: res[langList[i]].has_r2s, has_s2r: res[langList[i]].has_s2r})
-         }
-       }).catch((err) => {
-        this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
-        " " + "ScriptShifter" + " " +  
-        this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
-        this.translate.instant('Translate.ResultsMayNotBeOptimal'))
-       })
-
-     }
+      return lastValueFrom(this.http.get(Settings.ssLangURL, {
+        headers: new HttpHeaders({
+          'X-Proxy-Host': Settings.ssHost,
+          'Authorization': 'Bearer ' + authToken,
+          'Content-type': 'application/json'
+        }),
+        responseType: "json"
+       })).then((res) => {          
+          var resOBJ = JSON.parse(JSON.stringify(res))
+          var langList: Array<string> = Object.keys(resOBJ)
+          for(var i = 0 ; i < langList.length; i++) {
+            this.languageList.push({code: langList[i], marcCode: resOBJ[langList[i]].marc_code, 
+             name: resOBJ[langList[i]].label, has_r2s: resOBJ[langList[i]].has_r2s, has_s2r: resOBJ[langList[i]].has_s2r})          
+            }
+          
+        }).catch((err) => {
+          this.alert.warn(this.translate.instant('Translate.TroubleConnectingTo') + 
+          " " + "ScriptShifter" + " " +  
+          this.translate.instant('Translate.TroubleConnectingToAfter') + ": " + 
+          this.translate.instant('Translate.ResultsMayNotBeOptimal'))
+        })
+      }
 
      public lookupMarcCode(marcCode: string): string {
         var ssLang = ""
@@ -66,13 +75,13 @@ export class ScriptShifterService {
           '"t_dir":"' + tdir + '", "options": ' + options + ', "capitalize": "' + capitalize + '"}'
         let ssURL = Settings.ssBaseURL
         return new Promise<string>((resolve, reject) => {
-            this.http.post(ssURL, ssQueryJSON, {
+            lastValueFrom(this.http.post(ssURL, ssQueryJSON, {
               headers: new HttpHeaders({
                 'X-Proxy-Host': Settings.ssHost,
                 'Authorization': 'Bearer ' + authToken,
                 'Content-type': 'application/json'
             })
-            }).toPromise().then(async (res) => {
+            })).then(async (res) => {
             var resOBJ = JSON.parse(JSON.stringify(res))
             var resultSTR = resOBJ.output;
             //Fix SS errors in Chinese spacing/punctuation
@@ -118,17 +127,14 @@ export class ScriptShifterService {
     async getLanguageOptions(lang: string, authToken: string): Promise<string> {
       return new Promise<string>((resolve, reject) => {
         let options = ""
-        this.http.get(Settings.ssLangOptsURL + "/" + lang, {
+        lastValueFrom(this.http.get(Settings.ssLangOptsURL + "/" + lang, {
           headers: new HttpHeaders({
             'X-Proxy-Host': Settings.ssHost,
             'Authorization': 'Bearer ' + authToken,
             'Content-type': 'application/json'
           })
-        }).toPromise().then(async (res) => {        
-          options = JSON.stringify(res['options'])   
-          if(options == undefined) {
-            options = "[]"
-          }       
+        })).then(async (res) => {        
+          options = JSON.stringify(res)   
           resolve(options)
         }).catch((err) => {
           resolve("")

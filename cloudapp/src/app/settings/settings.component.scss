@@ -5,10 +5,15 @@
     margin: 10px 0;
   }
 
+mat-option, mat-select, mat-label, mat-checkbox, input {
+  font-size: 110%;
+  color: black;
+}
+
   mat-form-field {
-    width: 725px
+    width: 725px;
   }
-  
+
   .settings-control {
     margin: 0 10px;
   }

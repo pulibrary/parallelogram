@@ -1,4 +1,4 @@
-import { forkJoin, interval, Observable, Subscription } from 'rxjs';
+import { forkJoin, interval, Observable, Subscription, lastValueFrom } from 'rxjs';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod, CloudAppSettingsService,
@@ -32,51 +32,51 @@ import { P } from '@angular/cdk/keycodes';
 })
 
 export class MainComponent implements OnInit, OnDestroy {
-  private pageLoad$: Subscription;
-  pageEntities: Entity[];
+  private pageLoad$: Subscription = new Subscription;
+  pageEntities: Entity[] = [];
   private _apiResult: any;
-  initData: InitData
-  defaultLang: string
+  initData!: InitData;
+  defaultLang!: string;
   ssLangDirection = "both"
-  ssMarcSensitive = false
+  ssMarcSensitive: boolean = false
 
   hasApiResult: boolean = false;
-  loading = false;
-  saving = false;
+  loading: boolean = false;
+  saving: boolean = false;
   recordChanged = false;
   completedSearches = 0;
   totalSearches = 0;
-  bibUtils: BibUtils;
-  authUtils: AuthUtils;
-  settings: Settings;
-  doPresearch: boolean;
-  bib: Bib;
-  mms_id: string;
-  languageCode: string;
-  fieldTable: Map<string,MarcDataField>;
-  parallelDict: Array<DictEntry>;
-  subfield_options: Map<string, Map<string, Array<string>>>;
+  bibUtils!: BibUtils;
+  authUtils!: AuthUtils;
+  settings: Settings = new Settings;
+  doPresearch: boolean = false;
+  bib!: Bib
+  mms_id!: string;
+  languageCode!: string;
+  fieldTable!: Map<string, MarcDataField>;
+  parallelDict: Array<DictEntry> = [];
+  subfield_options!: Map<string, Map<string, Array<string>>>;
   statusString: string = "";
   doSearch: boolean = true;
   searchProgress: number = 0;
   showDetails = ""
   authToken = ""
-  authToken_ready: Promise<string>
-  access_token = null
-  warnedTimeout = false
-  warnedAPI = false
+  authToken_ready!: Promise<string>;
+  access_token = ""
+  warnedTimeout: boolean = false
+  warnedAPI: boolean = false
 
-  deletions: Array<{key: string,value: string}>;
+  deletions: Array<{ key: string; value: string; }> = [];
   
-  preSearchArray: Array<string>
-  preSearchFields: Map<string,boolean>;
-  fieldCache: Map<string,Map<string,Array<string>>>
-  linkedDataCache: Array<string>
+  preSearchArray: Array<string> = [];
+  preSearchFields!: Map<string, boolean>;
+  fieldCache!: Map<string, Map<string, Array<string>>>;
+  linkedDataCache: Array<string> = [];
   preferredWCscore = 10
   preferredLOCscore = 5
   dictMax = 200
 
-  ssLanguages: Array<{code: string, name: string}>
+  ssLanguages: Array<{ code: string; name: string; }> = [];
   defaultSSScore = 1
 
   punctuationPattern = "[^\\P{P}\\p{Ps}\\p{Pe}\\p{Pi}\\p{Pf}\"\"\'\']";
@@ -90,7 +90,8 @@ export class MainComponent implements OnInit, OnDestroy {
   cjk_re = new RegExp(this.cjkPattern,"u");
   latinPattern = "[\\p{sc=Latn}]"
 
-  @ViewChild('marcRecord',{static: false}) marcRecordTable: ElementRef;  
+  @ViewChild('marcRecord', { static: false })
+  marcRecordTable!: ElementRef;  
 
   constructor(private restService: CloudAppRestService,
     private eventsService: CloudAppEventsService,
@@ -166,7 +167,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.subfield_options = new Map<string, Map<string, Array<string>>>();
     this.deletions = new Array<{key: string,value: string}>();
     this.preSearchFields = new Map<string,boolean>()   
-    this.authToken_ready = this.eventsService.getAuthToken().toPromise()
+    this.authToken_ready = lastValueFrom(this.eventsService.getAuthToken())
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
 
   }
@@ -223,9 +224,9 @@ export class MainComponent implements OnInit, OnDestroy {
     }
 
     this.authToken_ready.then(async (aut) => {
-    this.authToken = aut    
-    if(this.ssLanguages == undefined) {
-      this.scriptshifter.loadLanguageList(this.authToken).then(() => {
+    this.authToken = aut   
+    if(this.ssLanguages.length == 0) {
+      this.scriptshifter.loadLanguageList(this.authToken).then((res) => {
         this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
         this.ssLanguages.unshift({code: "auto-select", name: "Auto-select"})
         this.ssLanguages.unshift({code: "none",name: "None"})
@@ -246,7 +247,6 @@ export class MainComponent implements OnInit, OnDestroy {
     if ((pageInfo.entities || []).length >= 1) {
       const entity = pageInfo.entities[0];
       this.bibUtils.getBib(entity.id).subscribe(bib=> {
-        this.bib = null;
         if(bib.record_format=='marc21') {
           if(pageInfo.entities.length > 1) {
             this.alert.warn(this.translate.instant("Translate.OneRecordWarning"))
@@ -340,7 +340,7 @@ export class MainComponent implements OnInit, OnDestroy {
   });
   setTimeout(() => {
     if(document.getElementById("noRecord")) {
-      return document.getElementById("noRecord").removeAttribute("hidden");this.changeSpinner("clear")}
+      return document.getElementById("noRecord")?.removeAttribute("hidden");this.changeSpinner("clear")}
     },
     3000)
   }
@@ -468,7 +468,10 @@ export class MainComponent implements OnInit, OnDestroy {
       this.statusString = ""
     }
     let field = this.fieldTable.get(fkey)
-    let placeholder_tag = field.tag
+    if(field == undefined) {
+      return
+    }
+    let placeholder_tag = field?.tag
 
     let selText = ""
     let selBefore = ""
@@ -481,16 +484,20 @@ export class MainComponent implements OnInit, OnDestroy {
 
     if(!presearch) {  
       let sel = document.getSelection()
-      selText = sel.toString()
-      if(selText != "") {
-        selStart = (sel.anchorOffset < sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
-        selEnd = (sel.anchorOffset > sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
-        if(selText != field.getSubfieldString().substring(selStart-1,selEnd-1)) {
-          this.alert.error(this.translate.instant('Translate.SelectionError'))
-          return
-        }      
-        selBefore = sel.anchorNode.textContent.substring(0,selStart-1)
-        selAfter = sel.anchorNode.textContent.substring(selEnd)
+      if(sel) {
+        selText = sel.toString()
+        if(selText != "") {
+          selStart = (sel.anchorOffset < sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
+          selEnd = (sel.anchorOffset > sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
+          if(selText != field.getSubfieldString().substring(selStart-1,selEnd-1)) {
+            this.alert.error(this.translate.instant('Translate.SelectionError'))
+            return
+          }    
+          if(sel.anchorNode && sel.anchorNode.textContent) {   
+            selBefore = sel.anchorNode.textContent.substring(0,selStart-1)
+            selAfter = sel.anchorNode.textContent.substring(selEnd)
+          }
+        }
       }
     }
     
@@ -557,7 +564,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
       let options = new Array<string>()
       if(cached_options != undefined && cached_options.has(sf.id)) {
-        options = cached_options.get(sf.id)
+        options = cached_options.get(sf.id) || []
       } else {
         let sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));        
         for(let k = 0; k < sfdataparts.length; k++) {        
@@ -705,16 +712,23 @@ export class MainComponent implements OnInit, OnDestroy {
 
   removeOption(fkey: string, sfid: string, optionValue: string) {    
     let pfkey = (fkey.substring(fkey.length-1) == "P") ? fkey.substring(0,fkey.length-1) : fkey + "P"
-    let psf = this.fieldTable.get(pfkey).getSubfield(sfid)
-    let sfo = this.subfield_options.get(fkey).get(sfid)
+    let pfield = this.fieldTable.get(pfkey)
+    if(!pfield) {
+      return
+    }
+    let psf = pfield.getSubfield(sfid)
+    let sfo = this.subfield_options.get(fkey)?.get(sfid)
+    if(!sfo) {
+      return
+    }
     let found = sfo.findIndex(a => a == optionValue)
     if(found > -1) {
      sfo.splice(found,1)
     }
     this.deletions.push({key: psf, value: optionValue})
 
-    this.subfield_options.get(fkey).set(sfid,sfo)
-    this.fieldTable.get(fkey).setSubfield(sfid,sfo[0])
+    this.subfield_options.get(fkey)?.set(sfid,sfo)
+    this.fieldTable.get(fkey)?.setSubfield(sfid,sfo[0])
   }
 
   public clearDeletions() {
@@ -724,6 +738,9 @@ export class MainComponent implements OnInit, OnDestroy {
   saveField(fkey: string) {
     let inputs : NodeListOf<HTMLInputElement> = document.querySelectorAll(".subfield_input");
     let field = this.fieldTable.get(fkey)
+    if(!field) {
+      return
+    }
     let newfield = new MarcDataField(field.tag,field.ind1,field.ind2)
     let fieldUpdates = new Map<string,string>();
 
@@ -733,7 +750,9 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     field.subfields.forEach(sf => {
       let newvalue = fieldUpdates.has(sf.id) ? fieldUpdates.get(sf.id) : sf.data;
-      newfield.addSubfield(sf.id,sf.code,newvalue);
+      if(newvalue) {
+        newfield.addSubfield(sf.id,sf.code,newvalue);
+      }
     })
     this.bibUtils.replaceFieldInBib(this.bib,fkey,newfield);
     this.fieldTable = this.bibUtils.getDatafields(this.bib)
@@ -751,8 +770,10 @@ export class MainComponent implements OnInit, OnDestroy {
         let jk = keys[j] 
         if(alldels.has(jk)) {
           let newdels = alldels.get(jk)
-          newdels.push(v)
-          alldels.set(jk,newdels)
+          if(newdels) {
+            newdels.push(v)
+            alldels.set(jk,newdels)
+          }
         } else {       
           alldels.set(jk,[v])
         }
@@ -1031,13 +1052,15 @@ export class MainComponent implements OnInit, OnDestroy {
       next: (res) => {
         if(res != undefined) { 
           let prevPair = new DictEntry(res.key,res.variants,res.parallels);
-          let newPair: DictEntry = pairs.find(a => {return a.key == prevPair.key})
+          let newPair = pairs.find(a => {return a.key == prevPair.key}) 
           let i = pairs2.findIndex(a => {return a.key == prevPair.key})
-          if(!prevPair.isEqualTo(newPair)) {
-            prevPair.mergeWith(newPair)  
-            pairs2[i] = prevPair
-          } else {
-            pairs2.splice(i,1)
+          if(newPair) {
+            if(!prevPair.isEqualTo(newPair)) {
+              prevPair.mergeWith(newPair)  
+              pairs2[i] = prevPair
+            } else {
+              pairs2.splice(i,1)
+            }
           }  
         } 
       },
@@ -1082,8 +1105,8 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     return resultString;
   }
-  oclcNSresolver(prefix: string): string {
-    let ns = {
+  oclcNSresolver(prefix: string): string | null {
+    let ns: { [key: string]: string } = {
       'srw' : 'http://www.loc.gov/zing/srw/',
       'marc' : 'http://www.loc.gov/MARC21/slim'
     }
@@ -1093,14 +1116,14 @@ export class MainComponent implements OnInit, OnDestroy {
   async getLinkedData(locURL: string) { 
     if(locURL.includes(Settings.locHost)) {
       locURL = locURL.replace("http://" + Settings.locHost + "/",Settings.awsBaseURL) + ".madsxml.xml"
-      await this.http.get(locURL, {
+      await lastValueFrom(this.http.get(locURL, {
         headers: new HttpHeaders({
           'X-Proxy-Host': Settings.locHost,
           'Authorization': 'Bearer ' + this.authToken,
           'Content-type': 'application/xml'
         }),
         responseType: 'text'
-      }).toPromise().then(async (res) => {             
+      })).then(async (res) => {             
           let entries = this.extractLOCvariants(res)
           await this.addToStorage(entries)
       }).catch((err) => {
@@ -1123,7 +1146,7 @@ export class MainComponent implements OnInit, OnDestroy {
         nameParts[i].remove()
       }
     }     
-    let main_s = mainentry[0].textContent.trim()
+    let main_s = mainentry[0].textContent?.trim()
     let variants = xmlDOM.getElementsByTagName("mads:variant")    
     for(let i = 0; i < variants.length; i++) {
       nameParts = variants[i].getElementsByTagName("mads:namePart")
@@ -1137,15 +1160,15 @@ export class MainComponent implements OnInit, OnDestroy {
     let var_rom = new Array()
     let var_nonrom = new Array()
 
-    if(main_s.match(new RegExp("[\\u0370-\\u1CFF\\u1F00-\\uFE19\\uFE30-\\uFFFF]",'u'))) {
+    if(main_s?.match(new RegExp("[\\u0370-\\u1CFF\\u1F00-\\uFE19\\uFE30-\\uFFFF]",'u'))) {
       var_nonrom.push(main_s)
     } else {
       var_rom.push(main_s)
     }    
 
     for(let i = 0; i < variants.length; i++) {
-      let v = variants[i].textContent.trim()
-      if(v.match(new RegExp("[\\u0370-\\u1CFF\\u1F00-\\uFE19\\uFE30-\\uFFFF]",'u'))) {
+      let v = variants[i].textContent?.trim()
+      if(v?.match(new RegExp("[\\u0370-\\u1CFF\\u1F00-\\uFE19\\uFE30-\\uFFFF]",'u'))) {
         if(!var_nonrom.includes(v)) {
           var_nonrom.push(v)
         }
@@ -1218,8 +1241,7 @@ export class MainComponent implements OnInit, OnDestroy {
             if(!parallelFields.has(linkage)) {
               parallelFields.set(linkage, new Array<Element>());
             }
-            parallelFields.get(linkage).push(datafields[j]);
-
+            parallelFields.get(linkage)?.push(datafields[j]);
           }
         }
       }
@@ -1242,11 +1264,11 @@ export class MainComponent implements OnInit, OnDestroy {
           }
           let text_rom = sfka.textContent;
           let text_nonrom = sfkb.textContent;          
-          if(text_rom.match(this.cjk_re)) {
+          if(text_rom?.match(this.cjk_re)) {
             text_rom = sfkb.textContent;
             text_nonrom = sfka.textContent;
           }
-          if(text_rom != text_nonrom) {
+          if(text_rom && text_nonrom && (text_rom != text_nonrom)) {
             let text_rom_stripped = text_rom.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"");
             text_rom_stripped = text_rom_stripped.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"");
 
@@ -1307,7 +1329,7 @@ removeFromParallelDict(textA: string, textB: string) {
 
 addToParallelDict(textA: string, textB: string, variants: string[] = [], score = 1): Array<DictEntry> {
     if(textA == textB) {
-      return;
+      return [];
     }    
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
@@ -1354,14 +1376,20 @@ addToParallelDict(textA: string, textB: string, variants: string[] = [], score =
       let main_field = this.fieldTable.get(fkey)
       let parallel_field = this.fieldTable.get(pfkey);
       
-      let subfields = parallel_field.subfields.filter(a => !a.code.match(/[06]/));
+      let subfields = parallel_field?.subfields.filter(a => !a.code.match(/[06]/));
+      if(!subfields) {
+        return
+      }
 
       for(let i = 0; i < subfields.length; i++) {
         let sf = subfields[i]  
-        let opts = new Array();
+        let opts: Array<string> = new Array<string>();
         let cached_options = this.fieldCache.get(pfkey)
         if(cached_options != undefined && cached_options.has(sf.id)) {
-          opts = cached_options.get(sf.id)
+          opts = cached_options.get(sf.id) || []
+          if(!opts) {
+            continue
+          }
           if(!opts.includes(sf.data)) {
             opts.push(sf.data);
           }    

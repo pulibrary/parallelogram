@@ -1,5 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Settings } from '../models/settings';
+import { lastValueFrom } from 'rxjs';
 
 export class AuthUtils {
     constructor(private http: HttpClient) {}
@@ -9,7 +10,7 @@ export class AuthUtils {
         let client_codes = window.btoa(wcKey + ":" + wcSecret)
         let tokenParams = new HttpParams().set('grant_type','client_credentials')
             .set('scope','WorldCatMetadataAPI')
-        let token = await this.http.post(oauthURL,'',
+        let token = await lastValueFrom(this.http.post(oauthURL,'',
         {
             headers: new HttpHeaders({
                 'Accept': 'application/json',
@@ -19,7 +20,7 @@ export class AuthUtils {
             }),    
         params: tokenParams,        
         responseType: 'text'
-        }).toPromise().then(res => {
+        })).then((res) => {
             let resOBJ = JSON.parse(res)
             if('access_token' in resOBJ) {
                 return resOBJ['access_token']
