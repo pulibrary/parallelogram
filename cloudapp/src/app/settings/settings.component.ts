@@ -92,7 +92,7 @@ export class SettingsComponent implements OnInit {
     this.translate.get('Translate.Settings').subscribe(title => this.appService.setTitle(title));
     this.authUtils = new AuthUtils(this.http)
     if(this.ssLanguages == undefined) {
-      let authToken = this.eventsService.getAuthToken().toPromise().then((aut) => {
+      lastValueFrom(this.eventsService.getAuthToken()).then((aut) => {
         if(aut) {
           this.scriptshifter.loadLanguageList(aut).then((res) => {
             this.ssLanguages = Object.assign([], this.scriptshifter.getLanguageList())
