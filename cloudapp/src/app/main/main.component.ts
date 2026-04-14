@@ -578,12 +578,17 @@ export class MainComponent implements OnInit, OnDestroy {
               ssOptionsObj['marc_field'] = field.tag
             }
             let ssOptions = JSON.stringify(ssOptionsObj)
+            let ssLang = this.settings.ssLang
+            if(ssLang == "korean_nonames" && field.tag.match(/[1678]00/)) {
+              ssLang = "korean_names"
+              sfdataparts[k] = sfdataparts[k].replace(new RegExp(this.punctuationPattern,"u"),"")
+            }
             if(this.ssLangDirection != "s2r") {
-              ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, false, this.settings.ssCapitalize, ssOptions, this.authToken)            
+              ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], ssLang, false, this.settings.ssCapitalize, ssOptions, this.authToken)            
             } 
             let ssResult_roman = ""
             if(this.ssLangDirection != "r2s" && !sfdataparts[k].match(new RegExp("^"+this.latinPattern+"*$","u"))) {
-              ssResult_roman = await this.scriptshifter.query(sfdataparts[k], this.settings.ssLang, true, this.settings.ssCapitalize, ssOptions, this.authToken)      
+              ssResult_roman = await this.scriptshifter.query(sfdataparts[k], ssLang, true, this.settings.ssCapitalize, ssOptions, this.authToken)      
             } 
             if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
               let sfdata_norm = this.cjkNormalize(sfdataparts[k])
