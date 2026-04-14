@@ -25,7 +25,7 @@ export class Settings {
     exclusionList: Array<string> = ["1xxe","7xxe","856u","xxxi"]
     preferInstitutions: boolean = false;
     preferredInstitutionList: Array<string> = ["DLC"]
-    interfaceLang: string = "en"
+    interfaceLang: string = ""
     adminWC: boolean = false;
     adminLock: boolean = false;
     ssLang: string = "none"

@@ -104,9 +104,11 @@ export class SettingsComponent implements OnInit {
     this.settingsService.get().subscribe( settings => {
       this.form = FormGroupUtil.toFormGroup(Object.assign(new Settings(), settings))  
       this.admin = this.isAdmin(); 
-      if(!settings.interfaceLang) {
+
+      if(settings.interfaceLang == undefined || settings.interfaceLang == "")  {
         settings.interfaceLang = "en"
         this.setLang("en")
+        this.form.get("interfaceLang")?.markAsDirty()
       } 
 
       if(!settings.ssLang) {

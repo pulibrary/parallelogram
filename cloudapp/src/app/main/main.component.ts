@@ -15,7 +15,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Settings } from '../models/settings';
 import { OclcQuery } from './oclc-query';
 import { MarcDataField } from './marc-datafield';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, TitleStrategy } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
 import { AppService } from '../app.service'
@@ -124,8 +124,11 @@ export class MainComponent implements OnInit, OnDestroy {
   ngOnInit() {   
     this.settingsService.get().subscribe(stgs => {
       this.settings = stgs as Settings;
-      if(this.settings.interfaceLang == undefined) {
-        this.settings.interfaceLang = "eng"
+      
+      if(this.settings.interfaceLang == undefined || this.settings.interfaceLang == "") {
+        this.settings.interfaceLang = "en"
+        this.router.navigate(['/settings'])
+        return
       } 
       if(this.settings.ssLang == undefined) {
         this.settings.ssLang = "None"
