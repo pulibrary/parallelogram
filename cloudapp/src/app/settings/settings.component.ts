@@ -201,19 +201,19 @@ export class SettingsComponent implements OnInit {
     })
   }
 
-  setSSlangOptions(event: Event | null) {   
+  setSSlangOptions(event: Event | null) {  
     if(event != null) {
-      const target = event.target as HTMLInputElement;
-      if(target.type === 'checkbox') { //checkbox
+      let target = (event as any)
+      if(target.source && target.checked != undefined) { //checkbox
         if(target.checked) {
-          this.ssOptionsCurrent[target.id] = true
+          this.ssOptionsCurrent[target.source.id] = true
         } else {
-          this.ssOptionsCurrent[target.id] = false
+          this.ssOptionsCurrent[target.source.id] = false
         }
-      } else if((event as any).source) {  //selection list   
-        this.ssOptionsCurrent[(event as any).source.id] = (event as any).source.value
-      } else { //text input
-        this.ssOptionsCurrent[target.id] = target.value
+      } else if(target.source) {  //selection list   
+        this.ssOptionsCurrent[target.source.id] = target.source.value
+      } else if(target.change && target.change.srcElement) { //text input
+        this.ssOptionsCurrent[target.change.srcElement.id] = target.change.srcElement.value
       }
       this.form.get("ssOptionsValues")?.markAsDirty()
     } else {      
