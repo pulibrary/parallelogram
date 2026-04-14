@@ -25,8 +25,8 @@ export interface ScriptShifterLanguageOptions {
 }
 
 export interface AlmaUser {
-    role_type: string;
-    status: string;
+    role_type: {value: string, desc: string};
+    status: {value: string, desc: string};
 }
 
 @Component({
@@ -327,7 +327,7 @@ export class SettingsComponent implements OnInit {
       switchMap( initData => this.restService.call(`/users/${initData.user.primaryId}`)),
       map( user => {
         if (!user.user_role.some((role: AlmaUser)=>{ //Catalog Administrator
-          return (role.role_type =='205' && role.status =='ACTIVE')
+          return (role.role_type.value =='205' && role.status.value =='ACTIVE')
         })) { 
           return false;
         }
