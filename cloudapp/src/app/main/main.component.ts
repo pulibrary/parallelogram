@@ -1182,27 +1182,20 @@ export class MainComponent implements OnInit, OnDestroy {
       }
     }    
 
-    let vnew = new Array<string>()
     for(let i = 0; i < var_rom.length; i++) {
       for(let j = 0; j < var_nonrom.length; j++) {
         let norm = this.cjkNormalize(var_rom[i])
         let v = this.addToParallelDict(norm,var_nonrom[j],[],this.preferredLOCscore)
-        vnew.push(...(v.map(a => a.key)))
       }
     }
-    var_rom = vnew
-    vnew = new Array<string>()
     
     for(let i = 0; i < var_nonrom.length; i++) {
       for(let j = 0; j < var_rom.length; j++) {
         let norm = this.cjkNormalize(var_nonrom[i])  
-        let v = this.addToParallelDict(norm,var_rom[j],[],this.preferredLOCscore)     
-
-        vnew.push(...(v.map(a => a.key)))
+        let v = this.addToParallelDict(norm,var_rom[j],[],this.preferredLOCscore)  
       }
     }    
 
-    var_nonrom = vnew
     let var_all = [main_s,...var_nonrom,...var_rom]    
     for(let i = 0; i < var_all.length; i++) {
       let vi = var_all[i]
