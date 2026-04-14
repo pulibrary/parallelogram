@@ -110,7 +110,7 @@ Also, if you would like to translate the app interface into a new language, plea
 
 ### Acknowledgments
 
-Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Nannan Liu, Joshua Seufert, Chiharu Watsky, and Mark Zelesky.  
+Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Nannan Liu, Charles Riley, Joshua Seufert, Chiharu Watsky, and Mark Zelesky.  
 
 ### License
 <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a>
