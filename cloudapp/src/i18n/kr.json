@@ -57,6 +57,9 @@
 		"SSoptions": "ScriptShifter (스크립트 시프터) 설정",
 		"WorldCatSettings": "월드캣 설정",
 		"AdminSettings": "관리자 설정",
-		"Capitalization": "대문자 사용"
+		"Capitalization": "대문자 사용",
+		"ExcludeSubfields": "변환에서 제외할 하위 필드:",
+		"AddExclusion": "하위 필드 태그 추가 (예: 490v, 7xxe)",
+		"SelectionError": "제외 텍스트는 모두 같은 필드 내에 있어야 합니다."
 	}
 }
