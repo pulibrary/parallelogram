@@ -57,6 +57,9 @@
 		"SSoptions": "ScriptShifter設定",
 		"WorldCatSettings": "WorldCat設定",
         "AdminSettings": "管理者設定",
-		"Capitalization": "大文字化"
+		"Capitalization": "大文字化",
+		"ExcludeSubfields": "以下のサブフィールドを変換から除外する",
+		"AddExclusion": "サブフィールドタグ(490v, 7xxeなど)を追加する",
+        "SelectionError": "除外された文書はすべて同じフィールドに入れる"
     }
 }
