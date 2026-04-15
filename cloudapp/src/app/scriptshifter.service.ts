@@ -83,6 +83,9 @@ export class ScriptShifterService {
             })
             })).then(async (res) => {
             var resOBJ = JSON.parse(JSON.stringify(res))
+            if(resOBJ.warnings.length > 0) {
+              resolve("")
+            }
             var resultSTR = resOBJ.output;
             //Fix SS errors in Chinese spacing/punctuation
             if(lang.includes("chinese")) {
