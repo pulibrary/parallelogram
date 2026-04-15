@@ -250,10 +250,7 @@ export class MainComponent implements OnInit, OnDestroy {
     if ((pageInfo.entities || []).length >= 1) {
       const entity = pageInfo.entities[0];
       this.bibUtils.getBib(entity.id).subscribe(bib=> {
-        if(bib.record_format=='marc21') {
-          if(pageInfo.entities.length > 1) {
-            this.alert.warn(this.translate.instant("Translate.OneRecordWarning"))
-          }
+        if(bib.record_format=='marc21') {        
           this.bib = bib;
           this.languageCode = this.bibUtils.getLanguageCode(bib)
           if(this.settings.autoSelectSSLang) {
