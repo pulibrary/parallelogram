@@ -490,6 +490,12 @@ export class MainComponent implements OnInit, OnDestroy {
           selStart = (sel.anchorOffset < sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
           selEnd = (sel.anchorOffset > sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
           if(selText != field.getSubfieldString().substring(selStart-1,selEnd-1)) {
+            window.scrollTo({
+              top: 0,
+              left: 0,
+              behavior: 'smooth'
+            });  
+            this.alert.clear()
             this.alert.error(this.translate.instant('Translate.SelectionError'))
             return
           }    
