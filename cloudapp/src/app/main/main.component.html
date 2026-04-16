@@ -97,7 +97,7 @@
                             [disabled]="subfield_options.get(field.key).get(subfield.id).length == 1">
                             <mat-icon>translate</mat-icon>
                           </button>
-                          <mat-menu #options="matMenu">
+                          <mat-menu class="sfoptions" #options="matMenu">
                             <ng-container *ngFor="let lookup_value of subfield_options.get(field.key).get(subfield.id)">
                               <button mat-menu-item (click)="sf.value = lookup_value">
                                   {{lookup_value}}

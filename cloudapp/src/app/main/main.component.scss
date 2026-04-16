@@ -122,3 +122,7 @@ table.parallelOptions td {
 .ssLangCaption {
   font-style: italic
 }
+
+::ng-deep .sfoptions {
+  max-width: none!important;
+}
