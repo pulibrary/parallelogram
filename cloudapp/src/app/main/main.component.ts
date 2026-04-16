@@ -545,13 +545,15 @@ export class MainComponent implements OnInit, OnDestroy {
         }
       }
 
+      let sfSoFar = processedSubfields.getSubfieldString()
+      let sfStartIndex = sfSoFar.length + 4
+      let sfEndIndex = sfStartIndex + sf.data.length + 1
+
       if(!presearch && selText != "") {
-        let sfSoFar = processedSubfields.getSubfieldString()
-        if((sfSoFar.length + sf.data.length + 3 >= selBefore.length) &&
-             (sfSoFar.length < selBefore.length + selText.length)) {
-              skip_sf = true
-            }
+        if((selStart <= sfStartIndex) && (sfEndIndex < selEnd)) {
+          skip_sf = true
         }
+      }
       
       if(sf.code.match(/[0-9]/)) {
         skip_sf = true
@@ -562,52 +564,101 @@ export class MainComponent implements OnInit, OnDestroy {
         continue
       }
 
+      let sfsegments = [sf.data]
+      if(selText != "") {
+        if(sfStartIndex < selStart && selStart < sfEndIndex &&  sfEndIndex < selEnd) {
+          sfsegments = [
+            sf.data.substring(0,selStart - sfStartIndex - 1),
+            sf.data.substring(selStart - sfStartIndex - 1),
+            ""
+          ]
+        } else if(selStart < sfStartIndex && sfStartIndex < selEnd && selEnd < sfEndIndex) {
+          sfsegments = ["",
+            sf.data.substring(0,selEnd - sfStartIndex - 1),
+            sf.data.substring(selEnd - sfStartIndex - 1),
+          ]
+        } else if (sfStartIndex < selStart && selEnd < sfEndIndex) {
+          sfsegments = [
+            sf.data.substring(0,selStart - sfStartIndex - 1),
+            sf.data.substring(selStart - sfStartIndex - 1,selEnd - sfStartIndex - 1),
+            sf.data.substring(selEnd - sfStartIndex - 1)
+          ]
+        }
+      }      
+
+
       let options = new Array<string>()
-      if(cached_options != undefined && cached_options.has(sf.id)) {
+      if(selText == "" && cached_options != undefined && cached_options.has(sf.id)) {
         options = cached_options.get(sf.id) || []
       } else {
-        let sfdataparts = sf.data.split(new RegExp(this.delimiterPattern,"u"));        
-        for(let k = 0; k < sfdataparts.length; k++) {        
-          if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
-            let ssResult_nonrom = ""
-            let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues ?? "{}")
-            if(this.ssMarcSensitive) {
-              ssOptionsObj['marc_field'] = field.tag
-            }
-            let ssOptions = JSON.stringify(ssOptionsObj)
-            let ssLang = this.settings.ssLang
-            if(ssLang == "korean_nonames" && field.tag.match(/[1678]00/)) {
-              ssLang = "korean_names"
-              sfdataparts[k] = sfdataparts[k].replace(new RegExp(this.punctuationPattern,"u"),"")
-            }
-            if(this.ssLangDirection != "s2r") {
-              ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], ssLang, false, this.settings.ssCapitalize, ssOptions, this.authToken)            
-            } 
-            let ssResult_roman = ""
-            if(this.ssLangDirection != "r2s" && !sfdataparts[k].match(new RegExp("^"+this.latinPattern+"*$","u"))) {
-              ssResult_roman = await this.scriptshifter.query(sfdataparts[k], ssLang, true, this.settings.ssCapitalize, ssOptions, this.authToken)      
-            } 
-            if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
-              let sfdata_norm = this.cjkNormalize(sfdataparts[k])
-              if(sfdata_norm != "") {
-                let entries = new Array<DictEntry>()
-                if(ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != sfdata_norm && ssResult_nonrom != "") {
-                  let entries_nonrom = this.addToParallelDict(sfdata_norm, ssResult_nonrom, [sfdataparts[k]], this.defaultSSScore)
-                  entries = entries.concat(entries_nonrom)
-                }
-                if(ssResult_roman != sfdataparts[k] && ssResult_roman != ssResult_nonrom && ssResult_roman != sfdata_norm&& ssResult_roman != "") {
-                  let entries_roman = this.addToParallelDict(sfdata_norm, ssResult_roman, [sfdataparts[k]], this.defaultSSScore)
-                  entries = entries.concat(entries_roman)
-                }
-                if(entries != undefined && entries.length > 0) {
-                  entries = entries.filter((a, index) => entries.indexOf(a) === index)
-                  await this.addToStorage(entries)
-                }
+        for(let g = 0; g < sfsegments.length; g++) {
+          if(sfsegments[g] == "" || g  == 1) {
+            continue
+          }
+          let sfdataparts = sfsegments[g].split(new RegExp(this.delimiterPattern,"u"));        
+          for(let k = 0; k < sfdataparts.length; k++) {        
+            if(sfdataparts[k] != "" && this.settings.ssLang != "none") {
+              let ssResult_nonrom = ""
+              let ssOptionsObj = JSON.parse(this.settings.ssOptionsValues ?? "{}")
+              if(this.ssMarcSensitive) {
+                ssOptionsObj['marc_field'] = field.tag
               }
+              let ssOptions = JSON.stringify(ssOptionsObj)
+              let ssLang = this.settings.ssLang
+              if(ssLang == "korean_nonames" && field.tag.match(/[1678]00/)) {
+                ssLang = "korean_names"
+                sfdataparts[k] = sfdataparts[k].replace(new RegExp(this.punctuationPattern,"u"),"")
+              }
+              if(this.ssLangDirection != "s2r") {
+                ssResult_nonrom = await this.scriptshifter.query(sfdataparts[k], ssLang, false, this.settings.ssCapitalize, ssOptions, this.authToken)            
+              } 
+              let ssResult_roman = ""
+              if(this.ssLangDirection != "r2s" && !sfdataparts[k].match(new RegExp("^"+this.latinPattern+"*$","u"))) {
+                ssResult_roman = await this.scriptshifter.query(sfdataparts[k], ssLang, true, this.settings.ssCapitalize, ssOptions, this.authToken)      
+              } 
+              if((ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != "") || (ssResult_roman != sfdataparts[k] && ssResult_roman != "")) {
+                let sfdata_norm = this.cjkNormalize(sfdataparts[k])
+                if(sfdata_norm != "") {
+                  let entries = new Array<DictEntry>()
+                  if(ssResult_nonrom != sfdataparts[k] && ssResult_nonrom != sfdata_norm && ssResult_nonrom != "") {
+                    let entries_nonrom = this.addToParallelDict(sfdata_norm, ssResult_nonrom, [sfdataparts[k]], this.defaultSSScore)
+                    entries = entries.concat(entries_nonrom)
+                  }
+                  if(ssResult_roman != sfdataparts[k] && ssResult_roman != ssResult_nonrom && ssResult_roman != sfdata_norm&& ssResult_roman != "") {
+                    let entries_roman = this.addToParallelDict(sfdata_norm, ssResult_roman, [sfdataparts[k]], this.defaultSSScore)
+                    entries = entries.concat(entries_roman)
+                  }
+                  if(entries != undefined && entries.length > 0) {
+                    entries = entries.filter((a, index) => entries.indexOf(a) === index)
+                    await this.addToStorage(entries)
+                  }
+                }
+              } 
+            } 
+          }
+        } 
+        if(sfsegments.length == 1) {
+          options = await this.lookupInDictionary(sf.data);   
+        } else if(sfsegments.length == 3) {
+          let sfcomposed = ""
+          if(sfsegments[0] != "") {
+            let options1 = await this.lookupInDictionary(sfsegments[0]);  
+            if(options1.length > 0) {
+              sfcomposed = options1[0]
+            } else {
+              sfcomposed = sfsegments[0]
             }
-          } 
-        }  
-        options = await this.lookupInDictionary(sf.data);    
+          }
+          sfcomposed += sfsegments[1]
+          if(sfsegments[2] != "") {
+            let options2 = await this.lookupInDictionary(sfsegments[2]);  
+            if(options2.length > 0) {
+              sfcomposed += options2[0]
+            } else 
+              sfcomposed += sfsegments[2]
+          }
+          options = [sfcomposed]
+        } 
       }   
       if(options.length == 0) {
         options = [sf.data]
@@ -876,11 +927,13 @@ export class MainComponent implements OnInit, OnDestroy {
 
     let options_final = new Array<string>();
     let options_full = new Array<string>();
-    await this.storeService.get(this.cjkNormalize(sfdata)).toPromise().then((res: DictEntry) => {          
-      if(res != undefined) {  
+    await lastValueFrom(this.storeService.get(this.cjkNormalize(sfdata))).then((res: DictEntry) => {          
+      if(res != undefined) {
         options_full = res.parallels.map(a => a.text)      
       }
-    });    
+    }).catch((err) => {
+      options_full = []
+    });   
 
     let sfsections = sfdata.split(new RegExp("(" + this.delimiterPattern + ")","u"));
     for(let g = 0; g < sfsections.length; g++) {
@@ -898,11 +951,13 @@ export class MainComponent implements OnInit, OnDestroy {
         if(options_d.length > 0) {
           break;
         }
-        await this.storeService.get(hi).toPromise().then((res: DictEntry) => {          
-          if(res != undefined) {        
+        await lastValueFrom(this.storeService.get(hi)).then((res: DictEntry) => {          
+          if(res != undefined) {    
             options_d = res.parallels.map(a => a.text)      
           }
-        });
+        }).catch((err) => {
+          options_d = []
+       });
       } 
       options_d = options_d.filter(a => !a.match(/^<>/))
       if(options_d.length == 0) {
@@ -923,10 +978,12 @@ export class MainComponent implements OnInit, OnDestroy {
             if(options.length > 0) {
               break;
             }
-            await this.storeService.get(ki).toPromise().then((res: DictEntry) => {
+            await lastValueFrom(this.storeService.get(ki)).then((res: DictEntry) => {
               if(res != undefined) {
                 options = res.parallels.map(a => a.text);
               }
+            }).catch((err) => {
+            options = []
             });
           }    
          options = options.filter(a => !a.trim().match(/^<>/))
