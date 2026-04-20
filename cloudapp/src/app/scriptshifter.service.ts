@@ -38,6 +38,7 @@ export class ScriptShifterService {
        })).then((res) => {          
           var resOBJ = JSON.parse(JSON.stringify(res))
           var langList: Array<string> = Object.keys(resOBJ)
+          this.languageList = []
           for(var i = 0 ; i < langList.length; i++) {
             this.languageList.push({code: langList[i], marcCode: resOBJ[langList[i]].marc_code, 
              name: resOBJ[langList[i]].label, has_r2s: resOBJ[langList[i]].has_r2s, has_s2r: resOBJ[langList[i]].has_s2r})          
