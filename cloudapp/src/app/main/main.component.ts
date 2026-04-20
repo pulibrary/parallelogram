@@ -1272,7 +1272,7 @@ export class MainComponent implements OnInit, OnDestroy {
     return entries 
   }
 
-  extractParallelFields(xml: string, isOCLC = false): void {    
+  extractParallelFields(xml: string, isOCLC = false): void { 
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let records = xmlDOM.getElementsByTagName("record"); 
@@ -1329,6 +1329,7 @@ export class MainComponent implements OnInit, OnDestroy {
             text_rom = sfkb.textContent;
             text_nonrom = sfka.textContent;
           }
+
           if(text_rom && text_nonrom && (text_rom != text_nonrom)) {
             let text_rom_stripped = text_rom.replace(new RegExp("^(\\s|" + this.punctuationPattern + ")+","u"),"");
             text_rom_stripped = text_rom_stripped.replace(new RegExp("(\\s|" + this.punctuationPattern + ")+$","u"),"");
@@ -1389,7 +1390,7 @@ removeFromParallelDict(textA: string, textB: string) {
 }
 
 addToParallelDict(textA: string, textB: string, variants: string[] = [], score = 1): Array<DictEntry> { 
-    if(textA == "" || textB == "") {
+    if(textA == "" || textB == "" || textA.includes(textB) || textB.includes(textA)) {
       return []
     }
     let found = this.parallelDict.findIndex(a => a.key == textA)
