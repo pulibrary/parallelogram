@@ -1272,7 +1272,7 @@ export class MainComponent implements OnInit, OnDestroy {
     return entries 
   }
 
-  extractParallelFields(xml: string, isOCLC = false): void {     
+  extractParallelFields(xml: string, isOCLC = false): void {    
     let parser = new DOMParser();
     let xmlDOM: XMLDocument = parser.parseFromString(xml, 'application/xml');
     let records = xmlDOM.getElementsByTagName("record"); 
@@ -1388,10 +1388,10 @@ removeFromParallelDict(textA: string, textB: string) {
     return
 }
 
-addToParallelDict(textA: string, textB: string, variants: string[] = [], score = 1): Array<DictEntry> {
-    if(textA == textB) {
-      return [];
-    }    
+addToParallelDict(textA: string, textB: string, variants: string[] = [], score = 1): Array<DictEntry> { 
+    if(textA == "" || textB == "") {
+      return []
+    }
     let found = this.parallelDict.findIndex(a => a.key == textA)
     let entry: DictEntry;
     if(found == -1) {
