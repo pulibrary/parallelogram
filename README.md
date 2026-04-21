@@ -2,9 +2,9 @@
 
 ### Introduction
 
-The "Parallelogram" Cloud App for Alma is used to generate parallel fields in bibliographic records.  It can add a non-roman text field to romanized text and vice versa.  To do so, it uses identifiers in the target record (ISBNs, OCLC numbers, etc.) to search for similar records in WorldCat and the Library of Congress Linked Data Service (id.loc.gov).  It examines the parallel fields in these records and uses its findings to generate parallel text in the target record (provided it can find such text).  Additionally, it uses the Library of Congresss [ScriptShifter](https://bibframe.org/scriptshifter/) service to perform conversion for its over 150 supported scripts/languages.
+The "Parallelogram" Cloud App for Alma is used to generate parallel fields (either roman or non-roman text) in bibliographic records.  It does so by synthesizing results from WorldCat, Library of Congress authority records, and the Library of Congresss [ScriptShifter](https://bibframe.org/scriptshifter/) service.
 
-The above approach allows the tool to be used for a variety of different languages and scripts without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  That being said, it may not be able to produce an accurate transliteration in every case.  However, the tool compensates for this by presenting multiple options for parallel text where there is ambiguity, and also allowing the user to correct its suggestions.  Such corrections are saved in the tool's internal database and can be recalled the next time that text appears in a record.  Thus, over time, the tool should produce more consistent and accurate results. 
+The above approach allows the tool to be used for a variety of different languages and scripts without needing detailed information about each language's rules for romanization, capitalization, punctuation, spacing, etc.  (Indeed, some languages do not have consistent "rules" that can easily be automated.)  Since it is dependent on data from external sources, it may not be able to produce an accurate transliteration in every case.  (It is always recommended to proofread the results.) On the other hand, the tool has the ability to learn and communicate with the user about complex cases.  It presents multiple options for parallel text where there is ambiguity, and also allows the user to correct its suggestions.  Such corrections are saved in the tool's internal database and can be recalled the next time that text appears in a record.  Thus, over time, the tool should produce more consistent and accurate results.  
 
 ### Configuration
 
@@ -16,7 +16,7 @@ To incorporate WorldCat records in the output, a WorldCat Metadata API Key is ne
 
 https://www.oclc.org/developer/api/oclc-apis/worldcat-metadata-api.en.html
 
-However, even without a WorldCat API Key, the tool can still be used to query the ScriptShifter and LOC Linked data services. 
+However, even without a WorldCat Metadata API Key, the tool can still be used to query the ScriptShifter and LOC Linked data services. 
 
 ### Launching the App
 
@@ -32,15 +32,15 @@ Before opening the app, you must first navigate to the bibliographic record you 
 
 If you do not see "Parallelogram" under "Activated Apps", then go to the "Available Apps" tab and look for it.  (You may need to scroll down to the bottom of the list to see it.)  Select the app, then click "Activate".  It should then appear under "Activated Apps".   Clicking "Parallelogram" there should launch the app.  When the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
 
-|<img src="docs/images/screenshot3-2.png" width=700></img>|
+|<img src="docs/images/screenshot3-2.png" width=1000></img>|
 |-|
 
 Depending on the app settings, you may need to wait for the app to perform some preliminary steps before you can edit the record.  These include "Searching WorldCat", "Analyzing Records", and "Pre-searching" specific fields.  The screen will go gray and the app will display the progress of these steps.  Once the progress spinner disappears and the screen brightens (as shown in the screenshot above), you can begin editing the record.  If pre-searching is enabled, any fields with successful pre-search results will be displayed in bold.  (See "App Settings" below for an explanation of the pre-searching feature).  To generate a parallel field, click the plus sign icon to the left of the desired field.  The screenshot below shows the result of doing so for a few fields in this record.
 
-|<img src="docs/images/screenshot4-2.png" width=700></img>|
+|<img src="docs/images/screenshot4-2.png" width=1000></img>|
 |-|
 
-Parallel pairs are displayed next to each other and are highlighted in the same color.  In this particular case, the record contains some fields in Russian and one in Japanese, and selects the appropriate script in each case.  (See the detailed documentation below for different ways to refine the output if it is not totally accurate.)  After generating all of the desired parallel fields, click the "Save Record" button above the record to save your changes.  To close the app, you can click the X in the upper right of the window or "Back to App List" in the upper left.  Note that you may need to refresh your browser window or the MDE to see your changes reflected in Alma.  (In the MDE, selecting "Record Actions > Reload Original Record" will effectively refresh your display to show the record you just saved to the database via Parallelogram.  This is counter-intutive, since you are actually reloading a newer version of the record than the one previously shown in the MDE.  This is just a quirk of how Alma interacts with Cloud Apps). 
+Parallel pairs are displayed next to each other and are highlighted in the same color.  In this particular case, the record contains some fields in Russian and one in Japanese, and uses the appropriate script in each case.  (See the detailed documentation below for different ways to refine the output if it is not totally accurate.)  After generating all of the desired parallel fields, click the "Save Record" button above the record to save your changes.  To close the app, you can click the X in the upper right of the window or "Back to App List" in the upper left.  Note that you may need to refresh your browser window or the MDE to see your changes reflected in Alma.  (In the MDE, selecting "Record Actions > Reload Original Record" will effectively refresh your display to show the record you just saved to the database via Parallelogram.  This is counter-intutive, since you are actually reloading a newer version of the record than the one previously shown in the MDE.  This is just a quirk of how Alma interacts with Cloud Apps). 
 
 ***BE SURE TO SAVE THE RECORD BEFORE YOU CLOSE THE APP!  IT WILL NOT WARN YOU IF YOU CLOSE IT WITH UNSAVED WORK!***
 
@@ -48,31 +48,31 @@ Parallel pairs are displayed next to each other and are highlighted in the same 
 
 Sometimes, you may only want to convert part of the field.  In the example above, field 500 contains some English text followed by romanized Russian.  To prevent the English part from being converted, simply highlight it before clicking the "+" button, as shown below.
 
-|<img src="docs/images/screenshot4b-1.png" width=100></img>|
+|<img src="docs/images/screenshot4b-1.png" width=1000></img>|
 |-|
 
 In the generated parallel field, the English text is preserved.
 
-|<img src="docs/images/screenshot4b-2.png" width=100></img>|
+|<img src="docs/images/screenshot4b-2.png" width=1000></img>|
 |-|
 
 ### Changing the default ScriptShifter language
 
-Parallelogram draws its output from a few different sources.  It gives priority to data from WorldCat and LOC authority records.  (This is how it is able to correctly generate Cyrillic text for the Russian fields, but Japanese text for field 246.)  However, when it cannot find sufficient data from these sources, it will use ScriptShifter to perform the conversion.  At the top of the window, to the right of the "Settings" button, there is a menu called "ScriptShifter language". 
+Parallelogram draws its output from a few different sources.  It gives priority to data from WorldCat and LOC authority records.  (In the above example, this is how it is able to correctly generate Cyrillic text for the Russian fields, but Japanese text for field 246.)  However, when it cannot find sufficient data from these sources, it will use ScriptShifter to perform the conversion.  At the top of the window, to the right of the "Settings" button, there is a menu called "ScriptShifter language". 
 
-|<img src="docs/images/screenshot4c.png" width=100></img>|
+|<img src="docs/images/screenshot4c.png" width=500></img>|
 |-|
 
 This menu indicates which language/script is used to perform the conversion, and is automatically set based on field 008 of the record (if auto-selection is enabled in the settings panel.)  You can select a different language to have Scriptshifer convert text using that language.  For example, consider the case of a Chinese work translated into Japanese.  Suppose that Parallelogram generates the Japanese romanization of the characters, as shown below:
 
 
-|<img src="docs/images/screenshot4d-1.png" width=100></img>|
+|<img src="docs/images/screenshot4d-1.png" width=500></img>|
 |-|
 
 If you wanted it to use the Chinese romanization instead, you could delete the romanized field, set the "ScriptShifter" language to "Chinese", then click the "+" button again.  This would perform the romanization in Chinese.
 
 
-|<img src="docs/images/screenshot4d-2.png" width=100></img>|
+|<img src="docs/images/screenshot4d-2.png" width=500></img>|
 |-|
 
 Note that this menu only affects ScriptShifter queries.  If WorldCat results are included, then the output may still include text that differs from the ScriptShifter output.
@@ -81,7 +81,7 @@ Note that this menu only affects ScriptShifter queries.  If WorldCat results are
 
 Once a field has parallel data, the button to the left turns from a plus into an ellipsis.  Clicking it will open the menu below:
 
-|<img src="docs/images/screenshot5.png" width=100></img>|
+|<img src="docs/images/screenshot5.png" width=150></img>|
 |-|
 
 These menu options do the following:
@@ -95,17 +95,17 @@ These menu options do the following:
 
 If you select the "edit" option for a given field, the field will expand so that you can edit the subfields, as shown in the screenshot below:
 
-|<img src="docs/images/screenshot6a-2.png" width=700></img>|
+|<img src="docs/images/screenshot6a-2.png" width=500></img>|
 |-|
 
 There is one line for each subfield (However, subfields $6 and $0 are not displayed and are not editable).  There are two buttons to the left of each subfield.  The "language" icon displays a list of candidates for that subfield. 
 
-|<img src="docs/images/screenshot6a-2.png" width=700></img>|
+|<img src="docs/images/screenshot6b-2.png" width=500></img>|
 |-|
 
  In the example above, the app displays the two possible transliterations (Chinese and Japanese) of the CJK text, so both of these are displayed in the menu.  (Additionally, this menu will always include the original text from the parallel field.)  Selecting one of these candidates will populate the text box with that selection. 
 
-Sometimes, the candidate list will include invalid options.  This may be due to ambiguity or errors in the WorldCat or authority records that are found.  In such a case, the "thumbs down" button will remove the selected text from the candidate list as well as the app's internal database.  (It is still possible that the text could re-appear if a future search encounters the same data.  However, in many cases the thumbs down button is effective in keeping candidate lists from becoming too cluttered).
+Sometimes, the candidate list will include invalid options.  This may be due to ambiguity or errors in the data sources.  In such a case, the "thumbs down" button will remove the selected text from the candidate list as well as the app's internal database.  (It is still possible that the text could re-appear if a future search encounters the same data.  However, in many cases the thumbs down button is effective in keeping candidate lists from becoming too cluttered).
 
 You can also edit the subfield text directly in the text box.  The app remembers your custom edits and will display them in the candidate list if the same parallel text is encountered in the future.  Clicking the "checkmark" button to the left of the field will save your changes to the subfields and also add any custom text to the app's internal database.    Clicking the "X" button will discard any changes you made to the candidate list or the subfield text.
 
@@ -123,17 +123,18 @@ The screenshots below show the app settings.  This screen can be accessed by cli
 * **Exclude the following subfields...**: The subfields in this list will always be excluded from conversion, whether or not the user highlights the text.
 * **After adding a parallel field, swap original field and 880...**: If checked, this option allows you to set a policy for what kind of text is placed in the 880 field (either roman or non-roman text).  When a parallel field is added, the original and 880 fields are swapped (if needed) to conform to this policy.
 
-|<img src="docs/images/screenshot7b-2.png" width=700></img>|
+|<img src="docs/images/screenshot7b-2.png" width=500></img>|
 |-|
 
 ***ScriptShifter Settings***
 
 * **ScriptShifter Default Language**: Specifies the language to use for ScriptShifter queries.  This may be overridden in specific cases by selecting another language from the ScriptShifter menu that appears on the main screen, or checking the "Auto-select..." option below it.  Once a language is selected, additional options specific to that language may appear in the settings panel.
-* **Auto-select...": Checking this option will set the "ScriptShifter language" menu in the main window based on the language code of the 008 field of the record.  If the 008 field does not contain a code for a language supported by ScriptShifter, then the "ScriptShifter Default Language" specified above will be used.
+* **Auto-select..."**: Checking this option will set the "ScriptShifter language" menu in the main window based on the language code of the 008 field of the record.  If the 008 field does not contain a code for a language supported by ScriptShifter, then the "ScriptShifter Default Language" specified above will be used.
 * **Capitilization**: Indicates whether to capitalize the first word, all words, or none of the words in the ScriptShifter output.
 
 ***WorldCat Settings***
 
+* **Search WorldCat**: Uncheck to derive results only from ScriptShifter and LOC authority records (or if you do not have access to a WorldCat Metadata API Key).
 * **WorldCat Metadata API Key** and **Client Secret**: Needed in order to search for WorldCat records.  The Catalog Administrator may choose to populate these fields for all users and prevent them from being viewed or edited. (Such is the case in the above screenshot.)  However, if the administrator has not provided a key/secret pair, individual users may enter them.  The API Key and Client Secret not needed if you are only using the app to convert Chinese characters to pinyin.  
 * **Give preference to WorldCat records...**: If checked, then the app will give greater weight to parallel text from records originating from specific institutions.  "DLC" (Library of Congress) is included by default, but you can enter any code that may be found in field 040.  This allows you to improve the quality of the parallel text by indicating that certain institutions can be trusted to produce good records.
 
