@@ -30,7 +30,7 @@ Before opening the app, you must first navigate to the bibliographic record you 
 |<img src="docs/images/screenshot2.png" width=300></img>|
 |-|
 
-If you do not see "Parallelogram" under "Activated Apps", then go to the "Available Apps" tab and look for it.  (You may need to scroll down to the bottom of the list to see it.)  Select the app, then click "Activate".  It should then appear under "Activated Apps".   Clicking "Parallelogram" there should launch the app.  When the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
+If you do not see "Parallelogram" under "Activated Apps", then go to the "Available Apps" tab and look for it.  (You may need to scroll down to the bottom of the list to see it.)  Select the app, then click "Activate".  It should then appear under "Activated Apps".   Clicking "Parallelogram" there should launch the app.  The first time you run the app, it will go to the settings panel.  (You can simply click "Save", and then "Home" to confirm these settings, or see "App Settings" further down if you want to change any of them.)  In general, when the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
 
 |<img src="docs/images/screenshot3-2.png" width=1000></img>|
 |-|
