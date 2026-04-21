@@ -18,7 +18,7 @@ https://www.oclc.org/developer/api/oclc-apis/worldcat-metadata-api.en.html
 
 However, even without a WorldCat Metadata API Key, the tool can still be used to query the ScriptShifter and LOC Linked data services. 
 
-### Launching the App
+### Running the App
 
 Before opening the app, you must first navigate to the bibliographic record you are interested in editing.  (Note: the app currently only works with Institution Zone records, i.e. those in your local catalog.)  The record can either be open in the MDE or in read-only mode (what you see if you click the title of the record in a results list).  Alternatively, if you launch the app with a list of search results open, it will select the first record in the list.  To launch the app, open the Cloud Apps Center using this icon in the upper right of the Alma window. 
 
