@@ -77,7 +77,7 @@ If you wanted it to use the Chinese romanization instead, you could delete the r
 |<img src="docs/images/screenshot4d-2.png" width=500></img>|
 |-|
 
-Note that this menu only affects ScriptShifter queries.  If WorldCat results are included, then the output may still include text that differs from the ScriptShifter output.
+Note that this menu only affects ScriptShifter queries.  If WorldCat results are included, then the output may still include text that differs from the language/script selected in this menu.
 
 ### Field Options
 
