@@ -485,6 +485,7 @@ export class MainComponent implements OnInit, OnDestroy {
     if(!presearch) {  
       let sel = document.getSelection()
       if(sel) {
+              console.log(sel.anchorOffset + " " + sel.focusOffset + " *" + sel.toString() + "*")
         selText = sel.toString()
         if(selText != "") {
           selStart = (sel.anchorOffset < sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
@@ -515,7 +516,11 @@ export class MainComponent implements OnInit, OnDestroy {
       placeholder_tag = t.substring(0,3)      
     }
     if(!presearch) {
-      field.deleteSubfield("61")
+      var linkage = field.getSubfield("61")
+      if(linkage != "") {
+        processedSubfields.addSubfield("61","6",linkage)
+        field.deleteSubfield("61")
+      }
     }
     let parallel_field = new MarcDataField("880",field.ind1,field.ind2);
     let seqno = this.findUnusedLinkage();
@@ -555,8 +560,10 @@ export class MainComponent implements OnInit, OnDestroy {
       let sfStartIndex = sfSoFar.length + 4
       let sfEndIndex = sfStartIndex + sf.data.length + 1
 
+      console.log(selStart + " "  + sfStartIndex + " " + sfEndIndex + " "  +selEnd)
+
       if(!presearch && selText != "") {
-        if((selStart <= sfStartIndex) && (sfEndIndex < selEnd)) {
+        if((selStart <= sfStartIndex+1) && (sfEndIndex <= selEnd)) {
           skip_sf = true
         }
       }
@@ -572,18 +579,18 @@ export class MainComponent implements OnInit, OnDestroy {
 
       let sfsegments = [sf.data]
       if(selText != "") {
-        if(sfStartIndex < selStart && selStart < sfEndIndex &&  sfEndIndex < selEnd) {
+        if(sfStartIndex <= selStart && selStart <= sfEndIndex &&  sfEndIndex <= selEnd) {
           sfsegments = [
             sf.data.substring(0,selStart - sfStartIndex - 1),
             sf.data.substring(selStart - sfStartIndex - 1),
             ""
           ]
-        } else if(selStart < sfStartIndex && sfStartIndex < selEnd && selEnd < sfEndIndex) {
+        } else if(selStart <= sfStartIndex && sfStartIndex <= selEnd && selEnd <= sfEndIndex) {
           sfsegments = ["",
             sf.data.substring(0,selEnd - sfStartIndex - 1),
             sf.data.substring(selEnd - sfStartIndex - 1),
           ]
-        } else if (sfStartIndex < selStart && selEnd < sfEndIndex) {
+        } else if (sfStartIndex <= selStart && selEnd <= sfEndIndex) {
           sfsegments = [
             sf.data.substring(0,selStart - sfStartIndex - 1),
             sf.data.substring(selStart - sfStartIndex - 1,selEnd - sfStartIndex - 1),
@@ -592,6 +599,8 @@ export class MainComponent implements OnInit, OnDestroy {
         }
       }      
 
+
+      console.log(sfsegments)
 
       let options = new Array<string>()
       if(selText == "" && cached_options != undefined && cached_options.has(sf.id)) {
