@@ -489,7 +489,8 @@ export class MainComponent implements OnInit, OnDestroy {
         if(selText != "") {
           selStart = (sel.anchorOffset < sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
           selEnd = (sel.anchorOffset > sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
-          if(selText != field.getSubfieldString().substring(selStart-1,selEnd-1)) {
+
+          if(selText != field.getSubfieldString().substring(selStart-1,selEnd-1).replace(new RegExp(/\s+/,'g')," ")) {
             window.scrollTo({
               top: 0,
               left: 0,
