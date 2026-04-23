@@ -144,6 +144,8 @@ export class SettingsComponent implements OnInit {
             && (adminSecret != "" && adminSecret != undefined)) {
             this.alert.clear()
             this.alert.info(this.translate.instant("Translate.AdminSetWCAPI"),{autoClose: false})
+            this.form.get('doWCSearch')?.setValue(true)
+            settings.doWCSearch = true
           }    
           this.form.get('wckey')?.setValue(adminKey)
           this.form.get('wcsecret')?.setValue(adminSecret)

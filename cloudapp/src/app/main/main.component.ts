@@ -485,7 +485,6 @@ export class MainComponent implements OnInit, OnDestroy {
     if(!presearch) {  
       let sel = document.getSelection()
       if(sel) {
-              console.log(sel.anchorOffset + " " + sel.focusOffset + " *" + sel.toString() + "*")
         selText = sel.toString()
         if(selText != "") {
           selStart = (sel.anchorOffset < sel.focusOffset) ? sel.anchorOffset : sel.focusOffset
@@ -560,8 +559,6 @@ export class MainComponent implements OnInit, OnDestroy {
       let sfStartIndex = sfSoFar.length + 4
       let sfEndIndex = sfStartIndex + sf.data.length + 1
 
-      console.log(selStart + " "  + sfStartIndex + " " + sfEndIndex + " "  +selEnd)
-
       if(!presearch && selText != "") {
         if((selStart <= sfStartIndex+1) && (sfEndIndex <= selEnd)) {
           skip_sf = true
@@ -598,9 +595,6 @@ export class MainComponent implements OnInit, OnDestroy {
           ]
         }
       }      
-
-
-      console.log(sfsegments)
 
       let options = new Array<string>()
       if(selText == "" && cached_options != undefined && cached_options.has(sf.id)) {
