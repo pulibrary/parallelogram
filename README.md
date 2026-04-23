@@ -12,7 +12,7 @@ First of all, please note that depending on your Alma configuration, your admini
 
 https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/050Administration/050Configuring_General_Alma_Functions/Configuring_Cloud_Apps
 
-To incorporate WorldCat records in the output, a WorldCat Metadata API Key is needed.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users. (See the [App Settings](https://github.com/pulibrary/parallelogram/blob/v2-documentation/README.md#app-settings) section below for details.  It is also possible to deploy the key to users without making it visible to them.)  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC (it is free for qualifying WorldCat members).  Further details can be found at the following website:
+To incorporate WorldCat records in the output, a WorldCat Metadata API Key is needed.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users. (See the [App Settings](https://github.com/pulibrary/parallelogram/blob/v2-documentation/README.md#app-settings) section below for details.  It is also possible to securely deploy the key to users without making it visible to them.)  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC (it is free for qualifying WorldCat members).  Further details can be found at the following website:
 
 https://www.oclc.org/developer/api/oclc-apis/worldcat-metadata-api.en.html
 
