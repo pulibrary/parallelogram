@@ -12,7 +12,7 @@ First of all, please note that depending on your Alma configuration, your admini
 
 https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/050Administration/050Configuring_General_Alma_Functions/Configuring_Cloud_Apps
 
-To incorporate WorldCat records in the output, a WorldCat Metadata API Key is needed.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users. (See the [App Settings](https://github.com/pulibrary/parallelogram/blob/v2-documentation/README.md#app-settings) section below for details.  It is also possible to securely deploy the key to users without making it visible to them.)  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC (it is free for qualifying WorldCat members).  Further details can be found at the following website:
+To incorporate WorldCat records in the output, a WorldCat Metadata API Key is needed.  This can be entered in the settings the first time the app is run.  A catalog administrator can also set the key for all users. (See the [App Settings](https://github.com/pulibrary/parallelogram/blob/v2-documentation/README.md#app-settings) section below for details.  It is also possible to securely deploy the key to users without making it visible to them.)  If you do not know your institution's WorldCat API Key, please contact your administrator. If your institution does not have an API Key, they may request one from OCLC. (It is free for qualifying WorldCat members.)  Further details can be found at the following website:
 
 https://www.oclc.org/developer/api/oclc-apis/worldcat-metadata-api.en.html
 
@@ -32,7 +32,7 @@ Before opening the app, you must first navigate to the bibliographic record you 
 
 If you do not see "Parallelogram" under "Activated Apps", then go to the "Available Apps" tab and look for it.  (You may need to scroll down to the bottom of the list to see it.)  Select the app, then click "Activate".  It should then appear under "Activated Apps".   Clicking "Parallelogram" there should launch the app.  
 
-The first time you run the app, it will go to the settings panel.  (You can simply click "Save", and then "Home" to confirm these settings.)  However, be sure to check "Search WorldCat" if you want to incorporate WorldCat into the app's output.  Other app settings are described in the [App Settings](https://github.com/pulibrary/parallelogram/blob/v2-documentation/README.md#app-settings) section further down in this README.)  In general, when the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display).
+The first time you run the app, it will go to the settings panel.  (You can simply click "Save", and then "Home" to confirm these settings.)  However, be sure to check "Search WorldCat" if you want to incorporate WorldCat into the app's output.  Other app settings are described in the [App Settings](https://github.com/pulibrary/parallelogram/blob/v2-documentation/README.md#app-settings) section further down in this README.)  In general, when the app first opens, you will see all of the data fields in the currently displayed record.  (Control fields are not included in order to simplify the display.)
 
 |<img src="docs/images/screenshot3-2.png" width=1000></img>|
 |-|
