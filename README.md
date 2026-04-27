@@ -154,6 +154,6 @@ Also, if you would like to translate the app interface into a new language, plea
 
 ### Acknowledgments
 
-Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Alim Alp, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Hyoungbae Lee, Sumiko Maeda, Michael Meerson, Nannan Liu, Charles Riley, Joshua Seufert, Chiharu Watsky, and Mark Zelesky.  Special thanks to Stefano Cossu, Jessalyn Zoom, and the team at the Library of Congress that has made this collaboration possible.
+Many thanks to those who helped with beta testing the tool and translating the localization files: Ellen Ambrosone, Alim Alp, Shuwen Cao, Minjie Chen, Krikor Chobanian, Lia Contursi, Maria Gorbunova, Flora Kim, Seong Heon Lee, Hyoungbae Lee, Sumiko Maeda, Michael Meerson, Nannan Liu, Charles Riley, Joshua Seufert, Chiharu Watsky, and Mark Zelesky.  Special thanks to Stefano Cossu, Jessalyn Zoom, and the team at the Library of Congress that has made this collaboration possible.
 
 
